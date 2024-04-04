@@ -104,7 +104,7 @@ def move(table, label, target_table, target_position, axis=0):
             # Concatenate the parts back together, inserting the row_data in between
             target_table = pd.concat([top_half, row_data, bottom_half])
 
-            return table, target_table
+    return table, target_table
 
 
 def copy(table, label, target_table, target_label, axis=0):
