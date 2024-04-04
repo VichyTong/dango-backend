@@ -37,7 +37,7 @@ def drop(table, label, axis=0):
     return table
 
 
-def move(table, label, target_table, target_position, axis=0):
+def move(table, label, target_table, target_label, axis=0):
     """
     Moves a row or column from source_table to target_table at the specified position.
 
@@ -49,59 +49,41 @@ def move(table, label, target_table, target_position, axis=0):
     - axis: 0 for row, 1 for column.
     """
 
-    # Validate axis
     if axis not in [0, 1, "index", "columns"]:
         raise ValueError("Axis must be 0, 'index', 1, or 'columns'")
 
-    # Convert string axis to numeric
     if axis == "index":
         axis = 0
     elif axis == "columns":
         axis = 1
 
-    target_position = int(target_position)
+    target_label = int(target_label)
 
-    # Moving a column
     if axis == 1:
         if label not in table.columns:
             raise ValueError(
                 f"Column '{label}' does not exist in the source DataFrame."
             )
-        if target_position < 0 or target_position > len(target_table.columns):
+        if target_label < 0 or target_label > len(target_table.columns):
             raise ValueError("Position out of range in the target DataFrame.")
-
-        # Extract the column and drop it from the source
         column_data = table.pop(label)
-
-        # Insert the column into the target DataFrame at the specified position
-        target_table.insert(loc=target_position, column=label, value=column_data)
-
-    # Moving a row
+        target_table.insert(loc=target_label, column=label, value=column_data)
     else:
         label = int(label)
-        # Check if the row exists in the source DataFrame
         if label not in table.index:
             raise ValueError(f"Row '{label}' does not exist in the source DataFrame.")
-
-        # Validate the target position
-        if target_position < 0 or target_position > len(target_table.index):
+        if target_label < 0 or target_label > len(target_table.index):
             raise ValueError("Position out of range in the target DataFrame.")
 
-        # Extract the row to be moved
         row_data = table.loc[[label]]
 
-        # Drop the row from the source DataFrame
         table.drop(labels=label, axis=0, inplace=True)
 
-        # If the target_position is at the end, simply concatenate
-        if target_position == len(target_table.index):
+        if target_label == len(target_table.index):
             target_table = pd.concat([target_table, row_data])
         else:
-            # Split the target DataFrame at the desired position
-            top_half = target_table.iloc[:target_position]
-            bottom_half = target_table.iloc[target_position:]
-
-            # Concatenate the parts back together, inserting the row_data in between
+            top_half = target_table.iloc[:target_label]
+            bottom_half = target_table.iloc[target_label:]
             target_table = pd.concat([top_half, row_data, bottom_half])
 
     return table, target_table
@@ -143,6 +125,7 @@ def copy(table, label, target_table, target_label, axis=0):
 
     # Copying a row
     else:
+        label = int(label)
         if label not in table.index:
             raise ValueError(f"Row {label} does not exist in the source DataFrame.")
         if target_label in target_table.index:
@@ -192,6 +175,9 @@ def merge(table, label_1, label_2, glue, new_label, axis=0):
 
     # Merging rows
     else:
+        label_1 = int(label_1)
+        label_2 = int(label_2)
+        new_label = int(new_label)
         if label_1 not in table.index or label_2 not in table.index:
             raise ValueError("One or both row labels do not exist in the DataFrame.")
         if new_label in table.index:
@@ -201,7 +187,7 @@ def merge(table, label_1, label_2, glue, new_label, axis=0):
         new_row = (
             table.loc[label_1].astype(str) + glue + table.loc[label_2].astype(str)
         ).rename(new_label)
-        table = table.append(new_row)
+        table.loc[new_label] = new_row.copy()
 
     return table
 
@@ -238,8 +224,8 @@ def split(table, label, delimiter, new_labels, axis=0):
         split_data.columns = new_labels
 
         # Drop the original column and add new columns
-        table = table.drop(labels=label, axis=1)
-        table = pd.concat([table, split_data], axis=1)
+        table = table.drop(labels=label, axis=axis)
+        table = pd.concat([table, split_data], axis=axis)
 
     # Splitting a row
     else:
@@ -254,7 +240,7 @@ def split(table, label, delimiter, new_labels, axis=0):
             )
 
         # Drop the original row and add new rows
-        table = table.drop(labels=label, axis=0)
+        table = table.drop(labels=label, axis=axis)
         for new_label, data in zip(new_labels, split_data):
             table.loc[new_label] = data
 
@@ -278,57 +264,11 @@ def transpose(table):
     return transposed_table
 
 
-def aggregate(table, label, new_label, operation, axis=0):
-    """
-    Performs a specified aggregation operation on a row or column in the DataFrame and appends the result.
-
-    Parameters:
-    - table: DataFrame on which the aggregation operation will be performed.
-    - label: The label of the row/column to be aggregated. Ignored if axis is 0 and operation is sum, mean, median, min, or max, as the aggregation will be done for all columns.
-    - new_label: The label for the resulting aggregated row/column.
-    - operation: The aggregation operation to perform ('sum', 'mean', 'median', 'min', 'max').
-    - axis: 0 to aggregate columns (resulting in a new row), 1 to aggregate rows (resulting in a new column).
-    """
-
+def aggregate(table, functions, axis=0):
     # Validate axis
-    if axis not in [0, 1]:
-        raise ValueError("Axis must be 0 or 1")
-
-    # Define supported operations
-    supported_operations = {
-        "sum": lambda x: x.sum(),
-        "mean": lambda x: x.mean(),
-        "median": lambda x: x.median(),
-        "min": lambda x: x.min(),
-        "max": lambda x: x.max(),
-    }
-
-    # Check if the operation is supported
-    if operation not in supported_operations:
-        raise ValueError(
-            f"Operation '{operation}' is not supported. Supported operations are: {list(supported_operations.keys())}"
-        )
-
-    # Aggregating columns (resulting in a new row)
-    if axis == 0:
-        # Compute the aggregation for each column
-        aggregated_row = supported_operations[operation](table)
-
-        # Append the aggregated row with the specified label
-        table.loc[new_label] = aggregated_row
-
-    # Aggregating rows (resulting in a new column)
-    else:
-        if label not in table.index:
-            raise ValueError(f"Row {label} does not exist in the DataFrame.")
-
-        # Compute the aggregation for the specified row
-        aggregated_column = supported_operations[operation](table.loc[label])
-
-        # Append the aggregated column with the specified label
-        table[new_label] = aggregated_column
-
-    return table
+    if axis not in [0, 1, "index", "columns"]:
+        raise ValueError("Axis must be 0, 'index', 1, or 'columns'")
+    return table.agg(functions, axis=axis)
 
 
 def test(table, label_1, label_2, strategy, axis=0):
