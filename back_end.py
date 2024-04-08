@@ -110,7 +110,6 @@ async def continue_clarification(request_body: ContinueClarification):
 
     chat_response = client.generate_chat_completion(client.history)
     chat_response_full = json.loads(chat_response.choices[0].message.content)
-    print(chat_response_full)
     if chat_response_full["type"] == "question":
         chat_response_content = chat_response_full["content"]
         chat_response_choices = chat_response_full["choices"]
@@ -157,7 +156,6 @@ async def generate_dsl(request_body: GenerateDSL):
     client.append_user_message("History:\n" + json.dumps(history))
 
     chat_response = client.generate_chat_completion(client.history)
-    print(chat_response.choices[0].message.content)
     chat_response_content = json.loads(chat_response.choices[0].message.content)
 
     client.append_assistant_message(chat_response_content)
