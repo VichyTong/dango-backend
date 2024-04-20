@@ -12,11 +12,7 @@ source venv/bin/activate
 
 ## Install dependencies
 ```
-pip install openai
-pip install fastapi
-pip install uvicorn
-pip install lark
-pip install pandas
+pip install -r requirements.txt
 ```
 
 ## Set the openai api key
