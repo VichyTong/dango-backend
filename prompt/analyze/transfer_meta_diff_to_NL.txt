@@ -9,20 +9,27 @@ The difference detail includes a '+' or '-' sign, which means to add or delete, 
 Example 1:
 ```
 table1.csv
-+ (4, 12) 5
++ (4, 1) 1
++ (4, 2) 2
++ (4, 3) 3
++ (4, 4) 4
++ (4, 5) 5
++ (4, 6) 6
++ (4, 7) 7
 ```
-The summary is: In table1.csv, add 5 to the 4th column and the 12th row.
+Summary: In table1.csv, sequentially insert values into the fourth column according to row number.
 
 Example 2:
 ```
 table2.csv
-- (4,)
+- (4, ) [1, 2, 3]
++ (5, ) [1, 2, 3]
 ```
-The summary is: In table2.csv, delete the number in the 4th column.
+Summary: In table2.csv, move column 4 to column 5.
 
 Example 3:
 ```
 table3.csv
-+ (2, ) [1, 2, 3, 4]
++ (, 7) [452, 424, 981, 1423]
 ```
-The summary is: In table3.csv, add [1, 2, 3, 4] to the 2nd column.
+Summary: In table3.csv, add a new row at row 7, maybe the end of the table.
