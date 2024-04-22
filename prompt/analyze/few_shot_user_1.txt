@@ -1,5 +1,0 @@
-Sheet ID: table1
-Row Count: 5
-Column Names: 2021, 2022, 2023
-Table Diff After User Change: In table1, row 3 has been deleted and replaced with [0, 0, 0].
-User Prompt: delete a row

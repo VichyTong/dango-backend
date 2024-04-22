@@ -1,6 +1,0 @@
-{
-    "type": "question",
-    "summary": "The user has deleted row 3 in table1 and replaced it with zero.",
-    "question": "It appears that you have deleted row 3 and replaced it with zero. What is the rationale behind this operation?",
-    "choices": ["Choose the third row and set 0", "Choose the middle row and set 0", "other"]
-}

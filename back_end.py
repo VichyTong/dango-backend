@@ -83,6 +83,7 @@ async def simple_chat(request_body: SimpleChat):
             "client_id": client_id,
             "history": client.history,
             "response": response,
+            "status": "init",
         }
     else:
         client = get_client(client_id)
@@ -93,6 +94,7 @@ async def simple_chat(request_body: SimpleChat):
             "client_id": client_id,
             "history": client.history,
             "response": response,
+            "status": "init",
         }
     return return_message
 
