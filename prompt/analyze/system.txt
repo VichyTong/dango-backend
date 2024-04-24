@@ -38,13 +38,13 @@ SYSTEM:
 
 USER:
 {
-    "choice": "Choose the third row and set 0",
+    "choice": "Other: Copy row 5 to row 3.",
 }
 
 SYSTEM:
 {
     "type": "finish",
-    "summary": "The user intended to specifically select the third row of the table and set its values to zero."
+    "summary": "The user's intent was to copy the values from row 5 to row 3 in table_1 after initially deleting row 3."
 }
 
 Example 2:
@@ -99,57 +99,4 @@ SYSTEM:
 {
     "type": "finish",
     "summary": "The user has confirmed that the 'Paid' status marked as 'Yes' for the first five rows should also be applied automatically to all future entries in table_7 where the 'Amount' is not zero."
-}
-
-Example 4:
-USER:
-Sheet ID: table_12
-Row Count: 25
-Column Names: Store ID, Item ID, Stock, Reorder Level
-Table Diff After User Change: Values in 'Stock' column for rows 10 to 15 have been increased by 5 units each.
-User Prompt: adjust stock levels
-
-SYSTEM:
-{
-    "type": "question",
-    "summary": "You have increased the stock levels by 5 units each for rows 10 to 15 in table_12.",
-    "question": "Is this stock adjustment a one-time update or should it trigger automatic updates when reorder levels are met?",
-    "choices": ["One-time update", "Trigger automatic updates", "other"]
-}
-
-USER:
-{
-    "choice": "Trigger automatic updates"
-}
-
-SYSTEM:
-{
-    "type": "question",
-    "summary": "You've opted for automatic updates for the stock adjustments.",
-    "question": "Do you want this automation to apply to all items in the table or only to the items you've adjusted?",
-    "choices": ["All items in the table", "Only adjusted items", "other"]
-}
-
-USER:
-{
-    "choice": "Only adjusted items"
-}
-
-SYSTEM:
-{
-    "type": "question",
-    "summary": "Automatic updates will be applied only to the adjusted items (rows 10 to 15).",
-    "question": "Should the system automatically adjust stock when it drops to or below the reorder level, or when it exceeds it?",
-    "choices": ["When stock drops to/below reorder level", "When stock exceeds reorder level", "other"]
-}
-
-USER:
-{
-    "choice": "When stock drops to/below reorder level"
-}
-
-SYSTEM:
-{
-    "type": "finish",
-    "summary": "The user has configured automatic stock adjustments for items in rows 10 to 15 of table_12 to trigger when their stock levels drop to or fall below the reorder level."
 }
