@@ -52,21 +52,21 @@ SYSTEM:
     "summary": "The user intends to copy the values from row 5 to row 3 in table_1 after initially deleting row 3.",
     "question": "Do you want to replace all values in row 3 with those from row 5, and delete row 5?",
     "choices": [
-    "Yes, replace all values and delete row 5",
-    "No, just replace the values without deleting row 5",
-    "other (please specify)"
+        "Yes, replace all values and delete row 5",
+        "No, just replace the values without deleting row 5",
+        "other (please specify)"
     ]
 }
 
 USER:
 {
-"choice": "Yes, replace all values and delete row 5"
+    "choice": "Yes, replace all values and delete row 5"
 }
 
 SYSTEM:
 {
-"type": "finish",
-"summary": "The user's intent was to completely replace all values in row 3 with those from row 5 in table_1. Then delete row 5."
+    "type": "finish",
+    "summary": "The user's intent was to completely replace all values in row 3 with those from row 5 in table_1. Then delete row 5."
 }
 
 Example 2:
@@ -81,11 +81,11 @@ SYSTEM:
     "summary": "You have cleared all data in row 2 across all columns in table_4.",
     "question": "Did you intend to delete the entire row 2?",
     "choices": [
-    "Delete the entire row",
-    "Clear data only, keep row",
-    "Remove incorrect or outdated information",
-    "Reset values temporarily for audit purposes",
-    "other (please specify)"
+        "Delete the entire row",
+        "Clear data only, keep row",
+        "Remove incorrect or outdated information",
+        "Reset values temporarily for audit purposes",
+        "other (please specify)"
     ]
 }
 
@@ -99,5 +99,3 @@ SYSTEM:
     "type": "finish",
     "summary": "The user intended to delete the entire row 2."
 }
-
-
