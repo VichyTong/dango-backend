@@ -18,12 +18,11 @@ app = FastAPI()
 origins = ["http://localhost:3000"]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"],  # Adjust this to match your frontend URL for security
     allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allow_headers=["Content-Type", "Authorization"],
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
-
 
 clients = {}
 
@@ -75,6 +74,8 @@ class SimpleChat(BaseModel):
 async def simple_chat(request_body: SimpleChat):
     client_id = request_body.client_id
     message = request_body.message
+    print("client id:")
+    print(client_id)
     if not client_id:
         client_id, client = create_client()
         client.append_user_message(message)
