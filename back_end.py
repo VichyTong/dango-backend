@@ -49,6 +49,7 @@ class Chat(BaseModel):
     column_names: Optional[List[str]] = Field(None)
     table_diff: Optional[str] = Field(None)
     user_prompt: Optional[str] = Field(None)
+    response: Optional[str] = Field(None)
 
 
 @app.post("/chat")
@@ -151,7 +152,9 @@ class Response(BaseModel):
 @app.post("/response")
 async def handle_response(request_body: Response):
     client_id = request_body.client_id
-    response = chat(client_id, request_body.response)
+    client = get_client(client_id)
+    user_response = request_body.response
+    response = chat(client_id, user_response)
     if response["type"] == "question":
         response_question = response["question"]
         response_choices = response["choices"]

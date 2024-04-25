@@ -12,10 +12,6 @@ def init_prompt():
         analyze_system_prompt = f.read()
     with open("prompt/analyze/user.txt", "r") as f:
         analyze_user_prompt = f.read()
-    with open("prompt/analyze/few_shot_user_1.txt", "r") as f:
-        analyze_few_shot_user_prompt = f.read()
-    with open("prompt/analyze/few_shot_assistant_1.txt", "r") as f:
-        analyze_few_shot_assistant_prompt = f.read()
 
 
 init_prompt()
@@ -32,18 +28,27 @@ def mata_diff_to_NL(diff: str) -> str:
 
 
 def get_analyze(sheet_id, row_count, column_names, NL_diff, user_prompt):
+    column_number = len(column_names)
+    index = "A"
+    column_string_list = []
+    for item in column_names:
+        item = f'{index}: "{item}"'
+        index = chr(ord(index) + 1)
+        column_string_list.append(item)
+        # TODO: What if number of columns is more than 26?
+    column_names = ", ".join(column_string_list)
+
     input_user_prompt = (
         analyze_user_prompt.replace("{sheet_id}", sheet_id)
         .replace("{row_count}", str(row_count))
-        .replace("{column_names}", f"[{', '.join(column_names)}]")
+        .replace("{column_names}", column_names)
         .replace("{NL_diff}", NL_diff)
         .replace("{user_prompt}", user_prompt)
+        .replace("{column_number}", str(column_number))
     )
 
     client_id, client = create_client()
     client.append_system_message(analyze_system_prompt)
-    # client.append_user_message(analyze_few_shot_user_prompt)
-    # client.append_assistant_message(analyze_few_shot_assistant_prompt)
     client.append_user_message(input_user_prompt)
     response = client.generate_chat_completion()
     print(response)
