@@ -1,5 +1,6 @@
 from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 from typing import List, Optional
 import os
@@ -26,17 +27,28 @@ app.add_middleware(
 
 clients = {}
 
+UPLOAD_FOLDER = "./files"
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
 
-@app.post("/upload-csv")
-async def upload_csv(file: UploadFile = File(...)):
-    if file.content_type != "text/csv":
-        return {"error": "File must be a CSV"}
 
-    file_location = f"files/{file.filename}"
-    with open(file_location, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
+@app.post("/upload/")
+async def upload_file(file: UploadFile = File(...)):
+    if not file.filename.endswith(".csv"):
+        raise HTTPException(status_code=400, detail="Unsupported file type")
+    unique_filename = f"{uuid.uuid4()}_{file.filename}"
 
-    return {"info": f"File '{file.filename}' saved."}
+    file_path = os.path.join(UPLOAD_FOLDER, unique_filename)
+
+    # Save the file
+    try:
+        with open(file_path, "wb") as buffer:
+            while data := await file.read(1024):
+                buffer.write(data)
+    except IOError as e:
+        raise HTTPException(status_code=500, detail=f"File save failed: {e}")
+
+    return JSONResponse(status_code=200, content={"sheet_id": unique_filename})
 
 
 class Chat(BaseModel):
@@ -57,7 +69,7 @@ async def handle_chat(request_body: Chat):
     print(status)
     if status == "init":
         return await simple_chat(request_body)
-    if status == "with_demo":
+    if status == "analyze":
         return await handle_analyze(request_body)
     elif status == "clarification":
         return await handle_response(request_body)
