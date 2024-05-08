@@ -4,32 +4,35 @@ The diff information contains:
 1. Table name
 2. Difference detail
 
-The difference detail includes a '+' or '-' sign, which means to add or delete, respectively. The following part specifies (column, row), indicating the position. The final part is optional and specifies the numbers to add.
-
 Example 1:
 ```
 table1.csv
-+ (4, 1) 1
-+ (4, 2) 2
-+ (4, 3) 3
-+ (4, 4) 4
-+ (4, 5) 5
-+ (4, 6) 6
-+ (4, 7) 7
+{'row': 4, 'col': 1, 'old_value': null, 'new_value': '1'}
+{'row': 4, 'col': 2, 'old_value': null, 'new_value': '2'}
+{'row': 4, 'col': 3, 'old_value': null, 'new_value': '3'}
+{'row': 4, 'col': 4, 'old_value': null, 'new_value': '4'}
+{'row': 4, 'col': 5, 'old_value': null, 'new_value': '5'}
 ```
-Summary: In table1.csv, sequentially insert values into the fourth column according to row number.
+Summary: In table1.csv, sequentially insert values into the fourth row according to column number.
 
 Example 2:
 ```
 table2.csv
-- (4, ) [1, 2, 3]
-+ (5, ) [1, 2, 3]
+{'row': 4, 'col': 1, 'old_value': "1", 'new_value': null}
+{'row': 4, 'col': 2, 'old_value': "2", 'new_value': null}
+{'row': 4, 'col': 3, 'old_value': "3", 'new_value': null}
+{'row': 5, 'col': 1, 'old_value': null, 'new_value': '1'}
+{'row': 5, 'col': 2, 'old_value': null, 'new_value': '2'}
+{'row': 5, 'col': 3, 'old_value': null, 'new_value': '3'}
 ```
-Summary: In table2.csv, move column 4 to column 5.
+Summary: In table2.csv, move row 4 to row 5.
 
 Example 3:
 ```
 table3.csv
-+ (, 7) [452, 424, 981, 1423]
+{'row': 7, 'col': 1, 'old_value': null, 'new_value': '452'}
+{'row': 7, 'col': 2, 'old_value': null, 'new_value': '424'}
+{'row': 7, 'col': 3, 'old_value': null, 'new_value': '981'}
+{'row': 7, 'col': 4, 'old_value': null, 'new_value': '1423'}
 ```
 Summary: In table3.csv, add a new row at row 7, maybe the end of the table.
