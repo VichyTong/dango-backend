@@ -48,25 +48,80 @@ def extract_changes(data):
 
 
 def find_batch_operation(changes, num_rows, num_cols):
-    changed_row_flag = 0
-    changed_col_flag = 0
-    for index, change in enumerate(changes):
-        if change["row"] == changed_row_flag + 1:
-            changed_row_flag = change["row"]
-        else:
-            changed_row_flag = 0
-        if change["col"] == changed_col_flag + 1:
-            changed_col_flag = change["col"]
-        else:
-            changed_col_flag = 0
-        if changed_row_flag == num_rows:
-            new_change = {
-                "col": change["col"],
-                "old_value": change ["old_value"],
-                "new_value": change["new_value"],
-            }
-        # TODO here ...
-        
+    # Initialize dictionaries to track changes across rows and columns
+    col_changes = {col: [] for col in range(1, num_cols + 1)}
+    row_changes = {row: [] for row in range(1, num_rows + 1)}
+
+    # Gather changes by rows and columns
+    for change in changes:
+        col_changes[change["col"]].append(change)
+        row_changes[change["row"]].append(change)
+
+    # List to store detected batch operations
+    batch_operations = []
+
+    # Check for column-wise batch operations
+    for col, col_changes in col_changes.items():
+        if len(col_changes) == num_rows and all(
+            change["row"] == i
+            for i, change in enumerate(
+                sorted(col_changes, key=lambda x: x["row"]), start=1
+            )
+        ):
+            # All rows in this column have changes
+            old_values = [
+                change["old_value"]
+                for change in sorted(col_changes, key=lambda x: x["row"])
+            ]
+            new_values = [
+                change["new_value"]
+                for change in sorted(col_changes, key=lambda x: x["row"])
+            ]
+            batch_operations.append(
+                {
+                    "type": "all_row",
+                    "col": col,
+                    "old_values": old_values,
+                    "new_values": new_values,
+                }
+            )
+            # Remove individual changes from the main list
+            for change in col_changes:
+                changes.remove(change)
+
+    # Check for row-wise batch operations
+    for row, row_changes in row_changes.items():
+        if len(row_changes) == num_cols and all(
+            change["col"] == i
+            for i, change in enumerate(
+                sorted(row_changes, key=lambda x: x["col"]), start=1
+            )
+        ):
+            # All columns in this row have changes
+            old_values = [
+                change["old_value"]
+                for change in sorted(row_changes, key=lambda x: x["col"])
+            ]
+            new_values = [
+                change["new_value"]
+                for change in sorted(row_changes, key=lambda x: x["col"])
+            ]
+            batch_operations.append(
+                {
+                    "type": "all_col",
+                    "row": row,
+                    "old_values": old_values,
+                    "new_values": new_values,
+                }
+            )
+            # Remove individual changes from the main list
+            for change in row_changes:
+                changes.remove(change)
+
+    # Add batch operations to the changes list
+    changes.extend(batch_operations)
+
+    return changes
 
 
 def mata_diff_to_NL(diff: str, row_count: int, column_names: list) -> str:
@@ -74,7 +129,7 @@ def mata_diff_to_NL(diff: str, row_count: int, column_names: list) -> str:
     for change in changes:
         change["row"] += 1
         change["col"] += 1
-    # changes = find_batch_operation(changes, row_count, len(column_names))
+    changes = find_batch_operation(changes, row_count, len(column_names))
     print(changes)
     client_id, client = create_client()
     client.append_system_message(transfer_prompt)
