@@ -44,7 +44,9 @@ SYSTEM:
 
 USER:
 {
+    ...,
     "choice": "Other: Copy row 5 to row 3.",
+    ...,
 }
 
 
@@ -62,7 +64,9 @@ SYSTEM:
 
 USER:
 {
+    ...,
     "choice": "Yes, replace all values and delete row 5"
+    ...,
 }
 
 SYSTEM:
@@ -93,7 +97,9 @@ SYSTEM:
 
 USER:
 {
+    ...,
     "choice": "Delete the entire row"
+    ...,
 }
 
 SYSTEM:
