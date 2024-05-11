@@ -125,8 +125,7 @@ class SimpleChat(BaseModel):
 async def simple_chat(request_body: SimpleChat):
     client_id = request_body.client_id
     message = request_body.message
-    print("client id:")
-    print(client_id)
+
     if not client_id:
         client_id, client = create_client()
         client.append_user_message(message)
@@ -158,6 +157,7 @@ class Analyze(BaseModel):
     column_names: List[str]
     table_diff: str
     user_prompt: str
+    user_choice: str
 
 
 @app.post("/analyze")
@@ -167,9 +167,10 @@ async def handle_analyze(request_body: Analyze):
     column_names = request_body.column_names
     table_diff = request_body.table_diff
     user_prompt = request_body.user_prompt
+    user_choice = request_body.user_choice
 
     client_id, response = analyze(
-        sheet_id, row_count, column_names, table_diff, user_prompt
+        sheet_id, row_count, column_names, table_diff, user_prompt, user_choice
     )
     client = get_client(client_id)
 

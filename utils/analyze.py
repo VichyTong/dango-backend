@@ -140,7 +140,7 @@ def mata_diff_to_NL(diff: str, row_count: int, column_names: list) -> str:
     return response
 
 
-def get_analyze(sheet_id, row_count, column_names, NL_diff, user_prompt):
+def get_analyze(sheet_id, row_count, column_names, NL_diff, user_prompt, user_choice):
     column_number = len(column_names)
     index = "A"
     column_string_list = []
@@ -158,6 +158,7 @@ def get_analyze(sheet_id, row_count, column_names, NL_diff, user_prompt):
         .replace("{NL_diff}", NL_diff)
         .replace("{user_prompt}", user_prompt)
         .replace("{column_number}", str(column_number))
+        .replace("{user_choice}", user_choice)
     )
 
     client_id, client = create_client()
@@ -176,10 +177,11 @@ def analyze(
     column_names: List[str],
     table_diff: str,
     user_promt: str,
+    user_choice: str,
 ) -> str:
     NL_diff = mata_diff_to_NL(table_diff, row_count, column_names)
     client_id, response = get_analyze(
-        sheet_id, row_count, column_names, NL_diff, user_promt
+        sheet_id, row_count, column_names, NL_diff, user_promt, user_choice
     )
     response = json.loads(response)
 
