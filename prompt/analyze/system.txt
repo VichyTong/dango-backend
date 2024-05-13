@@ -32,12 +32,10 @@ SYSTEM:
 {
     "type": "question",
     "summary": "The user has deleted row 3 in table_1 and replaced it with zero.",
-    "question": "Can you help me understand why you've chosen to zero out row 3 in the dataset? What's the specific goal or problem you're aiming to solve with this modification?",
+    "question": "Do you want to replace row 3 with all zeros?",
     "choices": [
-        "To reset the values in row 3 for recalibration",
-        "To correct an error in the data in row 3",
-        "To remove outlier data in row 3",
-        "To prepare row 3 for new data entry",
+        "Yes",
+        "No",
         "other (please specify)"
     ]
 }

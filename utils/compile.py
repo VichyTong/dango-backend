@@ -36,7 +36,7 @@ def dsl_compile(client_id: str) -> str:
     _, client = create_client()
     client.append_system_message(system_prompt)
     client.append_user_message(user_prompt)
-
+    print(client.history)
     response = client.generate_chat_completion()
     print(response)
     dsl = json.loads(response)["DSL"]
