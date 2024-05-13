@@ -167,10 +167,9 @@ async def handle_analyze(request_body: Analyze):
     column_names = request_body.column_names
     table_diff = request_body.table_diff
     user_prompt = request_body.user_prompt
-    user_choice = request_body.user_choice
 
     client_id, response = analyze(
-        sheet_id, row_count, column_names, table_diff, user_prompt, user_choice
+        sheet_id, row_count, column_names, table_diff, user_prompt
     )
     client = get_client(client_id)
 
