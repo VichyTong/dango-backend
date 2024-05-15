@@ -157,7 +157,6 @@ class Analyze(BaseModel):
     column_names: List[str]
     table_diff: str
     user_prompt: str
-    user_choice: str
 
 
 @app.post("/analyze")
