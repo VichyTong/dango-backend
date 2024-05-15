@@ -1,4 +1,4 @@
-Your task is to summarize the diff information into natural language.
+Summarize the diff information made by the user into natural language.
 
 The diff information contains:
 1. Table name
