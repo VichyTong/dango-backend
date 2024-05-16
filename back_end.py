@@ -32,6 +32,12 @@ if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 
 
+@app.post("/login/")
+async def login():
+    client_id, client = create_client()
+    return JSONResponse(status_code=200, content={"client_id": client_id})
+
+
 @app.post("/upload/")
 async def upload_file(file: UploadFile = File(...)):
     if not file.filename.endswith(".csv"):
