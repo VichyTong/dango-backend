@@ -1,11 +1,12 @@
-from fastapi import FastAPI, UploadFile, File
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse
 from pydantic import BaseModel, Field
 from typing import List, Optional
 import os
 import uuid
 import json
+import aiofiles
 
 from utils.analyze import analyze
 from utils.chat import chat
@@ -39,22 +40,24 @@ async def login():
 
 
 @app.post("/upload/")
-async def upload_file(file: UploadFile = File(...)):
+async def upload_file(client_id: str = Form(...), file: UploadFile = File(...)):
     if not file.filename.endswith(".csv"):
         raise HTTPException(status_code=400, detail="Unsupported file type")
-    unique_filename = f"{uuid.uuid4()}_{file.filename}"
+    unique_filename = f"{client_id}_{file.filename}"
 
     file_path = os.path.join(UPLOAD_FOLDER, unique_filename)
 
     # Save the file
     try:
-        with open(file_path, "wb") as buffer:
+        async with aiofiles.open(file_path, "wb") as buffer:
             while data := await file.read(1024):
-                buffer.write(data)
+                await buffer.write(data)
     except IOError as e:
         raise HTTPException(status_code=500, detail=f"File save failed: {e}")
 
-    return JSONResponse(status_code=200, content={"sheet_id": unique_filename})
+    return JSONResponse(
+        status_code=200, content={"message": f"{file.filename} uploaded successfully"}
+    )
 
 
 @app.post("/modify/{sheet_id}")
