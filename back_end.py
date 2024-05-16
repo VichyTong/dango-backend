@@ -1,16 +1,19 @@
-from fastapi import FastAPI, UploadFile, File
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse
 from pydantic import BaseModel, Field
 from typing import List, Optional
 import os
 import uuid
 import json
+import aiofiles
+import pandas as pd
 
 from utils.analyze import analyze
 from utils.chat import chat
 from utils.compile import dsl_compile
 from utils.llm import get_client, create_client
+from utils.execute import execute_dsl
 
 # Initialize FastAPI app
 app = FastAPI()
@@ -32,48 +35,58 @@ if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 
 
+@app.post("/login/")
+async def login():
+    client_id, client = create_client()
+    return JSONResponse(status_code=200, content={"client_id": client_id})
+
+
 @app.post("/upload/")
-async def upload_file(file: UploadFile = File(...)):
+async def upload_file(client_id: str = Form(...), file: UploadFile = File(...)):
     if not file.filename.endswith(".csv"):
         raise HTTPException(status_code=400, detail="Unsupported file type")
-    unique_filename = f"{uuid.uuid4()}_{file.filename}"
+    unique_filename = f"{client_id}_{file.filename}"
 
     file_path = os.path.join(UPLOAD_FOLDER, unique_filename)
 
     # Save the file
     try:
-        with open(file_path, "wb") as buffer:
+        async with aiofiles.open(file_path, "wb") as buffer:
             while data := await file.read(1024):
-                buffer.write(data)
+                await buffer.write(data)
     except IOError as e:
         raise HTTPException(status_code=500, detail=f"File save failed: {e}")
 
-    return JSONResponse(status_code=200, content={"sheet_id": unique_filename})
+    return JSONResponse(
+        status_code=200, content={"message": f"{file.filename} uploaded successfully"}
+    )
 
 
-@app.post("/modify/{sheet_id}")
-async def modify_file(sheet_id: str, file: UploadFile = File(...)):
+@app.post("/modify/")
+async def modify_file(
+    client_id: str = Form(...), sheet_id: str = Form(...), file: UploadFile = File(...)
+):
     if not file.filename.endswith(".csv"):
         raise HTTPException(status_code=400, detail="Unsupported file type")
-    file_path = os.path.join(UPLOAD_FOLDER, sheet_id)
+    file_path = os.path.join(UPLOAD_FOLDER, f"{client_id}_{sheet_id}")
 
     # Replace the file
     try:
-        with open(file_path, "wb") as buffer:
+        async with aiofiles.open(file_path, "wb") as buffer:
             while data := await file.read(1024):
-                buffer.write(data)
+                await buffer.write(data)
     except IOError as e:
         raise HTTPException(status_code=500, detail=f"File modification failed: {e}")
 
     return JSONResponse(
         status_code=200,
-        content={"message": "File modified successfully", "sheet_id": sheet_id},
+        content={"message": f"{sheed_id} modified successfully"},
     )
 
 
-@app.delete("/delete/{sheet_id}")
-async def delete_file(sheet_id: str):
-    file_path = os.path.join(UPLOAD_FOLDER, sheet_id)
+@app.delete("/delete/")
+async def delete_file(client_id: str = Form(...), sheet_id: str = Form(...)):
+    file_path = os.path.join(UPLOAD_FOLDER, f"{client_id}_{sheet_id}")
 
     # Check if file exists
     if not os.path.exists(file_path):
@@ -86,8 +99,20 @@ async def delete_file(sheet_id: str):
         raise HTTPException(status_code=500, detail=f"File deletion failed: {e}")
 
     return JSONResponse(
-        status_code=200, content={"message": "File deleted successfully"}
+        status_code=200, content={"message": f"{sheet_id} deleted successfully"}
     )
+
+
+@app.get("/get/")
+async def get_file(client_id: str = Form(...), sheet_id: str = Form(...)):
+    file_path = os.path.join(UPLOAD_FOLDER, f"{client_id}_{sheet_id}")
+
+    # Check if file exists
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="File not found")
+
+    # return the file
+    return FileResponse(file_path)
 
 
 class Chat(BaseModel):
@@ -127,31 +152,24 @@ async def simple_chat(request_body: SimpleChat):
     message = request_body.message
 
     if not client_id:
-        client_id, client = create_client()
-        client.append_user_message(message)
-        response = client.generate_chat_completion()
-        client.append_assistant_message(response)
-        return_message = {
-            "client_id": client_id,
-            "history": client.history,
-            "response": response,
-            "status": "init",
-        }
-    else:
-        client = get_client(client_id)
-        client.append_user_message(message)
-        response = client.generate_chat_completion()
-        client.append_assistant_message(response)
-        return_message = {
-            "client_id": client_id,
-            "history": client.history,
-            "response": response,
-            "status": "init",
-        }
+        return JSONResponse(status_code=400, detail="Client ID is required")
+
+    client = get_client(client_id)
+    client.append_user_message(message)
+    response = client.generate_chat_completion()
+    client.append_assistant_message(response)
+    return_message = {
+        "client_id": client_id,
+        "history": client.history,
+        "response": response,
+        "status": "init",
+    }
+
     return return_message
 
 
 class Analyze(BaseModel):
+    client_id: str
     sheet_id: str
     row_count: int
     column_names: List[str]
@@ -166,9 +184,10 @@ async def handle_analyze(request_body: Analyze):
     column_names = request_body.column_names
     table_diff = request_body.table_diff
     user_prompt = request_body.user_prompt
+    client_id = request_body.client_id
 
-    client_id, response = analyze(
-        sheet_id, row_count, column_names, table_diff, user_prompt
+    response = analyze(
+        client_id, sheet_id, row_count, column_names, table_diff, user_prompt
     )
     client = get_client(client_id)
 
@@ -239,3 +258,28 @@ async def handle_generate_dsl(request_body: GenerateDSL):
     response = dsl_compile(client_id)
     return_message = {"dsl": response, "status": "finish"}
     return return_message
+
+
+class ExecuteDSL(BaseModel):
+    client_id: str
+    sheet_id: str
+    dsl: str
+    arguments: List[str]
+
+
+@app.post("/execute_dsl")
+async def handle_execute_dsl(request_body: ExecuteDSL):
+    client_id = request_body.client_id
+    sheet_id = request_body.sheet_id
+    dsl = request_body.dsl
+    arguments = request_body.arguments
+
+    file_path = os.path.join(UPLOAD_FOLDER, f"{client_id}_{sheet_id}")
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="File not found")
+
+    sheet = pd.read_csv(file_path)
+    new_sheet = execute_dsl(sheet, dsl, arguments)
+    new_sheet.to_csv(file_path, index=False)
+
+    return FileResponse(file_path)

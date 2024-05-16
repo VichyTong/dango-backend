@@ -39,5 +39,5 @@ def dsl_compile(client_id: str) -> str:
     print(client.history)
     response = client.generate_chat_completion()
     print(response)
-    dsl = json.loads(response)["DSL"]
+    dsl = json.loads(response)
     return dsl

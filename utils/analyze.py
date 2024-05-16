@@ -140,7 +140,7 @@ def mata_diff_to_NL(diff: str, row_count: int, column_names: list) -> str:
     return response
 
 
-def get_analyze(sheet_id, row_count, column_names, NL_diff, user_prompt):
+def get_analyze(client_id, sheet_id, row_count, column_names, NL_diff, user_prompt):
     column_number = len(column_names)
     index = "A"
     column_string_list = []
@@ -152,7 +152,7 @@ def get_analyze(sheet_id, row_count, column_names, NL_diff, user_prompt):
     column_names = ", ".join(column_string_list)
 
     input_user_prompt = (
-        analyze_user_prompt.replace("{sheet_id}", sheet_id.split("_")[1])
+        analyze_user_prompt.replace("{sheet_id}", sheet_id)
         .replace("{row_count}", str(row_count))
         .replace("{column_names}", column_names)
         .replace("{column_count}", str(column_number))
@@ -161,17 +161,18 @@ def get_analyze(sheet_id, row_count, column_names, NL_diff, user_prompt):
         .replace("{column_number}", str(column_number))
     )
 
-    client_id, client = create_client()
+    client = get_client(client_id)
     client.append_system_message(analyze_system_prompt)
     client.append_user_message(input_user_prompt)
     response = client.generate_chat_completion()
     print(response)
     client.append_assistant_message(response)
     print(json.dumps(client.history, indent=4))
-    return client_id, response
+    return response
 
 
 def analyze(
+    client_id: str,
     sheet_id: str,
     row_count: int,
     column_names: List[str],
@@ -179,9 +180,9 @@ def analyze(
     user_promt: str,
 ) -> str:
     NL_diff = mata_diff_to_NL(table_diff, row_count, column_names)
-    client_id, response = get_analyze(
-        sheet_id, row_count, column_names, NL_diff, user_promt
+    response = get_analyze(
+        client_id, sheet_id, row_count, column_names, NL_diff, user_promt
     )
     response = json.loads(response)
 
-    return client_id, response
+    return response
