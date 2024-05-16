@@ -34,6 +34,13 @@ DSL grammar:
     test(table, label_1, label_2, strategy, axis)
 
 Your output should be in JSON form. For example:
-{
-    "DSL": "copy(Table1, row_1, Table2, row4, index)\ndrop(Table1, row_1, index)"
-}
+[
+    {
+        "function_name": "copy",
+        "arguments": ["Table1", "row_1", "Table2", "row4", "index"]
+    },
+    {
+        "function_name": "drop",
+        "arguments": ["Table1", "row_1", "index"]
+    }
+]
