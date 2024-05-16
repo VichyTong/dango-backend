@@ -1,4 +1,4 @@
-Your task is to summarize the diff information into natural language.
+Summarize the diff information made by the user into natural language.
 
 The diff information contains:
 1. Table name
@@ -13,7 +13,7 @@ table1.csv
 {'row': 4, 'col': 4, 'old_value': null, 'new_value': '4'}
 {'row': 4, 'col': 5, 'old_value': null, 'new_value': '5'}
 ```
-Summary: In table1.csv, sequentially insert values into the fourth row according to column number.
+Summary: In table1.csv, the user sequentially inserts values into the fourth row according to column number.
 
 Example 2:
 ```
@@ -25,7 +25,7 @@ table2.csv
 {'row': 5, 'col': 2, 'old_value': null, 'new_value': '2'}
 {'row': 5, 'col': 3, 'old_value': null, 'new_value': '3'}
 ```
-Summary: In table2.csv, move row 4 to row 5.
+Summary: In table2.csv, the user moves row 4 to row 5.
 
 Example 3:
 ```
@@ -35,4 +35,4 @@ table3.csv
 {'row': 7, 'col': 3, 'old_value': null, 'new_value': '981'}
 {'row': 7, 'col': 4, 'old_value': null, 'new_value': '1423'}
 ```
-Summary: In table3.csv, add a new row at row 7, maybe the end of the table.
+Summary: In table3.csv, the user adds a new row at row 7, maybe the end of the table.
