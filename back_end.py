@@ -82,9 +82,9 @@ async def modify_file(
     )
 
 
-@app.delete("/delete/{sheet_id}")
-async def delete_file(sheet_id: str):
-    file_path = os.path.join(UPLOAD_FOLDER, sheet_id)
+@app.delete("/delete/")
+async def delete_file(client_id: str = Form(...), sheet_id: str = Form(...)):
+    file_path = os.path.join(UPLOAD_FOLDER, f"{client_id}_{sheet_id}")
 
     # Check if file exists
     if not os.path.exists(file_path):
@@ -97,7 +97,7 @@ async def delete_file(sheet_id: str):
         raise HTTPException(status_code=500, detail=f"File deletion failed: {e}")
 
     return JSONResponse(
-        status_code=200, content={"message": "File deleted successfully"}
+        status_code=200, content={"message": f"{sheet_id} deleted successfully"}
     )
 
 
