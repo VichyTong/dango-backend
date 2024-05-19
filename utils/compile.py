@@ -13,9 +13,15 @@ init_prompt()
 
 
 def create_user_prompt(history):
-    information = history[1]["content"]
+    start_index = 0
+    for index, message in enumerate(history):
+        if message["role"] == "system":
+            start_index = index
+            break
+
+    information = history[start_index + 1]["content"]
     QAs = ""
-    for index in range(2, len(history), 2):
+    for index in range(start_index + 2, len(history), 2):
         response = json.loads(history[index]["content"])
         if response["type"] == "finish":
             break
