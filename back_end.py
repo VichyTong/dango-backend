@@ -44,7 +44,7 @@ async def login():
 @app.post("/upload/")
 async def upload_file(client_id: str = Form(...), file: UploadFile = File(...)):
     if not file.filename.endswith(".csv"):
-        raise HTTPException(status_code=400, detail="Unsupported file type")
+        raise HTTPException(status_code=400, content={"message": "Unsupported file type"})
     unique_filename = f"{client_id}_{file.filename}"
 
     file_path = os.path.join(UPLOAD_FOLDER, unique_filename)
@@ -55,7 +55,7 @@ async def upload_file(client_id: str = Form(...), file: UploadFile = File(...)):
             while data := await file.read(1024):
                 await buffer.write(data)
     except IOError as e:
-        raise HTTPException(status_code=500, detail=f"File save failed: {e}")
+        raise HTTPException(status_code=500, content={"message": f"File upload failed: {e}"})
 
     return JSONResponse(
         status_code=200, content={"message": f"{file.filename} uploaded successfully"}
@@ -67,7 +67,7 @@ async def modify_file(
     client_id: str = Form(...), sheet_id: str = Form(...), file: UploadFile = File(...)
 ):
     if not file.filename.endswith(".csv"):
-        raise HTTPException(status_code=400, detail="Unsupported file type")
+        raise HTTPException(status_code=400, content={"message": "Unsupported file type"})
     file_path = os.path.join(UPLOAD_FOLDER, f"{client_id}_{sheet_id}")
 
     # Replace the file
@@ -76,7 +76,7 @@ async def modify_file(
             while data := await file.read(1024):
                 await buffer.write(data)
     except IOError as e:
-        raise HTTPException(status_code=500, detail=f"File modification failed: {e}")
+        raise HTTPException(status_code=500, content={"message": f"File modification failed: {e}"})
 
     return JSONResponse(
         status_code=200,
@@ -90,13 +90,13 @@ async def delete_file(client_id: str = Form(...), sheet_id: str = Form(...)):
 
     # Check if file exists
     if not os.path.exists(file_path):
-        raise HTTPException(status_code=404, detail="File not found")
+        raise HTTPException(status_code=404, content={"message": "File not found"})
 
     # Delete the file
     try:
         os.remove(file_path)
     except IOError as e:
-        raise HTTPException(status_code=500, detail=f"File deletion failed: {e}")
+        raise HTTPException(status_code=500, content={"message": f"File deletion failed: {e}"})
 
     return JSONResponse(
         status_code=200, content={"message": f"{sheet_id} deleted successfully"}
@@ -109,7 +109,7 @@ async def get_file(client_id: str = Form(...), sheet_id: str = Form(...)):
 
     # Check if file exists
     if not os.path.exists(file_path):
-        raise HTTPException(status_code=404, detail="File not found")
+        raise HTTPException(status_code=404, content={"message": "File not found"})
 
     # return the file
     return FileResponse(file_path)
@@ -152,7 +152,7 @@ async def simple_chat(request_body: SimpleChat):
     message = request_body.message
 
     if not client_id:
-        return JSONResponse(status_code=400, detail="Client ID is required")
+        return JSONResponse(status_code=400, content={"message": "Client ID is required"})
 
     client = get_client(client_id)
     client.append_user_message(message)
