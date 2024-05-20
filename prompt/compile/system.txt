@@ -19,7 +19,7 @@ DSL grammar:
     merge(table, label_1, label_2, glue, new_label, axis)
 
 5. split: Separates a label into two or more halves at the occurrences of the delimiter
-    split(table, label, delimiter, new_labels) 
+    split(table, label, delimiter, new_labels, axis) 
 
 6. transpose: Transposes the table
     transpose(table)
