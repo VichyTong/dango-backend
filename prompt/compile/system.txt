@@ -6,9 +6,6 @@ Definition:
 - axis = "columns" or 1 means column operation.
 
 DSL grammar:
-0. create: Create a table with the given name and data. Data need to be a list of lists.
-    create(table, data)
-
 1. drop: Deletes a label in the table
     drop(table, label, axis) 
 
