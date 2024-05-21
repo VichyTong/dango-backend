@@ -30,7 +30,7 @@ def drop(table, label, axis=0):
 
     # Dropping a row
     else:
-        label = int(label)
+        label = int(label) - 1 
         if label not in table.index:
             table.drop(labels=table.index[label], axis=axis, inplace=True)
         else:
@@ -58,7 +58,7 @@ def move(table, label, target_table, target_label, axis=0):
     elif axis == "columns":
         axis = 1
 
-    target_label = int(target_label)
+    target_label = int(target_label) - 1
 
     if axis == 1:
         if label not in table.columns:
@@ -70,7 +70,7 @@ def move(table, label, target_table, target_label, axis=0):
         column_data = table.pop(label)
         target_table.insert(loc=target_label, column=label, value=column_data)
     else:
-        label = int(label)
+        label = int(label) - 1
         if label not in table.index:
             raise ValueError(f"Row '{label}' does not exist in the source DataFrame.")
         if target_label < 0 or target_label > len(target_table.index):
@@ -126,7 +126,8 @@ def copy(table, label, target_table, target_label, axis=0):
 
     # Copying a row
     else:
-        label = int(label)
+        label = int(label) - 1
+        target_label = int(target_label) - 1
         if label not in table.index:
             raise ValueError(f"Row {label} does not exist in the source DataFrame.")
         if target_label in target_table.index:
@@ -176,9 +177,9 @@ def merge(table, label_1, label_2, glue, new_label, axis=0):
 
     # Merging rows
     else:
-        label_1 = int(label_1)
-        label_2 = int(label_2)
-        new_label = int(new_label)
+        label_1 = int(label_1) - 1
+        label_2 = int(label_2) - 1
+        new_label = int(new_label) - 1
         if label_1 not in table.index or label_2 not in table.index:
             raise ValueError("One or both row labels do not exist in the DataFrame.")
         if new_label in table.index:
