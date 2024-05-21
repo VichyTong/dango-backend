@@ -126,9 +126,6 @@ def find_batch_operation(changes, num_rows, num_cols):
 
 def mata_diff_to_NL(diff: str, row_count: int, column_names: list) -> str:
     changes = extract_changes(diff)
-    for change in changes:
-        change["row"] += 1
-        change["col"] += 1
     changes = find_batch_operation(changes, row_count, len(column_names))
     print(changes)
     client_id, client = create_client()

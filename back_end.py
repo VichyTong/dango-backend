@@ -186,6 +186,16 @@ async def handle_analyze(request_body: Analyze):
     user_prompt = request_body.user_prompt
     client_id = request_body.client_id
 
+    file_path = os.path.join(UPLOAD_FOLDER, f"{client_id}_{sheet_id}")
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="File not found")
+    
+    first_line = pd.read_csv(file_path, nrows=1)
+    if first_line[0] != "":
+        pass
+    else:
+        for change in changes:
+            change["col"] += 1
     response = analyze(
         client_id, sheet_id, row_count, column_names, table_diff, user_prompt
     )
