@@ -32,8 +32,9 @@ def drop(table, label, axis=0):
     else:
         label = int(label)
         if label not in table.index:
-            raise ValueError(f"Row {label} does not exist in the DataFrame.")
-        table.drop(labels=label, axis=axis, inplace=True)
+            table.drop(labels=table.index[label], axis=axis, inplace=True)
+        else:
+            table.drop(labels=label, axis=axis, inplace=True)
     return table
 
 

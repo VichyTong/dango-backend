@@ -49,8 +49,8 @@ def extract_changes(data):
 
 def find_batch_operation(changes, num_rows, num_cols):
     # Initialize dictionaries to track changes across rows and columns
-    col_changes = {col: [] for col in range(1, num_cols + 1)}
-    row_changes = {row: [] for row in range(1, num_rows + 1)}
+    col_changes = {col: [] for col in range(0, num_cols + 1)}
+    row_changes = {row: [] for row in range(0, num_rows + 1)}
 
     # Gather changes by rows and columns
     for change in changes:
@@ -62,10 +62,21 @@ def find_batch_operation(changes, num_rows, num_cols):
 
     # Check for column-wise batch operations
     for col, col_changes in col_changes.items():
-        if len(col_changes) == num_rows and all(
-            change["row"] == i
-            for i, change in enumerate(
-                sorted(col_changes, key=lambda x: x["row"]), start=1
+        if (
+            len(col_changes) == num_rows
+            and all(
+                change["row"] == i
+                for i, change in enumerate(
+                    sorted(col_changes, key=lambda x: x["row"]), start=1
+                )
+            )
+        ) or (
+            len(col_changes) == num_rows + 1
+            and all(
+                change["row"] == i
+                for i, change in enumerate(
+                    sorted(col_changes, key=lambda x: x["row"]), start=0
+                )
             )
         ):
             # All rows in this column have changes
@@ -91,10 +102,21 @@ def find_batch_operation(changes, num_rows, num_cols):
 
     # Check for row-wise batch operations
     for row, row_changes in row_changes.items():
-        if len(row_changes) == num_cols and all(
-            change["col"] == i
-            for i, change in enumerate(
-                sorted(row_changes, key=lambda x: x["col"]), start=1
+        if (
+            len(row_changes) == num_cols
+            and all(
+                change["col"] == i
+                for i, change in enumerate(
+                    sorted(row_changes, key=lambda x: x["col"]), start=1
+                )
+            )
+        ) or (
+            len(row_changes) == num_cols + 1
+            and all(
+                change["col"] == i
+                for i, change in enumerate(
+                    sorted(row_changes, key=lambda x: x["col"]), start=0
+                )
             )
         ):
             # All columns in this row have changes

@@ -190,8 +190,8 @@ async def handle_analyze(request_body: Analyze):
     if not os.path.exists(file_path):
         raise HTTPException(status_code=404, detail="File not found")
     
-    first_line = pd.read_csv(file_path, nrows=1)
-    if first_line[0] != "":
+    df = pd.read_csv(file_path)
+    if 'Unnamed: 0' in df.columns:
         pass
     else:
         for change in changes:
@@ -289,7 +289,12 @@ async def handle_execute_dsl(request_body: ExecuteDSL):
         raise HTTPException(status_code=404, detail="File not found")
 
     sheet = pd.read_csv(file_path)
+    flag = False
+    if 'Unnamed: 0' in sheet.columns:
+        flag = True
+        sheet = pd.read_csv(file_path, index_col=0)
+    
     new_sheet = execute_dsl(sheet, dsl, arguments)
-    new_sheet.to_csv(file_path, index=False)
-
+    print(new_sheet)
+    new_sheet.to_csv(file_path, index=flag)
     return FileResponse(file_path)
