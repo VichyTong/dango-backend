@@ -48,6 +48,8 @@ def extract_changes(data):
 
 
 def find_batch_operation(changes, num_rows, num_cols):
+    print(num_cols, num_rows)
+    print(changes)
     # Initialize dictionaries to track changes across rows and columns
     col_changes = {col: [] for col in range(0, num_cols + 1)}
     row_changes = {row: [] for row in range(0, num_rows + 1)}
@@ -146,8 +148,11 @@ def find_batch_operation(changes, num_rows, num_cols):
     return changes
 
 
-def mata_diff_to_NL(diff: str, row_count: int, column_names: list) -> str:
+def mata_diff_to_NL(diff: str, row_count: int, column_names: list, is_index_table: bool) -> str:
     changes = extract_changes(diff)
+    if is_index_table:
+        for change in changes:
+            change["col"] += 1
     changes = find_batch_operation(changes, row_count, len(column_names))
     print(changes)
     client_id, client = create_client()
@@ -197,8 +202,9 @@ def analyze(
     column_names: List[str],
     table_diff: str,
     user_promt: str,
+    is_index_table: bool,
 ) -> str:
-    NL_diff = mata_diff_to_NL(table_diff, row_count, column_names)
+    NL_diff = mata_diff_to_NL(table_diff, row_count, column_names, is_index_table)
     response = get_analyze(
         client_id, sheet_id, row_count, column_names, NL_diff, user_promt
     )

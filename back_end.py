@@ -191,13 +191,11 @@ async def handle_analyze(request_body: Analyze):
         raise HTTPException(status_code=404, detail="File not found")
     
     df = pd.read_csv(file_path)
-    if 'Unnamed: 0' in df.columns:
-        pass
-    else:
-        for change in changes:
-            change["col"] += 1
+    if 'Unnamed: 0' not in df.columns:
+        is_index_table = True
+    
     response = analyze(
-        client_id, sheet_id, row_count, column_names, table_diff, user_prompt
+        client_id, sheet_id, row_count, column_names, table_diff, user_prompt, is_index_table
     )
     client = get_client(client_id)
 
