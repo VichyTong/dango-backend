@@ -41,9 +41,9 @@ def transfer_to_NL(dsl):
         label = dsl["arguments"][1]
         axis = dsl["arguments"][2]
         if axis == 0 or axis == "index":
-            return f"Drop the row with {label} in {table}."
+            return f"Drop the row $[{label}] in %[{table}]."
         elif axis == 1 or axis == "column":
-            return f"Drop the column with {label} in {table}."
+            return f"Drop the column $[{label}] in %[{table}]."
         else:
             return "Invalid function"
     elif dsl["function_name"] == "move":
@@ -53,9 +53,9 @@ def transfer_to_NL(dsl):
         target_position = dsl["arguments"][3]
         axis = dsl["arguments"][4]
         if axis == 0 or axis == "index":
-            return f"Move the row with {label} in {table} to {target_table} at position {target_position}."
+            return f"Move the row $[{label}] in %[{table}] to %[{target_table}] at position #[{target_position}]."
         elif axis == 1 or axis == "column":
-            return f"Move the column with {label} in {table} to {target_table} at position {target_position}."
+            return f"Move the column $[{label}] in %[{table}] to %[{target_table}] at position #[{target_position}]."
         else:
             return "Invalid function"
     elif dsl["function_name"] == "copy":
@@ -65,9 +65,9 @@ def transfer_to_NL(dsl):
         target_position = dsl["arguments"][3]
         axis = dsl["arguments"][4]
         if axis == 0 or axis == "index":
-            return f"Copy the row with {label} in {table} to {target_table} at position {target_position}."
+            return f"Copy the row $[{label}] in %[{table}] to %[{target_table}] at position #[{target_position}]."
         elif axis == 1 or axis == "column":
-            return f"Copy the column with {label} in {table} to {target_table} at position {target_position}."
+            return f"Copy the column $[{label}] in %[{table}] to %[{target_table}] at position #[{target_position}]."
         else:
             return "Invalid function"
     elif dsl["function_name"] == "merge":
@@ -78,9 +78,9 @@ def transfer_to_NL(dsl):
         new_label = dsl["arguments"][4]
         axis = dsl["arguments"][5]
         if axis == 0 or axis == "index":
-            return f"Merge the row with {label_1} and {label_2} in {table} with \"{glue}\" as {new_label}."
+            return f"Merge the row $[{label_1}] and $[{label_2}] in %[{table}] with @{glue} as $[{new_label}]."
         elif axis == 1 or axis == "column":
-            return f"Merge the column with {label_1} and {label_2} in {table} with \"{glue}\" as {new_label}."
+            return f"Merge the column $[{label_1}] and $[{label_2}] in %[{table}] with @{glue} as $[{new_label}]."
         else:
             return "Invalid function"
     elif dsl["function_name"] == "split":
@@ -90,23 +90,23 @@ def transfer_to_NL(dsl):
         new_labels = dsl["arguments"][3]
         axis = dsl["arguments"][4]
         if axis == 0 or axis == "index":
-            return f"Split the row with {label} in {table} by \"{delimiter}\" as {new_labels}."
+            return f"Split the row $[{label}] in %[{table}] by &[{delimiter}] as $[{new_labels}]."
         elif axis == 1 or axis == "column":
-            return f"Split the column with {label} in {table} by \"{delimiter}\" as {new_labels}."
+            return f"Split the column $[{label}] in %[{table}] by &[{delimiter}] as $[{new_labels}]."
         else:
             return "Invalid function"
     elif dsl["function_name"] == "transpose":
         table = dsl["arguments"][0]
-        return f"Transpose {table}."
+        return f"Transpose %[{table}]."
     elif dsl["function_name"] == "aggregate":
         table = dsl["arguments"][0]
         label = dsl["arguments"][1]
         operation = dsl["arguments"][2]
         axis = dsl["arguments"][3]
         if axis == 0 or axis == "index":
-            return f"Aggregate the row with {label} in {table} with {operation}."
+            return f"Aggregate the row $[{label}] in %[{table}] with *[{operation}]."
         elif axis == 1 or axis == "column":
-            return f"Aggregate the column with {label} in {table} with {operation}."
+            return f"Aggregate the column $[{label}] in %[{table}] with *[{operation}]."
         else:
             return "Invalid function"
 
@@ -121,6 +121,6 @@ def dsl_compile(client_id: str) -> str:
     response = client.generate_chat_completion()
     dsls = json.loads(response)
     for dsl in dsls:
-        dsl["naturl_language"] = transfer_to_NL(dsl)
+        dsl["natural_language"] = transfer_to_NL(dsl)
     print(dsls)
     return dsls
