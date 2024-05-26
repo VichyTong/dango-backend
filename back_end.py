@@ -44,7 +44,9 @@ async def login():
 @app.post("/upload/")
 async def upload_file(client_id: str = Form(...), file: UploadFile = File(...)):
     if not file.filename.endswith(".csv"):
-        raise HTTPException(status_code=400, content={"message": "Unsupported file type"})
+        raise HTTPException(
+            status_code=400, content={"message": "Unsupported file type"}
+        )
     unique_filename = f"{client_id}_{file.filename}"
 
     file_path = os.path.join(UPLOAD_FOLDER, unique_filename)
@@ -55,7 +57,9 @@ async def upload_file(client_id: str = Form(...), file: UploadFile = File(...)):
             while data := await file.read(1024):
                 await buffer.write(data)
     except IOError as e:
-        raise HTTPException(status_code=500, content={"message": f"File upload failed: {e}"})
+        raise HTTPException(
+            status_code=500, content={"message": f"File upload failed: {e}"}
+        )
 
     return JSONResponse(
         status_code=200, content={"message": f"{file.filename} uploaded successfully"}
@@ -67,7 +71,9 @@ async def modify_file(
     client_id: str = Form(...), sheet_id: str = Form(...), file: UploadFile = File(...)
 ):
     if not file.filename.endswith(".csv"):
-        raise HTTPException(status_code=400, content={"message": "Unsupported file type"})
+        raise HTTPException(
+            status_code=400, content={"message": "Unsupported file type"}
+        )
     file_path = os.path.join(UPLOAD_FOLDER, f"{client_id}_{sheet_id}")
 
     # Replace the file
@@ -76,7 +82,9 @@ async def modify_file(
             while data := await file.read(1024):
                 await buffer.write(data)
     except IOError as e:
-        raise HTTPException(status_code=500, content={"message": f"File modification failed: {e}"})
+        raise HTTPException(
+            status_code=500, content={"message": f"File modification failed: {e}"}
+        )
 
     return JSONResponse(
         status_code=200,
@@ -96,7 +104,9 @@ async def delete_file(client_id: str = Form(...), sheet_id: str = Form(...)):
     try:
         os.remove(file_path)
     except IOError as e:
-        raise HTTPException(status_code=500, content={"message": f"File deletion failed: {e}"})
+        raise HTTPException(
+            status_code=500, content={"message": f"File deletion failed: {e}"}
+        )
 
     return JSONResponse(
         status_code=200, content={"message": f"{sheet_id} deleted successfully"}
@@ -135,9 +145,11 @@ async def handle_chat(request_body: Chat):
         return await simple_chat(request_body)
     if status == "analyze":
         return await handle_analyze(request_body)
-    elif status == "clarification":
+    if status == "multi_analyze":
+        return await handle_multi_analyze(request_body)
+    if status == "clarification":
         return await handle_response(request_body)
-    elif status == "generate_dsl":
+    if status == "generate_dsl":
         return await handle_generate_dsl(request_body)
 
 
@@ -152,7 +164,9 @@ async def simple_chat(request_body: SimpleChat):
     message = request_body.message
 
     if not client_id:
-        return JSONResponse(status_code=400, content={"message": "Client ID is required"})
+        return JSONResponse(
+            status_code=400, content={"message": "Client ID is required"}
+        )
 
     client = get_client(client_id)
     client.append_user_message(message)
@@ -189,13 +203,19 @@ async def handle_analyze(request_body: Analyze):
     file_path = os.path.join(UPLOAD_FOLDER, f"{client_id}_{sheet_id}")
     if not os.path.exists(file_path):
         raise HTTPException(status_code=404, detail="File not found")
-    
+
     df = pd.read_csv(file_path)
-    if 'Unnamed: 0' not in df.columns:
+    if "Unnamed: 0" not in df.columns:
         is_index_table = True
-    
+
     response = analyze(
-        client_id, sheet_id, row_count, column_names, table_diff, user_prompt, is_index_table
+        client_id,
+        sheet_id,
+        row_count,
+        column_names,
+        table_diff,
+        user_prompt,
+        is_index_table,
     )
     client = get_client(client_id)
 
@@ -288,10 +308,10 @@ async def handle_execute_dsl(request_body: ExecuteDSL):
 
     sheet = pd.read_csv(file_path)
     flag = False
-    if 'Unnamed: 0' in sheet.columns:
+    if "Unnamed: 0" in sheet.columns:
         flag = True
         sheet = pd.read_csv(file_path, index_col=0)
-    
+
     new_sheet = execute_dsl(sheet, dsl, arguments)
     print(new_sheet)
     new_sheet.to_csv(file_path, index=flag)
