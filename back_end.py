@@ -301,6 +301,11 @@ async def handle_execute_dsl(request_body: ExecuteDSL):
     sheet_id = request_body.sheet_id
     dsl = request_body.dsl
     arguments = request_body.arguments
+    
+    print(f"client_id: {client_id}")
+    print(f"sheet_id: {sheet_id}")
+    print(f"dsl: {dsl}")
+    print(f"arguments: {arguments}")
 
     file_path = os.path.join(UPLOAD_FOLDER, f"{client_id}_{sheet_id}")
     if not os.path.exists(file_path):
@@ -308,11 +313,13 @@ async def handle_execute_dsl(request_body: ExecuteDSL):
 
     sheet = pd.read_csv(file_path)
     flag = False
-    if "Unnamed: 0" in sheet.columns:
+    if 'Unnamed: 0' in sheet.columns:
         flag = True
         sheet = pd.read_csv(file_path, index_col=0)
-
+    
     new_sheet = execute_dsl(sheet, dsl, arguments)
     print(new_sheet)
-    new_sheet.to_csv(file_path, index=flag)
-    return FileResponse(file_path)
+    
+    # Convert the DataFrame to JSON and return it
+    json_result = new_sheet.to_json(orient="records")
+    return JSONResponse(content=json_result)

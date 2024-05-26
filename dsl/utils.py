@@ -12,8 +12,8 @@ def drop(table, label, axis=0):
     - label: The label of the row/column to be dropped. For rows, this is the index label; for columns, this is the column name.
     - axis: 0 for row, 1 for column. Specifies whether to drop a row or a column.
     """
-    # Validate axis
-    if axis not in [0, 1, "index", "columns"]:
+
+    if axis not in [0, 1, "index", "columns", '0', '1']:
         raise ValueError("Axis must be 0, 'index', 1, or 'columns'")
 
     # Convert string axis to numeric
@@ -21,6 +21,11 @@ def drop(table, label, axis=0):
         axis = 0
     elif axis == "columns":
         axis = 1
+    elif axis == '0':
+        axis = 0
+    elif axis == '1':
+        axis = 1
+
 
     # Dropping a column
     if axis == 1:
