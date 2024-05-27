@@ -357,7 +357,7 @@ async def handle_generate_dsl(request_body: GenerateDSL):
 
 class ExecuteDSL(BaseModel):
     client_id: str
-    sheet_id: Optional(str)
+    sheet_id: Optional[str]
     dsl: str
     arguments: List[str]
 
