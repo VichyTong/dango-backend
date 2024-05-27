@@ -375,7 +375,9 @@ async def handle_execute_dsl(request_body: ExecuteDSL):
     print(f"arguments: {arguments}")
 
     file_path = os.path.join(UPLOAD_FOLDER, f"{client_id}_{sheet_id}")
+    print(file_path)
     if not os.path.exists(file_path):
+        print("File not found")
         raise HTTPException(status_code=404, detail="File not found")
 
     sheet = pd.read_csv(file_path)
