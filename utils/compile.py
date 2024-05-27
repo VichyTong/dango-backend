@@ -13,11 +13,13 @@ init_prompt()
 
 
 def create_user_prompt(history):
+    print(history)
     start_index = 0
     for index, message in enumerate(history):
         if message["role"] == "system":
             start_index = index
             break
+    print(start_index)
 
     information = history[start_index + 1]["content"]
     QAs = ""

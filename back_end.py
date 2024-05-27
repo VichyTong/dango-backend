@@ -9,7 +9,7 @@ import json
 import aiofiles
 import pandas as pd
 
-from utils.analyze import analyze
+from utils.analyze import analyze, multi_analyze
 from utils.chat import chat
 from utils.compile import dsl_compile
 from utils.llm import get_client, create_client
@@ -125,6 +125,19 @@ async def get_file(client_id: str = Form(...), sheet_id: str = Form(...)):
     return FileResponse(file_path)
 
 
+class TableInfo(BaseModel):
+    sheet_id: str
+    row_names: List[str]
+    column_names: List[str]
+    table_diff: str
+
+
+class MultiAnalyze(BaseModel):
+    client_id: str
+    table_list: List[TableInfo]
+    user_prompt: str
+
+
 class Chat(BaseModel):
     status: str
     client_id: Optional[str] = Field(None)
@@ -135,6 +148,7 @@ class Chat(BaseModel):
     table_diff: Optional[str] = Field(None)
     user_prompt: Optional[str] = Field(None)
     response: Optional[str] = Field(None)
+    table_list: Optional[List[TableInfo]] = Field(None)
 
 
 @app.post("/chat")
@@ -217,6 +231,59 @@ async def handle_analyze(request_body: Analyze):
         user_prompt,
         is_index_table,
     )
+    client = get_client(client_id)
+
+    if response["type"] == "question":
+        response_summary = response["summary"]
+        response_question = response["question"]
+        response_choices = response["choices"]
+        return_message = {
+            "client_id": client_id,
+            "history": client.history,
+            "question": response_question,
+            "choices": response_choices,
+            "type": "question",
+            "status": "clarification",
+        }
+    else:
+        response_summary = response["summary"]
+        return_message = {
+            "client_id": client_id,
+            "history": client.history,
+            "type": "finish",
+            "status": "generate_dsl",
+        }
+    return return_message
+
+
+@app.post("/multi_analyze")
+async def handle_multi_analyze(request_body: MultiAnalyze):
+    client_id = request_body.client_id
+    table_list = request_body.table_list
+    user_prompt = request_body.user_prompt
+
+    processed_tables = []
+    for table in table_list:
+        sheet_id = table.sheet_id
+        file_path = os.path.join(UPLOAD_FOLDER, f"{client_id}_{sheet_id}")
+        if not os.path.exists(file_path):
+            raise HTTPException(status_code=404, detail="File not found")
+
+        df = pd.read_csv(file_path)
+        if "Unnamed: 0" not in df.columns:
+            is_index_table = True
+        else:
+            is_index_table = False
+        processed_table = {
+            "sheet_id": sheet_id,
+            "row_names": table.row_names,
+            "column_names": table.column_names,
+            "table_diff": table.table_diff,
+            "is_index_table": is_index_table,
+        }
+        processed_tables.append(processed_table)
+    print(processed_tables)
+    response = multi_analyze(client_id, processed_tables, user_prompt)
     client = get_client(client_id)
 
     if response["type"] == "question":

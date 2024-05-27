@@ -1,17 +1,23 @@
 from typing import List
-from utils.llm import create_client, get_client
 import json
+
+from utils.llm import create_client, get_client
 
 
 def init_prompt():
     global transfer_prompt
-    global analyze_system_prompt, analyze_user_prompt, analyze_few_shot_user_prompt, analyze_few_shot_assistant_prompt
+    global analyze_system_prompt, analyze_user_prompt
+    global multi_analyze_system_prompt, multi_analyze_user_prompt
     with open("prompt/analyze/transfer_meta_diff_to_NL.txt", "r") as f:
         transfer_prompt = f.read()
     with open("prompt/analyze/system.txt", "r") as f:
         analyze_system_prompt = f.read()
     with open("prompt/analyze/user.txt", "r") as f:
         analyze_user_prompt = f.read()
+    with open("prompt/multi_analyze/system.txt", "r") as f:
+        multi_analyze_system_prompt = f.read()
+    with open("prompt/multi_analyze/user.txt", "r") as f:
+        multi_analyze_user_prompt = f.read()
 
 
 init_prompt()
@@ -148,12 +154,15 @@ def find_batch_operation(changes, num_rows, num_cols):
     return changes
 
 
-def mata_diff_to_NL(diff: str, row_count: int, column_names: list, is_index_table: bool) -> str:
+def mata_diff_to_NL(
+    diff: str, row_count: int, column_names: list, is_index_table: bool
+) -> str:
     changes = extract_changes(diff)
     if is_index_table:
         for change in changes:
             change["col"] += 1
     changes = find_batch_operation(changes, row_count, len(column_names))
+    print(">>> Finding batch operations...")
     print(changes)
     client_id, client = create_client()
     client.append_system_message(transfer_prompt)
@@ -182,7 +191,6 @@ def get_analyze(client_id, sheet_id, row_count, column_names, NL_diff, user_prom
         .replace("{column_count}", str(column_number))
         .replace("{NL_diff}", NL_diff)
         .replace("{user_prompt}", user_prompt)
-        .replace("{column_number}", str(column_number))
     )
 
     client = get_client(client_id)
@@ -210,4 +218,64 @@ def analyze(
     )
     response = json.loads(response)
 
+    return response
+
+def get_multi_analyze(client_id, table_list, user_prompt):
+    input_user_prompt = ""
+    for index, table in enumerate(table_list):
+        column_names = table["column_names"]
+        column_number = len(column_names)
+        sheet_id = table["sheet_id"]
+        row_count = len(table["row_names"])
+        NL_diff = table["NL_diff"]
+
+        column_index = "A"
+        column_string_list = []
+        for item in column_names:
+            item = f'{column_index}: "{item}"'
+            column_index = chr(ord(column_index) + 1)
+            column_string_list.append(item)
+            # TODO: What if number of columns is more than 26?
+        column_names = ", ".join(column_string_list)
+
+        input_user_prompt += (
+            multi_analyze_user_prompt.replace("{index}", str(index))
+            .replace("{sheet_id}", sheet_id)
+            .replace("{column_count}", str(column_number))
+            .replace("{column_names}", column_names)
+            .replace("{row_count}", str(row_count))
+            .replace("{NL_diff}", NL_diff)
+        )
+    
+    input_user_prompt += user_prompt
+
+    client = get_client(client_id)
+    client.append_system_message(multi_analyze_system_prompt)
+    client.append_user_message(input_user_prompt)
+    response = client.generate_chat_completion()
+    print(response)
+    client.append_assistant_message(response)
+    print(json.dumps(client.history, indent=4))
+    return response
+
+
+def multi_analyze(
+    client_id: str,
+    table_list: List[dict],
+    user_promt: str,
+) -> str:
+    for table in table_list:
+        sheet_id = table["sheet_id"]
+        row_count = len(table["row_names"])
+        column_names = table["column_names"]
+        table_diff = table["table_diff"]
+        is_index_table = table["is_index_table"]
+        NL_diff = mata_diff_to_NL(table_diff, row_count, column_names, is_index_table)
+        table["NL_diff"] = NL_diff
+
+    response = get_multi_analyze(
+        client_id, table_list, user_promt
+    )
+
+    response = json.loads(response)
     return response
