@@ -64,7 +64,24 @@ async def upload_file(client_id: str = Form(...), file: UploadFile = File(...)):
     return JSONResponse(
         status_code=200, content={"message": f"{file.filename} uploaded successfully"}
     )
+class FileExists(BaseModel):
+    client_id: str
+    file_name: str
 
+@app.post("/is_file_exists/")
+async def is_file_exists(request_body: FileExists):
+    client_id = request_body.client_id
+    file_name = request_body.file_name
+    print(client_id)
+    print(file_name)
+    file_path = os.path.join(UPLOAD_FOLDER, f"{client_id}_{file_name}")
+    if not os.path.exists(file_path):
+        return JSONResponse(
+            status_code=200, content={"message": "NO"}
+        )
+    return JSONResponse(
+        status_code=200, content={"message": "YES"}
+    )
 
 @app.post("/modify/")
 async def modify_file(
