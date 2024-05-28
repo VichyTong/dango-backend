@@ -4,37 +4,50 @@ from utils.llm import create_client, get_client
 
 
 def init_prompt():
-    global system_prompt
+    global system_prompt, user_prompt
     with open("prompt/compile/system.txt", "r") as f:
         system_prompt = f.read()
+    with open("prompt/compile/user.txt", "r") as f:
+        user_prompt = f.read()
 
 
 init_prompt()
 
 
 def create_user_prompt(history):
+    print(">>> create user prompt in compile.py")
     print(history)
     start_index = 0
     for index, message in enumerate(history):
         if message["role"] == "system":
             start_index = index
             break
-    print(start_index)
 
     information = history[start_index + 1]["content"]
-    QAs = ""
+    prompt = f"Information: {information}\n\n"
+
+    question_index = 1
     for index in range(start_index + 2, len(history), 2):
         response = json.loads(history[index]["content"])
         if response["type"] == "finish":
             break
-        question = f"Q: {response['question']}\nChoices:\n"
+
+        choices = ""
         for i, choice in enumerate(response["choices"]):
-            question += f"{i + 1}. {choice}\n"
-        answer = history[index + 1]["content"]
-        answer = f"A: {answer}\n"
-        QAs += f"{question}{answer}\n"
-    user_prompt = f"{information}\n{QAs}"
-    return user_prompt
+            choices += f"{chr(ord('A') + i)}. {choice}\n"
+
+        question_answer_pair = (
+            user_prompt.replace("{INDEX}", str(question_index))
+            .replace("{QUESTION}", response["question"])
+            .replace("{CHOICES}", choices)
+            .replace("{ANSWER}", history[index + 1]["content"])
+        )
+        question_index += 1
+        prompt += question_answer_pair
+    
+    print(">>> user prompt created in compile.py")
+    print(prompt)
+    return prompt
 
 
 def transfer_to_NL(dsl):
