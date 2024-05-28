@@ -46,14 +46,14 @@ Your output should be in JSON form. For example:
 [
     {
         "function_name": "copy",
-        "arguments": ["Table1", "row_1", "Table2", "row4", "index"]
+        "arguments": ["a.csv", "row_1", "Table2", "row4", "index"]
     },
     {
         "function_name": "drop",
-        "arguments": ["Table1", "row_1", "index"]
+        "arguments": ["a.csv", "row_1", "index"]
     },
     {
         "function_name": "merge",
-        "arguments": ["Table1", "row_1", "row_2", " ", "row_1_2", "index"]
+        "arguments": ["a.csv", "row_1", "row_2", " ", "row_1_2", "index"]
     }
 ]
