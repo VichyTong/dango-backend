@@ -47,7 +47,10 @@ async def upload_file(client_id: str = Form(...), file: UploadFile = File(...)):
         raise HTTPException(
             status_code=400, content={"message": "Unsupported file type"}
         )
-    unique_filename = f"{client_id}_{file.filename}"
+    sheet_id = file.filename
+    unique_filename = (
+        f"{client_id}_{sheet_id.split('.')[0]}_v0_{sheet_id.split('.')[1]}"
+    )
 
     file_path = os.path.join(UPLOAD_FOLDER, unique_filename)
 
@@ -64,54 +67,42 @@ async def upload_file(client_id: str = Form(...), file: UploadFile = File(...)):
     return JSONResponse(
         status_code=200, content={"message": f"{file.filename} uploaded successfully"}
     )
+
+
 class FileExists(BaseModel):
     client_id: str
     file_name: str
+    version: Optional[int] = Field(0)
+
 
 @app.post("/is_file_exists/")
 async def is_file_exists(request_body: FileExists):
     client_id = request_body.client_id
     file_name = request_body.file_name
+    version = str(request_body.version)
     print(client_id)
     print(file_name)
-    file_path = os.path.join(UPLOAD_FOLDER, f"{client_id}_{file_name}")
+    print(version)
+    unique_filename = (
+        f"{client_id}_{file_name.split('.')[0]}_v{version}_{file_name.split('.')[1]}"
+    )
+    file_path = os.path.join(UPLOAD_FOLDER, unique_filename)
     if not os.path.exists(file_path):
-        return JSONResponse(
-            status_code=200, content={"message": "NO"}
-        )
-    return JSONResponse(
-        status_code=200, content={"message": "YES"}
-    )
-
-@app.post("/modify/")
-async def modify_file(
-    client_id: str = Form(...), sheet_id: str = Form(...), file: UploadFile = File(...)
-):
-    if not file.filename.endswith(".csv"):
-        raise HTTPException(
-            status_code=400, content={"message": "Unsupported file type"}
-        )
-    file_path = os.path.join(UPLOAD_FOLDER, f"{client_id}_{sheet_id}")
-
-    # Replace the file
-    try:
-        async with aiofiles.open(file_path, "wb") as buffer:
-            while data := await file.read(1024):
-                await buffer.write(data)
-    except IOError as e:
-        raise HTTPException(
-            status_code=500, content={"message": f"File modification failed: {e}"}
-        )
-
-    return JSONResponse(
-        status_code=200,
-        content={"message": f"{sheed_id} modified successfully"},
-    )
+        return JSONResponse(status_code=200, content={"message": "NO"})
+    return JSONResponse(status_code=200, content={"message": "YES"})
 
 
 @app.delete("/delete/")
-async def delete_file(client_id: str = Form(...), sheet_id: str = Form(...)):
-    file_path = os.path.join(UPLOAD_FOLDER, f"{client_id}_{sheet_id}")
+async def delete_file(
+    client_id: str = Form(...),
+    sheet_id: str = Form(...),
+    version: Optional[int] = Form(0),
+):
+    version = str(version)
+    unique_filename = (
+        f"{client_id}_{sheet_id.split('.')[0]}_v{version}_{sheet_id.split('.')[1]}"
+    )
+    file_path = os.path.join(UPLOAD_FOLDER, unique_filename)
 
     # Check if file exists
     if not os.path.exists(file_path):
@@ -131,8 +122,16 @@ async def delete_file(client_id: str = Form(...), sheet_id: str = Form(...)):
 
 
 @app.get("/get/")
-async def get_file(client_id: str = Form(...), sheet_id: str = Form(...)):
-    file_path = os.path.join(UPLOAD_FOLDER, f"{client_id}_{sheet_id}")
+async def get_file(
+    client_id: str = Form(...),
+    sheet_id: str = Form(...),
+    version: Optional[int] = Form(0),
+):
+    version = str(version)
+    unique_filename = (
+        f"{client_id}_{sheet_id.split('.')[0]}_v{version}_{sheet_id.split('.')[1]}"
+    )
+    file_path = os.path.join(UPLOAD_FOLDER, unique_filename)
 
     # Check if file exists
     if not os.path.exists(file_path):
@@ -385,7 +384,7 @@ async def handle_execute_dsl(request_body: ExecuteDSL):
     dsl = request_body.dsl
     arguments = request_body.arguments
     sheet_id = arguments[0]
-    
+
     print(f"client_id: {client_id}")
     print(f"sheet_id: {sheet_id}")
     print(f"dsl: {dsl}")
@@ -399,13 +398,13 @@ async def handle_execute_dsl(request_body: ExecuteDSL):
 
     sheet = pd.read_csv(file_path)
     flag = False
-    if 'Unnamed: 0' in sheet.columns:
+    if "Unnamed: 0" in sheet.columns:
         flag = True
         sheet = pd.read_csv(file_path, index_col=0)
-    
+
     new_sheet = execute_dsl(sheet, dsl, arguments[1:])
     print(new_sheet)
-    
+
     # Convert the DataFrame to JSON and return it
     json_result = new_sheet.to_json(orient="records")
     return JSONResponse(content=json_result)
