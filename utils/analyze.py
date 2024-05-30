@@ -173,7 +173,7 @@ def mata_diff_to_NL(
     return response
 
 
-def get_analyze(client_id, sheet_id, row_count, column_names, NL_diff, user_prompt):
+def get_analyze(client_id, sheet_id, version, row_count, column_names, NL_diff, user_prompt):
     column_number = len(column_names)
     index = "A"
     column_string_list = []
@@ -185,7 +185,7 @@ def get_analyze(client_id, sheet_id, row_count, column_names, NL_diff, user_prom
     column_names = ", ".join(column_string_list)
 
     input_user_prompt = (
-        analyze_user_prompt.replace("{sheet_id}", sheet_id)
+        analyze_user_prompt.replace("{sheet_id}", f"{sheet_id.split('.')[0]}_v{version}_{sheet_id.split('.')[1]}")
         .replace("{row_count}", str(row_count))
         .replace("{column_names}", column_names)
         .replace("{column_count}", str(column_number))
@@ -206,6 +206,7 @@ def get_analyze(client_id, sheet_id, row_count, column_names, NL_diff, user_prom
 def analyze(
     client_id: str,
     sheet_id: str,
+    version: int,
     row_count: int,
     column_names: List[str],
     table_diff: str,
@@ -214,7 +215,7 @@ def analyze(
 ) -> str:
     NL_diff = mata_diff_to_NL(table_diff, row_count, column_names, is_index_table)
     response = get_analyze(
-        client_id, sheet_id, row_count, column_names, NL_diff, user_promt
+        client_id, sheet_id, version, row_count, column_names, NL_diff, user_promt
     )
     response = json.loads(response)
 
@@ -266,6 +267,7 @@ def multi_analyze(
 ) -> str:
     for table in table_list:
         sheet_id = table["sheet_id"]
+        version = table["version"]
         row_count = len(table["row_names"])
         column_names = table["column_names"]
         table_diff = table["table_diff"]

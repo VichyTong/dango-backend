@@ -143,6 +143,7 @@ async def get_file(
 
 class TableInfo(BaseModel):
     sheet_id: str
+    version: Optional[int] = Field(0)
     row_names: List[str]
     column_names: List[str]
     table_diff: str
@@ -215,6 +216,7 @@ async def simple_chat(request_body: SimpleChat):
 class Analyze(BaseModel):
     client_id: str
     sheet_id: str
+    version: Optional[int] = Field(0)
     row_count: int
     column_names: List[str]
     table_diff: str
@@ -223,24 +225,31 @@ class Analyze(BaseModel):
 
 @app.post("/analyze")
 async def handle_analyze(request_body: Analyze):
+    client_id = request_body.client_id
     sheet_id = request_body.sheet_id
+    version = request_body.version
     row_count = request_body.row_count
     column_names = request_body.column_names
     table_diff = request_body.table_diff
     user_prompt = request_body.user_prompt
-    client_id = request_body.client_id
-
-    file_path = os.path.join(UPLOAD_FOLDER, f"{client_id}_{sheet_id}")
+    
+    unique_filename = (
+        f"{client_id}_{sheet_id.split('.')[0]}_v{version}_{sheet_id.split('.')[1]}"
+    )
+    file_path = os.path.join(UPLOAD_FOLDER, unique_filename)
     if not os.path.exists(file_path):
         raise HTTPException(status_code=404, detail="File not found")
 
     df = pd.read_csv(file_path)
     if "Unnamed: 0" not in df.columns:
         is_index_table = True
+    else:
+        is_index_table = False
 
     response = analyze(
         client_id,
         sheet_id,
+        version,
         row_count,
         column_names,
         table_diff,
@@ -281,7 +290,11 @@ async def handle_multi_analyze(request_body: MultiAnalyze):
     processed_tables = []
     for table in table_list:
         sheet_id = table.sheet_id
-        file_path = os.path.join(UPLOAD_FOLDER, f"{client_id}_{sheet_id}")
+        version = table.version
+        unique_filename = (
+            f"{client_id}_{sheet_id.split('.')[0]}_v{version}_{sheet_id.split('.')[1]}"
+        )
+        file_path = os.path.join(UPLOAD_FOLDER, unique_filename)
         if not os.path.exists(file_path):
             raise HTTPException(status_code=404, detail="File not found")
 
@@ -292,6 +305,7 @@ async def handle_multi_analyze(request_body: MultiAnalyze):
             is_index_table = False
         processed_table = {
             "sheet_id": sheet_id,
+            "version": version,
             "row_names": table.row_names,
             "column_names": table.column_names,
             "table_diff": table.table_diff,
