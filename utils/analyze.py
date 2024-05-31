@@ -185,7 +185,7 @@ def get_analyze(client_id, sheet_id, version, row_count, column_names, NL_diff, 
     column_names = ", ".join(column_string_list)
 
     input_user_prompt = (
-        analyze_user_prompt.replace("{sheet_id}", f"{sheet_id.split('.')[0]}_v{version}_{sheet_id.split('.')[1]}")
+        analyze_user_prompt.replace("{sheet_id}", f"{sheet_id.split('.')[0]}_v{version}.{sheet_id.split('.')[1]}")
         .replace("{row_count}", str(row_count))
         .replace("{column_names}", column_names)
         .replace("{column_count}", str(column_number))

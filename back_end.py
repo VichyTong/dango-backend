@@ -9,6 +9,7 @@ import json
 import aiofiles
 import pandas as pd
 
+from utils.simple_analyze import simple_analyze
 from utils.analyze import analyze, multi_analyze
 from utils.chat import chat
 from utils.compile import dsl_compile
@@ -49,7 +50,7 @@ async def upload_file(client_id: str = Form(...), file: UploadFile = File(...)):
         )
     sheet_id = file.filename
     unique_filename = (
-        f"{client_id}_{sheet_id.split('.')[0]}_v0_{sheet_id.split('.')[1]}"
+        f"{client_id}_{sheet_id.split('.')[0]}_v0.{sheet_id.split('.')[1]}"
     )
 
     file_path = os.path.join(UPLOAD_FOLDER, unique_filename)
@@ -84,7 +85,7 @@ async def is_file_exists(request_body: FileExists):
     print(file_name)
     print(version)
     unique_filename = (
-        f"{client_id}_{file_name.split('.')[0]}_v{version}_{file_name.split('.')[1]}"
+        f"{client_id}_{file_name.split('.')[0]}_v{version}.{file_name.split('.')[1]}"
     )
     file_path = os.path.join(UPLOAD_FOLDER, unique_filename)
     if not os.path.exists(file_path):
@@ -100,7 +101,7 @@ async def delete_file(
 ):
     version = str(version)
     unique_filename = (
-        f"{client_id}_{sheet_id.split('.')[0]}_v{version}_{sheet_id.split('.')[1]}"
+        f"{client_id}_{sheet_id.split('.')[0]}_v{version}.{sheet_id.split('.')[1]}"
     )
     file_path = os.path.join(UPLOAD_FOLDER, unique_filename)
 
@@ -129,7 +130,7 @@ async def get_file(
 ):
     version = str(version)
     unique_filename = (
-        f"{client_id}_{sheet_id.split('.')[0]}_v{version}_{sheet_id.split('.')[1]}"
+        f"{client_id}_{sheet_id.split('.')[0]}_v{version}.{sheet_id.split('.')[1]}"
     )
     file_path = os.path.join(UPLOAD_FOLDER, unique_filename)
 
@@ -141,11 +142,29 @@ async def get_file(
     return FileResponse(file_path)
 
 
+def get_sheet_info(client_id, sheet_id, version):
+    unique_filename = (
+        f"{client_id}_{sheet_id.split('.')[0]}_v{version}.{sheet_id.split('.')[1]}"
+    )
+    file_path = os.path.join(UPLOAD_FOLDER, unique_filename)
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, content={"message": "File not found"})
+    df = pd.read_csv(file_path)
+    output = {}
+    if "Unnamed: 0" not in df.columns:
+        output["is_index_table"] = True
+    else:
+        output["is_index_table"] = False
+
+    output["column_names"] = df.columns.tolist()
+    output["row_names"] = df.index.tolist()
+
+    return output
+
+
 class TableInfo(BaseModel):
     sheet_id: str
     version: Optional[int] = Field(0)
-    row_names: List[str]
-    column_names: List[str]
     table_diff: str
 
 
@@ -160,6 +179,7 @@ class Chat(BaseModel):
     client_id: Optional[str] = Field(None)
     message: str = Field(None)
     sheet_id: Optional[str] = Field(None)
+    version: Optional[int] = Field(0)
     row_count: Optional[int] = Field(None)
     column_names: Optional[List[str]] = Field(None)
     table_diff: Optional[str] = Field(None)
@@ -173,7 +193,7 @@ async def handle_chat(request_body: Chat):
     status = request_body.status
     print(status)
     if status == "init":
-        return await simple_chat(request_body)
+        return await handle_simple_analyze(request_body)
     if status == "analyze":
         return await handle_analyze(request_body)
     if status == "multi_analyze":
@@ -213,6 +233,61 @@ async def simple_chat(request_body: SimpleChat):
     return return_message
 
 
+class SimpleAnalyze(BaseModel):
+    client_id: Optional[str] = Field(None)
+    sheet_id: str
+    version: Optional[int] = Field(0)
+    message: str
+
+
+@app.post("/simple_analyze")
+async def handle_simple_analyze(request_body: SimpleAnalyze):
+    client_id = request_body.client_id
+    sheet_id = request_body.sheet_id
+    version = request_body.version
+    message = request_body.message
+
+    if not client_id:
+        return JSONResponse(
+            status_code=400, content={"message": "Client ID is required"}
+        )
+
+    sheet_info = get_sheet_info(client_id, sheet_id, version)
+    row_names = sheet_info["row_names"]
+    column_names = sheet_info["column_names"]
+    response = simple_analyze(
+        client_id,
+        sheet_id,
+        version,
+        row_names,
+        column_names,
+        message,
+    )
+    client = get_client(client_id)
+
+    if response["type"] == "question":
+        response_summary = response["summary"]
+        response_question = response["question"]
+        response_choices = response["choices"]
+        return_message = {
+            "client_id": client_id,
+            "history": client.history,
+            "question": response_question,
+            "choices": response_choices,
+            "type": "question",
+            "status": "clarification",
+        }
+    else:
+        response_summary = response["summary"]
+        return_message = {
+            "client_id": client_id,
+            "history": client.history,
+            "type": "finish",
+            "status": "generate_dsl",
+        }
+    return return_message
+
+
 class Analyze(BaseModel):
     client_id: str
     sheet_id: str
@@ -232,29 +307,18 @@ async def handle_analyze(request_body: Analyze):
     column_names = request_body.column_names
     table_diff = request_body.table_diff
     user_prompt = request_body.user_prompt
-    
-    unique_filename = (
-        f"{client_id}_{sheet_id.split('.')[0]}_v{version}_{sheet_id.split('.')[1]}"
-    )
-    file_path = os.path.join(UPLOAD_FOLDER, unique_filename)
-    if not os.path.exists(file_path):
-        raise HTTPException(status_code=404, detail="File not found")
 
-    df = pd.read_csv(file_path)
-    if "Unnamed: 0" not in df.columns:
-        is_index_table = True
-    else:
-        is_index_table = False
+    sheet_info = get_sheet_info(client_id, sheet_id, version)
 
     response = analyze(
         client_id,
         sheet_id,
         version,
-        row_count,
-        column_names,
+        len(sheet_info["row_names"]),
+        sheet_info["column_names"],
         table_diff,
         user_prompt,
-        is_index_table,
+        sheet_info["is_index_table"],
     )
     client = get_client(client_id)
 
@@ -291,25 +355,15 @@ async def handle_multi_analyze(request_body: MultiAnalyze):
     for table in table_list:
         sheet_id = table.sheet_id
         version = table.version
-        unique_filename = (
-            f"{client_id}_{sheet_id.split('.')[0]}_v{version}_{sheet_id.split('.')[1]}"
-        )
-        file_path = os.path.join(UPLOAD_FOLDER, unique_filename)
-        if not os.path.exists(file_path):
-            raise HTTPException(status_code=404, detail="File not found")
+        sheet_info = get_sheet_info(client_id, sheet_id, version)
 
-        df = pd.read_csv(file_path)
-        if "Unnamed: 0" not in df.columns:
-            is_index_table = True
-        else:
-            is_index_table = False
         processed_table = {
             "sheet_id": sheet_id,
             "version": version,
-            "row_names": table.row_names,
-            "column_names": table.column_names,
+            "row_names": sheet_info["row_names"],
+            "column_names": sheet_info["column_names"],
             "table_diff": table.table_diff,
-            "is_index_table": is_index_table,
+            "is_index_table": sheet_info["is_index_table"],
         }
         processed_tables.append(processed_table)
     print(processed_tables)
@@ -421,4 +475,5 @@ async def handle_execute_dsl(request_body: ExecuteDSL):
 
     # Convert the DataFrame to JSON and return it
     json_result = new_sheet.to_json(orient="records")
+    print(json_result)
     return JSONResponse(content=json_result)
