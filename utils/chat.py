@@ -1,13 +1,13 @@
 import json
 
-from utils.llm import get_client
+from utils.llm import get_history, append_message, generate_chat_completion
 
 
 def chat(client_id, response):
-    client = get_client(client_id)
-    client.append_user_message(response)
+    client = get_history(client_id)
+    append_message(client_id, response, "user")
 
-    response = client.generate_chat_completion()
-    client.append_assistant_message(response)
+    response = generate_chat_completion(client_id)
+    append_message(client_id, response, "assistant")
     response = json.loads(response)
     return response

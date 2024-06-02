@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, FileResponse
 from pydantic import BaseModel, Field
 from typing import List, Optional
+from io import StringIO
 import os
 import uuid
 import json
@@ -13,7 +14,14 @@ from utils.simple_analyze import simple_analyze
 from utils.analyze import analyze, multi_analyze
 from utils.chat import chat
 from utils.compile import dsl_compile
-from utils.llm import get_client, create_client
+from utils.llm import (
+    get_history,
+    create_client,
+    update_history,
+    append_message,
+    generate_chat_completion,
+)
+from utils.db import upload_sheet, get_sheet, delete_sheet, is_sheet_exists
 from utils.execute import execute_dsl
 
 # Initialize FastAPI app
@@ -38,7 +46,7 @@ if not os.path.exists(UPLOAD_FOLDER):
 
 @app.post("/login/")
 async def login():
-    client_id, client = create_client()
+    client_id = create_client()
     return JSONResponse(status_code=200, content={"client_id": client_id})
 
 
@@ -49,21 +57,15 @@ async def upload_file(client_id: str = Form(...), file: UploadFile = File(...)):
             status_code=400, content={"message": "Unsupported file type"}
         )
     sheet_id = file.filename
-    unique_filename = (
-        f"{client_id}_{sheet_id.split('.')[0]}_v0.{sheet_id.split('.')[1]}"
-    )
-
-    file_path = os.path.join(UPLOAD_FOLDER, unique_filename)
-
-    # Save the file
-    try:
-        async with aiofiles.open(file_path, "wb") as buffer:
-            while data := await file.read(1024):
-                await buffer.write(data)
-    except IOError as e:
-        raise HTTPException(
-            status_code=500, content={"message": f"File upload failed: {e}"}
-        )
+    version = 0
+    # read the sheet to json
+    data = await file.read()
+    data = data.decode("utf-8")
+    csv_data = StringIO(data)
+    data = pd.read_csv(csv_data)
+    data = data.to_json(orient="records")
+    data = json.loads(data)
+    upload_sheet(client_id, sheet_id, data)
 
     return JSONResponse(
         status_code=200, content={"message": f"{file.filename} uploaded successfully"}
@@ -84,11 +86,10 @@ async def is_file_exists(request_body: FileExists):
     print(client_id)
     print(file_name)
     print(version)
-    unique_filename = (
-        f"{client_id}_{file_name.split('.')[0]}_v{version}.{file_name.split('.')[1]}"
-    )
-    file_path = os.path.join(UPLOAD_FOLDER, unique_filename)
-    if not os.path.exists(file_path):
+
+    is_exists = is_sheet_exists(client_id, file_name, version)
+
+    if not is_exists:
         return JSONResponse(status_code=200, content={"message": "NO"})
     return JSONResponse(status_code=200, content={"message": "YES"})
 
@@ -99,23 +100,12 @@ async def delete_file(
     sheet_id: str = Form(...),
     version: Optional[int] = Form(0),
 ):
-    version = str(version)
-    unique_filename = (
-        f"{client_id}_{sheet_id.split('.')[0]}_v{version}.{sheet_id.split('.')[1]}"
-    )
-    file_path = os.path.join(UPLOAD_FOLDER, unique_filename)
-
     # Check if file exists
-    if not os.path.exists(file_path):
+    if not is_sheet_exists(client_id, sheet_id, version):
         raise HTTPException(status_code=404, content={"message": "File not found"})
 
     # Delete the file
-    try:
-        os.remove(file_path)
-    except IOError as e:
-        raise HTTPException(
-            status_code=500, content={"message": f"File deletion failed: {e}"}
-        )
+    delete_sheet(client_id, sheet_id, version)
 
     return JSONResponse(
         status_code=200, content={"message": f"{sheet_id} deleted successfully"}
@@ -128,28 +118,21 @@ async def get_file(
     sheet_id: str = Form(...),
     version: Optional[int] = Form(0),
 ):
-    version = str(version)
-    unique_filename = (
-        f"{client_id}_{sheet_id.split('.')[0]}_v{version}.{sheet_id.split('.')[1]}"
-    )
-    file_path = os.path.join(UPLOAD_FOLDER, unique_filename)
-
     # Check if file exists
-    if not os.path.exists(file_path):
+    if not is_sheet_exists(client_id, sheet_id, version):
         raise HTTPException(status_code=404, content={"message": "File not found"})
 
+    sheet = json.dumps(get_sheet(client_id, sheet_id, version), indent=4)
     # return the file
-    return FileResponse(file_path)
+    return JSONResponse(
+        status_code=200,
+        content={"data": sheet},
+    )
 
 
 def get_sheet_info(client_id, sheet_id, version):
-    unique_filename = (
-        f"{client_id}_{sheet_id.split('.')[0]}_v{version}.{sheet_id.split('.')[1]}"
-    )
-    file_path = os.path.join(UPLOAD_FOLDER, unique_filename)
-    if not os.path.exists(file_path):
-        raise HTTPException(status_code=404, content={"message": "File not found"})
-    df = pd.read_csv(file_path)
+    sheet = get_sheet(client_id, sheet_id, version)
+    df = pd.DataFrame(sheet)
     output = {}
     if "Unnamed: 0" not in df.columns:
         output["is_index_table"] = True
@@ -193,7 +176,7 @@ async def handle_chat(request_body: Chat):
     status = request_body.status
     print(status)
     if status == "init":
-        return await handle_simple_analyze(request_body)
+        return await simple_chat(request_body)
     if status == "analyze":
         return await handle_analyze(request_body)
     if status == "multi_analyze":
@@ -219,13 +202,13 @@ async def simple_chat(request_body: SimpleChat):
             status_code=400, content={"message": "Client ID is required"}
         )
 
-    client = get_client(client_id)
-    client.append_user_message(message)
-    response = client.generate_chat_completion()
-    client.append_assistant_message(response)
+    history = get_history(client_id)
+    append_message(client_id, message, "user")
+    response = generate_chat_completion(client_id)
+    append_message(client_id, response, "assistant")
     return_message = {
         "client_id": client_id,
-        "history": client.history,
+        "history": history,
         "response": response,
         "status": "init",
     }
@@ -263,7 +246,7 @@ async def handle_simple_analyze(request_body: SimpleAnalyze):
         column_names,
         message,
     )
-    client = get_client(client_id)
+    history = get_history(client_id)
 
     if response["type"] == "question":
         response_summary = response["summary"]
@@ -271,7 +254,7 @@ async def handle_simple_analyze(request_body: SimpleAnalyze):
         response_choices = response["choices"]
         return_message = {
             "client_id": client_id,
-            "history": client.history,
+            "history": history,
             "question": response_question,
             "choices": response_choices,
             "type": "question",
@@ -281,7 +264,7 @@ async def handle_simple_analyze(request_body: SimpleAnalyze):
         response_summary = response["summary"]
         return_message = {
             "client_id": client_id,
-            "history": client.history,
+            "history": history,
             "type": "finish",
             "status": "generate_dsl",
         }
@@ -320,7 +303,7 @@ async def handle_analyze(request_body: Analyze):
         user_prompt,
         sheet_info["is_index_table"],
     )
-    client = get_client(client_id)
+    history = get_history(client_id)
 
     if response["type"] == "question":
         response_summary = response["summary"]
@@ -328,7 +311,7 @@ async def handle_analyze(request_body: Analyze):
         response_choices = response["choices"]
         return_message = {
             "client_id": client_id,
-            "history": client.history,
+            "history": history,
             "question": response_question,
             "choices": response_choices,
             "type": "question",
@@ -338,7 +321,7 @@ async def handle_analyze(request_body: Analyze):
         response_summary = response["summary"]
         return_message = {
             "client_id": client_id,
-            "history": client.history,
+            "history": history,
             "type": "finish",
             "status": "generate_dsl",
         }
@@ -368,7 +351,7 @@ async def handle_multi_analyze(request_body: MultiAnalyze):
         processed_tables.append(processed_table)
     print(processed_tables)
     response = multi_analyze(client_id, processed_tables, user_prompt)
-    client = get_client(client_id)
+    history = get_history(client_id)
 
     if response["type"] == "question":
         response_summary = response["summary"]
@@ -376,7 +359,7 @@ async def handle_multi_analyze(request_body: MultiAnalyze):
         response_choices = response["choices"]
         return_message = {
             "client_id": client_id,
-            "history": client.history,
+            "history": history,
             "question": response_question,
             "choices": response_choices,
             "type": "question",
@@ -386,7 +369,7 @@ async def handle_multi_analyze(request_body: MultiAnalyze):
         response_summary = response["summary"]
         return_message = {
             "client_id": client_id,
-            "history": client.history,
+            "history": history,
             "type": "finish",
             "status": "generate_dsl",
         }
@@ -401,7 +384,7 @@ class Response(BaseModel):
 @app.post("/response")
 async def handle_response(request_body: Response):
     client_id = request_body.client_id
-    client = get_client(client_id)
+    history = get_history(client_id)
     user_response = request_body.response
     response = chat(client_id, user_response)
     if response["type"] == "question":
@@ -410,7 +393,7 @@ async def handle_response(request_body: Response):
 
         return_message = {
             "client_number": client_id,
-            "history": client.history,
+            "history": history,
             "question": response_question,
             "choices": response_choices,
             "type": "question",
@@ -419,7 +402,7 @@ async def handle_response(request_body: Response):
     elif response["type"] == "finish":
         return_message = {
             "client_number": client_id,
-            "history": client.history,
+            "history": history,
             "type": "finish",
             "status": "generate_dsl",
         }
@@ -451,24 +434,21 @@ async def handle_execute_dsl(request_body: ExecuteDSL):
     client_id = request_body.client_id
     dsl = request_body.dsl
     arguments = request_body.arguments
-    sheet_id = arguments[0]
 
     print(f"client_id: {client_id}")
-    print(f"sheet_id: {sheet_id}")
     print(f"dsl: {dsl}")
     print(f"arguments: {arguments}")
 
-    file_path = os.path.join(UPLOAD_FOLDER, f"{client_id}_{sheet_id}")
-    print(file_path)
-    if not os.path.exists(file_path):
-        print("File not found")
-        raise HTTPException(status_code=404, detail="File not found")
-
-    sheet = pd.read_csv(file_path)
+    sheet_id = "_".join(arguments[0].split("_")[:-1]) + ".csv"
+    version = int(arguments[0].split("_")[-1][1:].split(".csv")[0])
+    print(sheet_id)
+    print(version)  
+    sheet_data = get_sheet(client_id, sheet_id, version)
+    sheet = pd.DataFrame(sheet_data)
     flag = False
     if "Unnamed: 0" in sheet.columns:
         flag = True
-        sheet = pd.read_csv(file_path, index_col=0)
+        sheet = pd.DataFrame(sheet_data, index_col=0)
 
     new_sheet = execute_dsl(sheet, dsl, arguments[1:])
     print(new_sheet)

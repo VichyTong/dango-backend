@@ -1,6 +1,6 @@
 import json
 
-from utils.llm import get_client
+from utils.llm import get_history, append_message, generate_chat_completion
 
 
 def init_prompt():
@@ -37,12 +37,12 @@ def simple_analyze(client_id, sheet_id, version, row_names, column_names, prompt
         .replace("{user_prompt}", prompt)
     )
 
-    client = get_client(client_id)
-    client.append_system_message(system_prompt)
-    client.append_user_message(input_user_prompt)
+    history = get_history(client_id)
+    append_message(client_id, system_prompt, "system")
+    append_message(client_id, input_user_prompt, "user")
 
-    response = client.generate_chat_completion()
+    response = generate_chat_completion(client_id)
     print(response)
-    client.append_assistant_message(response)
+    append_message(client_id, response, "assistant")
     response = json.loads(response)
     return response

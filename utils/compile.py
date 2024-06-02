@@ -1,6 +1,6 @@
 import json
 
-from utils.llm import create_client, get_client
+from utils.llm import create_client, get_history, append_message, generate_chat_completion, create_client
 
 
 def init_prompt():
@@ -127,13 +127,13 @@ def transfer_to_NL(dsl):
 
 
 def dsl_compile(client_id: str) -> str:
-    history = get_client(client_id).history
+    history = get_history(client_id)
     user_prompt = create_user_prompt(history)
 
-    _, client = create_client()
-    client.append_system_message(system_prompt)
-    client.append_user_message(user_prompt)
-    response = client.generate_chat_completion()
+    tmp_client_id = create_client()
+    append_message(tmp_client_id, system_prompt, "system")
+    append_message(tmp_client_id, user_prompt, "user")
+    response = generate_chat_completion(tmp_client_id)
     dsls = json.loads(response)
     for dsl in dsls:
         dsl["natural_language"] = transfer_to_NL(dsl)

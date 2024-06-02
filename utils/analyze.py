@@ -1,7 +1,12 @@
 from typing import List
 import json
 
-from utils.llm import create_client, get_client
+from utils.llm import (
+    create_client,
+    get_history,
+    append_message,
+    generate_chat_completion,
+)
 
 
 def init_prompt():
@@ -164,16 +169,19 @@ def mata_diff_to_NL(
     changes = find_batch_operation(changes, row_count, len(column_names))
     print(">>> Finding batch operations...")
     print(changes)
-    client_id, client = create_client()
-    client.append_system_message(transfer_prompt)
-    client.append_user_message(diff)
-    response = client.generate_chat_completion()
-    client.append_assistant_message(response)
-    print(json.dumps(client.history, indent=4))
+    client_id = create_client()
+    append_message(client_id, transfer_prompt, "system")
+    append_message(client_id, diff, "user")
+    response = generate_chat_completion(client_id)
+    append_message(client_id, response, "assistant")
+    history = get_history(client_id)
+    print(json.dumps(history, indent=4))
     return response
 
 
-def get_analyze(client_id, sheet_id, version, row_count, column_names, NL_diff, user_prompt):
+def get_analyze(
+    client_id, sheet_id, version, row_count, column_names, NL_diff, user_prompt
+):
     column_number = len(column_names)
     index = "A"
     column_string_list = []
@@ -185,7 +193,10 @@ def get_analyze(client_id, sheet_id, version, row_count, column_names, NL_diff, 
     column_names = ", ".join(column_string_list)
 
     input_user_prompt = (
-        analyze_user_prompt.replace("{sheet_id}", f"{sheet_id.split('.')[0]}_v{version}.{sheet_id.split('.')[1]}")
+        analyze_user_prompt.replace(
+            "{sheet_id}",
+            f"{sheet_id.split('.')[0]}_v{version}.{sheet_id.split('.')[1]}",
+        )
         .replace("{row_count}", str(row_count))
         .replace("{column_names}", column_names)
         .replace("{column_count}", str(column_number))
@@ -193,13 +204,13 @@ def get_analyze(client_id, sheet_id, version, row_count, column_names, NL_diff, 
         .replace("{user_prompt}", user_prompt)
     )
 
-    client = get_client(client_id)
-    client.append_system_message(analyze_system_prompt)
-    client.append_user_message(input_user_prompt)
-    response = client.generate_chat_completion()
+    history = get_history(client_id)
+    append_message(client_id, analyze_system_prompt, "system")
+    append_message(client_id, input_user_prompt, "user")
+    response = generate_chat_completion(client_id)
     print(response)
-    client.append_assistant_message(response)
-    print(json.dumps(client.history, indent=4))
+    append_message(client_id, response, "assistant")
+    print(json.dumps(history, indent=4))
     return response
 
 
@@ -220,6 +231,7 @@ def analyze(
     response = json.loads(response)
 
     return response
+
 
 def get_multi_analyze(client_id, table_list, user_prompt):
     input_user_prompt = ""
@@ -247,16 +259,16 @@ def get_multi_analyze(client_id, table_list, user_prompt):
             .replace("{row_count}", str(row_count))
             .replace("{NL_diff}", NL_diff)
         )
-    
+
     input_user_prompt += user_prompt
 
-    client = get_client(client_id)
-    client.append_system_message(multi_analyze_system_prompt)
-    client.append_user_message(input_user_prompt)
-    response = client.generate_chat_completion()
+    history = get_history(client_id)
+    append_message(client_id, multi_analyze_system_prompt, "system")
+    append_message(client_id, input_user_prompt, "user")
+    response = generate_chat_completion(client_id)
     print(response)
-    client.append_assistant_message(response)
-    print(json.dumps(client.history, indent=4))
+    append_message(client_id, response, "assistant")
+    print(json.dumps(history, indent=4))
     return response
 
 
@@ -275,9 +287,7 @@ def multi_analyze(
         NL_diff = mata_diff_to_NL(table_diff, row_count, column_names, is_index_table)
         table["NL_diff"] = NL_diff
 
-    response = get_multi_analyze(
-        client_id, table_list, user_promt
-    )
+    response = get_multi_analyze(client_id, table_list, user_promt)
 
     response = json.loads(response)
     return response
