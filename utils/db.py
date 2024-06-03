@@ -62,6 +62,14 @@ def is_sheet_exists(client_id, sheet_id, version):
     return cur.fetchone() is not None
 
 
+def get_all_sheets(client_id):
+    cur.execute(
+        "SELECT sheet_id, version FROM sheets WHERE client_id = ?", (client_id,)
+    )
+    sheets = cur.fetchall()
+    return sheets
+
+
 def create_history(client_id):
     cur.execute(
         "INSERT INTO histories (client_id, history) VALUES (?, ?)", (client_id, "[]")

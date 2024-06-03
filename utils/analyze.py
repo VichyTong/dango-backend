@@ -12,7 +12,7 @@ from utils.llm import (
 def init_prompt():
     global transfer_prompt
     global analyze_system_prompt, analyze_user_prompt
-    global multi_analyze_system_prompt, multi_analyze_user_prompt
+    global multi_analyze_system_prompt, multi_analyze_user_prompt, multi_analyze_diff_prompt
     with open("prompt/analyze/transfer_meta_diff_to_NL.txt", "r") as f:
         transfer_prompt = f.read()
     with open("prompt/analyze/system.txt", "r") as f:
@@ -23,6 +23,8 @@ def init_prompt():
         multi_analyze_system_prompt = f.read()
     with open("prompt/multi_analyze/user.txt", "r") as f:
         multi_analyze_user_prompt = f.read()
+    with open("prompt/multi_analyze/diff.txt", "r") as f:
+        multi_analyze_diff_prompt = f.read()
 
 
 init_prompt()
@@ -257,8 +259,9 @@ def get_multi_analyze(client_id, table_list, user_prompt):
             .replace("{column_count}", str(column_number))
             .replace("{column_names}", column_names)
             .replace("{row_count}", str(row_count))
-            .replace("{NL_diff}", NL_diff)
         )
+        if NL_diff:
+            input_user_prompt += multi_analyze_diff_prompt.replace("{NL_diff}", NL_diff)
 
     input_user_prompt += user_prompt
 

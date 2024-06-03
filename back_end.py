@@ -21,7 +21,13 @@ from utils.llm import (
     append_message,
     generate_chat_completion,
 )
-from utils.db import upload_sheet, get_sheet, delete_sheet, is_sheet_exists
+from utils.db import (
+    upload_sheet,
+    get_sheet,
+    delete_sheet,
+    is_sheet_exists,
+    get_all_sheets,
+)
 from utils.execute import execute_dsl
 
 # Initialize FastAPI app
@@ -148,13 +154,13 @@ def get_sheet_info(client_id, sheet_id, version):
 class TableInfo(BaseModel):
     sheet_id: str
     version: Optional[int] = Field(0)
-    table_diff: str
+    table_diff: Optional[str] = None
 
 
 class MultiAnalyze(BaseModel):
     client_id: str
-    table_list: List[TableInfo]
-    user_prompt: str
+    table_list: Optional[List[TableInfo]] = None
+    message: str
 
 
 class Chat(BaseModel):
@@ -176,7 +182,7 @@ async def handle_chat(request_body: Chat):
     status = request_body.status
     print(status)
     if status == "init":
-        return await simple_chat(request_body)
+        return await handle_multi_analyze(request_body)
     if status == "analyze":
         return await handle_analyze(request_body)
     if status == "multi_analyze":
@@ -213,61 +219,6 @@ async def simple_chat(request_body: SimpleChat):
         "status": "init",
     }
 
-    return return_message
-
-
-class SimpleAnalyze(BaseModel):
-    client_id: Optional[str] = Field(None)
-    sheet_id: str
-    version: Optional[int] = Field(0)
-    message: str
-
-
-@app.post("/simple_analyze")
-async def handle_simple_analyze(request_body: SimpleAnalyze):
-    client_id = request_body.client_id
-    sheet_id = request_body.sheet_id
-    version = request_body.version
-    message = request_body.message
-
-    if not client_id:
-        return JSONResponse(
-            status_code=400, content={"message": "Client ID is required"}
-        )
-
-    sheet_info = get_sheet_info(client_id, sheet_id, version)
-    row_names = sheet_info["row_names"]
-    column_names = sheet_info["column_names"]
-    response = simple_analyze(
-        client_id,
-        sheet_id,
-        version,
-        row_names,
-        column_names,
-        message,
-    )
-    history = get_history(client_id)
-
-    if response["type"] == "question":
-        response_summary = response["summary"]
-        response_question = response["question"]
-        response_choices = response["choices"]
-        return_message = {
-            "client_id": client_id,
-            "history": history,
-            "question": response_question,
-            "choices": response_choices,
-            "type": "question",
-            "status": "clarification",
-        }
-    else:
-        response_summary = response["summary"]
-        return_message = {
-            "client_id": client_id,
-            "history": history,
-            "type": "finish",
-            "status": "generate_dsl",
-        }
     return return_message
 
 
@@ -332,7 +283,19 @@ async def handle_analyze(request_body: Analyze):
 async def handle_multi_analyze(request_body: MultiAnalyze):
     client_id = request_body.client_id
     table_list = request_body.table_list
-    user_prompt = request_body.user_prompt
+    user_prompt = request_body.message
+
+    if not table_list:
+        table_list = []
+        sheets = get_all_sheets(client_id)
+        for sheet in sheets:
+            sheet_id = sheet[0]
+            version = sheet[1]
+            table_diff = None
+            table_info = TableInfo(
+                sheet_id=sheet_id, version=version, table_diff=table_diff
+            )
+            table_list.append(table_info)
 
     processed_tables = []
     for table in table_list:
@@ -442,7 +405,7 @@ async def handle_execute_dsl(request_body: ExecuteDSL):
     sheet_id = "_".join(arguments[0].split("_")[:-1]) + ".csv"
     version = int(arguments[0].split("_")[-1][1:].split(".csv")[0])
     print(sheet_id)
-    print(version)  
+    print(version)
     sheet_data = get_sheet(client_id, sheet_id, version)
     sheet = pd.DataFrame(sheet_data)
     flag = False
