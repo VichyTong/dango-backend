@@ -260,7 +260,7 @@ def get_multi_analyze(client_id, table_list, user_prompt):
             .replace("{row_count}", str(row_count))
         )
         if "NL_diff" in table:
-            input_user_prompt += multi_analyze_diff_prompt.replace("{NL_diff}", NL_diff)
+            input_user_prompt += multi_analyze_diff_prompt.replace("{NL_diff}", table["NL_diff"])
 
     input_user_prompt += user_prompt
 
@@ -271,6 +271,10 @@ def get_multi_analyze(client_id, table_list, user_prompt):
     print(response)
     append_message(client_id, response, "assistant")
     print(json.dumps(history, indent=4))
+    for item in history:
+        print(">>>> ")
+        print(item["role"])
+        print(item["content"])
     return response
 
 
