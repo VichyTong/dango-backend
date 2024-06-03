@@ -16,7 +16,7 @@ init_prompt()
 
 def create_user_prompt(history):
     print(">>> create user prompt in compile.py")
-    print(history)
+    print(json.dumps(history, indent=4))
     start_index = 0
     for index, message in enumerate(history):
         if message["role"] == "system":
