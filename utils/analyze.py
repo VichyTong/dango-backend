@@ -242,7 +242,6 @@ def get_multi_analyze(client_id, table_list, user_prompt):
         column_number = len(column_names)
         sheet_id = table["sheet_id"]
         row_count = len(table["row_names"])
-        NL_diff = table["NL_diff"]
 
         column_index = "A"
         column_string_list = []
@@ -260,7 +259,7 @@ def get_multi_analyze(client_id, table_list, user_prompt):
             .replace("{column_names}", column_names)
             .replace("{row_count}", str(row_count))
         )
-        if NL_diff:
+        if "NL_diff" in table:
             input_user_prompt += multi_analyze_diff_prompt.replace("{NL_diff}", NL_diff)
 
     input_user_prompt += user_prompt
@@ -287,8 +286,9 @@ def multi_analyze(
         column_names = table["column_names"]
         table_diff = table["table_diff"]
         is_index_table = table["is_index_table"]
-        NL_diff = mata_diff_to_NL(table_diff, row_count, column_names, is_index_table)
-        table["NL_diff"] = NL_diff
+        if table_diff:
+            NL_diff = mata_diff_to_NL(table_diff, row_count, column_names, is_index_table)
+            table["NL_diff"] = NL_diff
 
     response = get_multi_analyze(client_id, table_list, user_promt)
 
