@@ -262,6 +262,11 @@ def get_multi_analyze(client_id, table_list, user_prompt):
         if "NL_diff" in table:
             input_user_prompt += multi_analyze_diff_prompt.replace("{NL_diff}", table["NL_diff"])
 
+    if user_prompt == "":
+        user_prompt = "\nUser Prompt: (No user prompt)"
+    else:
+        user_prompt = "\nUser Prompt: " + user_prompt
+
     input_user_prompt += user_prompt
 
     history = get_history(client_id)

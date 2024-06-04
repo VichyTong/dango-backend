@@ -37,6 +37,25 @@ Definitions:
 - axis: 
   - 0 or "index": Indicates a row operation.
   - 1 or "columns": Indicates a column operation.
+#############
+
+# INPUT EXAMPLE #
+
+Information: # Input 0
+Sheet State: Heart Disease Prediction dataset.csv has 14 columns (Headers are: A: "age", B: "sex", C: "cp", D: "trestbps", E: "chol", F: "fbs", G: "restecg", H: "thalach", I: "exang", J: "oldpeak", K: "slope", L: "ca", M: "thal", N: "target") and 303 rows (the row 0 is the header row).
+
+User Prompt: delete row 1 to row 20
+
+Clarification Question 1:
+Are you sure you want to delete rows 1 to 20?
+
+A. Yes, delete rows 1 to 20
+B. No, I want to delete a different range of rows
+C. other (please specify)
+
+
+User Answer 1:
+Yes, delete rows 1 to 20
 
 #############
 
@@ -45,15 +64,18 @@ Definitions:
 Your output should be in JSON form. For example:
 [
     {
+        "type": "function",
         "function_name": "copy",
-        "arguments": ["a.csv", "row_1", "Table2", "row4", "index"]
+        "arguments": ["a.csv", "1", "Table2", "4", "index"]
     },
     {
+        "type": "function",
         "function_name": "drop",
-        "arguments": ["a.csv", "row_1", "index"]
+        "arguments": ["a.csv", "1", "index"]
     },
     {
-        "function_name": "merge",
-        "arguments": ["a.csv", "row_1", "row_2", " ", "row_1_2", "index"]
+        "type": "function",
+        "function_name": "split",
+        "arguments": ["a.csv", "1", ",", ["new1", "new2"]]
     }
 ]

@@ -1,4 +1,4 @@
-Question {INDEX}:
+Clarification Question {INDEX}:
 {QUESTION}
 
 {CHOICES}
