@@ -64,17 +64,14 @@ Yes, delete rows 1 to 20
 Your output should be in JSON form. For example:
 [
     {
-        "type": "function",
         "function_name": "copy",
         "arguments": ["a.csv", "1", "Table2", "4", "index"]
     },
     {
-        "type": "function",
         "function_name": "drop",
         "arguments": ["a.csv", "1", "index"]
     },
     {
-        "type": "function",
         "function_name": "split",
         "arguments": ["a.csv", "1", ",", ["new1", "new2"]]
     }
