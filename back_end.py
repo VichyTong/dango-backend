@@ -350,12 +350,14 @@ async def handle_response(request_body: Response):
     history = get_history(client_id)
     user_response = request_body.response
     response = chat(client_id, user_response)
+    print("Response:")
+    print(response)
     if response["type"] == "question":
         response_question = response["question"]
         response_choices = response["choices"]
 
         return_message = {
-            "client_number": client_id,
+            "client_id": client_id,
             "history": history,
             "question": response_question,
             "choices": response_choices,
@@ -364,7 +366,7 @@ async def handle_response(request_body: Response):
         }
     elif response["type"] == "finish":
         return_message = {
-            "client_number": client_id,
+            "client_id": client_id,
             "history": history,
             "type": "finish",
             "status": "generate_dsl",

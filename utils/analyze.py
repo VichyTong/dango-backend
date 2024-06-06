@@ -237,7 +237,7 @@ def analyze(
 
 def get_multi_analyze(client_id, table_list, user_prompt):
     input_user_prompt = ""
-    for index, table in enumerate(table_list):
+    for index, table in enumerate(table_list, start=1):
         column_names = table["column_names"]
         column_number = len(column_names)
         sheet_id = table["sheet_id"]
@@ -269,6 +269,9 @@ def get_multi_analyze(client_id, table_list, user_prompt):
 
     input_user_prompt += user_prompt
 
+    print(">>> final_input_user_prompt:")
+    print(input_user_prompt)
+
     history = get_history(client_id)
     append_message(client_id, multi_analyze_system_prompt, "system")
     append_message(client_id, input_user_prompt, "user")
@@ -298,6 +301,9 @@ def multi_analyze(
         if table_diff:
             NL_diff = mata_diff_to_NL(table_diff, row_count, column_names, is_index_table)
             table["NL_diff"] = NL_diff
+
+    print(">>> multi analyze table_list")
+    print(table_list)
 
     response = get_multi_analyze(client_id, table_list, user_promt)
 

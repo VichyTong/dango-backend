@@ -46,7 +46,7 @@ If the intent is clear enough:
 
 Example 1:
 USER:
-Sheet State: Sheet "table_4" has 5 columns (Headers are A: "Employee ID", B: "Name", C: "Department", D: "Status", E: "Start Date") and 10 rows (the row 1 is the header row).
+Sheet State: Sheet "table_4" has 5 columns (Headers are A: "Employee ID", B: "Name", C: "Department", D: "Status", E: "Start Date") and 10 rows (the row 0 is the header row).
 Table Diff: Cells (2,1), (2,2), (2,3), (2,4), (2,5) in table_4 have been cleared.
 User Prompt: "clear entries"
 
@@ -79,7 +79,7 @@ SYSTEM:
 
 Example 2:
 USER:
-Sheet State: Sheet "table_1" has 3 columns (Headers are A: "2021", B: "2022", C: "2023", D: "2024") and 5 rows (the row 1 is the header row).
+Sheet State: Sheet "table_1" has 3 columns (Headers are A: "2021", B: "2022", C: "2023", D: "2024") and 5 rows (the row 0 is the header row).
 Table Diff: In table_1, row 3 has been deleted and replaced with [0, 0, 0, 0].
 User Prompt: "delete a row"
 
