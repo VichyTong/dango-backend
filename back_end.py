@@ -27,6 +27,7 @@ from utils.db import (
     delete_sheet,
     is_sheet_exists,
     get_all_sheets,
+    find_next_version,
 )
 from utils.execute import execute_dsl
 
@@ -71,7 +72,7 @@ async def upload_file(client_id: str = Form(...), file: UploadFile = File(...)):
     data = pd.read_csv(csv_data)
     data = data.to_json(orient="records")
     data = json.loads(data)
-    upload_sheet(client_id, sheet_id, data)
+    upload_sheet(client_id, sheet_id, 0, data)
 
     return JSONResponse(
         status_code=200, content={"message": f"{file.filename} uploaded successfully"}
@@ -419,6 +420,11 @@ async def handle_execute_dsl(request_body: ExecuteDSL):
     print(new_sheet)
 
     # Convert the DataFrame to JSON and return it
-    json_result = new_sheet.to_json(orient="records")
-    print(json_result)
-    return JSONResponse(content=json_result)
+    data = new_sheet.to_json(orient="records")
+    new_version = find_next_version(client_id, sheet_id)
+    upload_sheet(client_id, sheet_id, new_version, new_sheet.to_dict(orient="records"))
+    return {
+        "sheet_id": sheet_id,
+        "version": new_version,
+        "data": data,
+    }

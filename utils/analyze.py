@@ -241,6 +241,8 @@ def get_multi_analyze(client_id, table_list, user_prompt):
         column_names = table["column_names"]
         column_number = len(column_names)
         sheet_id = table["sheet_id"]
+        version = table["version"]
+        file_name = f"{sheet_id.split('.')[0]}_v{version}.{sheet_id.split('.')[1]}"
         row_count = len(table["row_names"])
 
         column_index = "A"
@@ -254,7 +256,7 @@ def get_multi_analyze(client_id, table_list, user_prompt):
 
         input_user_prompt += (
             multi_analyze_user_prompt.replace("{index}", str(index))
-            .replace("{sheet_id}", sheet_id)
+            .replace("{file_name}", file_name)
             .replace("{column_count}", str(column_number))
             .replace("{column_names}", column_names)
             .replace("{row_count}", str(row_count))

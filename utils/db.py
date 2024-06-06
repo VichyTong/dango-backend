@@ -27,11 +27,11 @@ CREATE TABLE IF NOT EXISTS sheets (
 )
 
 
-def upload_sheet(client_id, sheet_id, data):
+def upload_sheet(client_id, sheet_id, version, data):
     data = json.dumps(data)
     cur.execute(
         "INSERT INTO sheets (client_id, sheet_id, version, data) VALUES (?, ?, ?, ?)",
-        (client_id, sheet_id, 0, data),
+        (client_id, sheet_id, version, data),
     )
     con.commit()
 
@@ -68,6 +68,18 @@ def get_all_sheets(client_id):
     )
     sheets = cur.fetchall()
     return sheets
+
+
+def find_next_version(client_id, sheet_id):
+    cur.execute(
+        "SELECT version FROM sheets WHERE client_id = ? AND sheet_id = ?",
+        (client_id, sheet_id),
+    )
+    versions = cur.fetchall()
+    if len(versions) == 0:
+        return 0
+    else:
+        return max([version[0] for version in versions]) + 1
 
 
 def create_history(client_id):
