@@ -298,6 +298,9 @@ async def handle_multi_analyze(request_body: MultiAnalyze):
             )
             table_list.append(table_info)
 
+    print(">>> multi_analyze Table List:")
+    print(table_list)
+
     processed_tables = []
     for table in table_list:
         sheet_id = table.sheet_id
@@ -405,26 +408,74 @@ async def handle_execute_dsl(request_body: ExecuteDSL):
     print(f"dsl: {dsl}")
     print(f"arguments: {arguments}")
 
-    sheet_id = "_".join(arguments[0].split("_")[:-1]) + ".csv"
-    version = int(arguments[0].split("_")[-1][1:].split(".csv")[0])
-    print(sheet_id)
-    print(version)
-    sheet_data = get_sheet(client_id, sheet_id, version)
-    sheet = pd.DataFrame(sheet_data)
-    flag = False
-    if "Unnamed: 0" in sheet.columns:
-        flag = True
-        sheet = pd.DataFrame(sheet_data, index_col=0)
+    def get_sheet_info(sheet_name):
+        sheet_id = "_".join(sheet_name.split("_")[:-1]) + ".csv"
+        version = int(sheet_name.split("_")[-1][1:].split(".csv")[0])
+        sheet_data = get_sheet(client_id, sheet_id, version)
+        sheet = pd.DataFrame(sheet_data)
+        flag = False
+        if "Unnamed: 0" in sheet.columns:
+            flag = True
+            sheet = pd.DataFrame(sheet_data, index_col=0)
+        return sheet_id, sheet
 
-    new_sheet = execute_dsl(sheet, dsl, arguments[1:])
-    print(new_sheet)
+    single_table_function_list = [
+        "drop",
+        "merge",
+        "split",
+        "transpose",
+        "aggregate",
+    ]
+    double_table_function_list = [
+        "move",
+        "copy",
+    ]
 
-    # Convert the DataFrame to JSON and return it
-    data = new_sheet.to_json(orient="records")
-    new_version = find_next_version(client_id, sheet_id)
-    upload_sheet(client_id, sheet_id, new_version, new_sheet.to_dict(orient="records"))
-    return {
-        "sheet_id": sheet_id,
-        "version": new_version,
-        "data": data,
-    }
+    if dsl in single_table_function_list:
+        sheet_id, sheet = get_sheet_info(arguments[0])
+        new_sheet = execute_dsl(sheet, dsl, arguments[1:])
+        new_data = new_sheet.to_json(orient="records")
+        new_version = find_next_version(client_id, sheet_id)
+        upload_sheet(
+            client_id, sheet_id, new_version, new_sheet.to_dict(orient="records")
+        )
+        return [
+            {
+                "sheet_id": sheet_id,
+                "version": new_version,
+                "data": new_data,
+            }
+        ]
+    elif dsl in double_table_function_list:
+        sheet_id, sheet = get_sheet_info(arguments[0])
+        target_sheet_id, target_sheet = get_sheet_info(arguments[2])
+        new_sheet, new_target_sheet = execute_dsl(
+            sheet, dsl, arguments[1] + arguments[3:], target_sheet=target_sheet
+        )
+        new_data = new_sheet.to_json(orient="records")
+        new_target_data = new_target_sheet.to_json(orient="records")
+        new_version = find_next_version(client_id, sheet_id)
+        new_target_version = find_next_version(client_id, target_sheet_id)
+        upload_sheet(
+            client_id, sheet_id, new_version, new_sheet.to_dict(orient="records")
+        )
+        upload_sheet(
+            client_id,
+            target_sheet_id,
+            new_target_version,
+            new_target_sheet.to_dict(orient="records"),
+        )
+        return [
+            {
+                "sheet_id": sheet_id,
+                "version": new_version,
+                "data": new_data,
+            },
+            {
+                "sheet_id": target_sheet_id,
+                "version": new_target_version,
+                "data": new_target_data,
+            },
+        ]
+    else:
+        return "Invalid function"

@@ -1,19 +1,20 @@
 from dsl.utils import drop, move, copy, merge, split, transpose, aggregate
 
-def execute_dsl(sheet, dsl, arguments):
-    if dsl == "drop":
+
+def execute_dsl(sheet, function, arguments, target_sheet=None):
+    if function == "drop":
         return drop(sheet, *arguments)
-    elif dsl == "move":
-        return move(sheet, *arguments)
-    elif dsl == "copy":
-        return copy(sheet, *arguments)
-    elif dsl == "merge":
+    elif function == "move":
+        return move(sheet, arguments[1], target_sheet, *arguments[2:])
+    elif function == "copy":
+        return copy(sheet, arguments[1], target_sheet, *arguments[2:])
+    elif function == "merge":
         return merge(sheet, *arguments)
-    elif dsl == "split":
+    elif function == "split":
         return split(sheet, *arguments)
-    elif dsl == "transpose":
-        return transpose(sheet, *arguments)
-    elif dsl == "aggregate":
+    elif function == "transpose":
+        return transpose(sheet)
+    elif function == "aggregate":
         return aggregate(sheet, *arguments)
     else:
         return "Invalid function"

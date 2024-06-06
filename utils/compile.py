@@ -134,6 +134,8 @@ def dsl_compile(client_id: str) -> str:
     append_message(tmp_client_id, system_prompt, "system")
     append_message(tmp_client_id, user_prompt, "user")
     response = generate_chat_completion(tmp_client_id)
+    print(">>> dsl_compile -- raw DSL:")
+    print(response)
     dsls = json.loads(response)
     for dsl in dsls:
         dsl["natural_language"] = transfer_to_NL(dsl)
