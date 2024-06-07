@@ -479,3 +479,103 @@ async def handle_execute_dsl(request_body: ExecuteDSL):
         ]
     else:
         return "Invalid function"
+
+
+class DSL(BaseModel):
+    function_name: str
+    arguments: List[str]
+
+
+class ExecuteDSLList(BaseModel):
+    client_id: str
+    dsl_list: List[DSL]
+
+
+@app.post("/execute_dsl_list")
+async def handle_execute_dsl_list(request_body: ExecuteDSLList):
+    client_id = request_body.client_id
+    dsl_list = request_body.dsl_list
+
+    single_table_function_list = [
+        "drop",
+        "merge",
+        "split",
+        "transpose",
+        "aggregate",
+    ]
+    double_table_function_list = [
+        "move",
+        "copy",
+    ]
+
+    def get_sheet_id(sheet_name):
+        return "_".join(sheet_name.split("_")[:-1]) + ".csv"
+
+    def get_sheet_version(sheet_name):
+        return int(sheet_name.split("_")[-1][1:].split(".csv")[0])
+
+    def get_sheet_info(sheet_name):
+        sheet_id = get_sheet_id(sheet_name)
+        version = get_sheet_version(sheet_name)
+        sheet_data = get_sheet(client_id, sheet_id, version)
+        sheet = pd.DataFrame(sheet_data)
+        flag = False
+        if "Unnamed: 0" in sheet.columns:
+            flag = True
+            sheet = pd.DataFrame(sheet_data, index_col=0)
+        return sheet
+
+    tmp_sheet_data_map = {}
+    tmp_sheet_version_map = {}
+
+    def load_sheet(sheet_name):
+        sheet_id = get_sheet_id(sheet_name)
+        sheet_version = get_sheet_version(sheet_name)
+        if sheet_id not in tmp_sheet_data_map:
+            tmp_sheet_data_map[sheet_id] = get_sheet_info(sheet_name)
+            tmp_sheet_version_map[sheet_id] = sheet_version
+        else:
+            if tmp_sheet_version_map[sheet_id] != sheet_version:
+                return f"Error: {sheet_id} version {tmp_sheet_version_map[sheet_id]} and {sheet_version} mismatch."
+
+    for dsl in dsl_list:
+        function = dsl.function_name
+        arguments = dsl.arguments
+        if function in single_table_function_list:
+            load_sheet(arguments[0])
+        elif function in double_table_function_list:
+            load_sheet(arguments[0])
+            load_sheet(arguments[2])
+
+    for dsl in dsl_list:
+        function = dsl.function_name
+        arguments = dsl.arguments
+
+        if function in single_table_function_list:
+            sheet_id = get_sheet_id(arguments[0])
+            sheet = tmp_sheet_data_map[sheet_id]
+            new_sheet = execute_dsl(sheet, function, arguments[1:])
+            new_data = new_sheet.to_json(orient="records")
+            tmp_sheet_data_map[sheet_id] = new_sheet
+        elif function in double_table_function_list:
+            sheet_id = get_sheet_id(arguments[0])
+            target_sheet_id = get_sheet_id(arguments[2])
+            new_sheet, new_target_sheet = execute_dsl(
+                sheet, function, arguments[1] + arguments[3:], target_sheet=target_sheet
+            )
+            new_data = new_sheet.to_json(orient="records")
+            new_target_data = new_target_sheet.to_json(orient="records")
+            tmp_sheet_data_map[sheet_id] = new_sheet
+            tmp_sheet_data_map[target_sheet_id] = new_target_sheet
+        else:
+            return "Error: Invalid function"
+
+    output = []
+    for sheet_id, sheet in tmp_sheet_data_map.items():
+        sheet_version = find_next_version(client_id, sheet_id)
+        sheet_data = sheet.to_dict(orient="records")
+        upload_sheet(client_id, sheet_id, sheet_version, sheet_data)
+        output.append(
+            {"sheet_id": sheet_id, "version": sheet_version, "data": sheet_data}
+        )
+    return output
