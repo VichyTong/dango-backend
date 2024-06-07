@@ -30,7 +30,9 @@ def create_user_prompt(history):
     for index in range(start_index + 2, len(history), 2):
         response = json.loads(history[index]["content"])
         if response["type"] == "finish":
-            break
+            if index == len(history) - 1:
+                prompt += f"\nSummary: {response['summary']}"
+            continue
 
         choices = ""
         for i, choice in enumerate(response["choices"]):
