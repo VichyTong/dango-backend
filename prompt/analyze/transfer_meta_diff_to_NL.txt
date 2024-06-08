@@ -25,7 +25,7 @@ table1.csv
 {'row': 4, 'col': 4, 'old_value': null, 'new_value': '4'}
 {'row': 4, 'col': 5, 'old_value': null, 'new_value': '5'}
 ```
-Summary: In table1.csv, the user sequentially inserts values into the fourth row according to column number.
+In table1.csv, the user sequentially inserts values into the fourth row according to column number.
 
 ---
 
@@ -39,7 +39,7 @@ table2.csv
 {'row': 5, 'col': 2, 'old_value': null, 'new_value': '2'}
 {'row': 5, 'col': 3, 'old_value': null, 'new_value': '3'}
 ```
-Summary: In table2.csv, the user moves row 4 to row 5.
+In table2.csv, the user moves row 4 to row 5.
 
 ---
 
@@ -51,4 +51,4 @@ table3.csv
 {'row': 7, 'col': 3, 'old_value': null, 'new_value': '981'}
 {'row': 7, 'col': 4, 'old_value': null, 'new_value': '1423'}
 ```
-Summary: In table3.csv, the user adds a new row at row 7, maybe the end of the table.
+In table3.csv, the user adds a new row at row 7, maybe the end of the table.
