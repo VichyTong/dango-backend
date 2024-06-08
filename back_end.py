@@ -2,7 +2,7 @@ from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, FileResponse
 from pydantic import BaseModel, Field
-from typing import List, Optional
+from typing import List, Optional, Union
 from io import StringIO
 import os
 import uuid
@@ -483,7 +483,7 @@ async def handle_execute_dsl(request_body: ExecuteDSL):
 
 class DSL(BaseModel):
     function_name: str
-    arguments: List[str]
+    arguments: List[Union[str, int]]
 
 
 class ExecuteDSLList(BaseModel):
