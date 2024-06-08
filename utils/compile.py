@@ -24,7 +24,7 @@ def create_user_prompt(history):
             break
 
     information = history[start_index + 1]["content"]
-    prompt = f"Information: {information}\n\n"
+    prompt = f"Information:\n{information}\n"
 
     question_index = 1
     for index in range(start_index + 2, len(history), 2):
