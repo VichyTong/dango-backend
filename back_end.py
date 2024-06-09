@@ -10,7 +10,6 @@ import json
 import aiofiles
 import pandas as pd
 
-from utils.simple_analyze import simple_analyze
 from utils.analyze import analyze, multi_analyze
 from utils.chat import chat
 from utils.compile import dsl_compile
@@ -90,9 +89,11 @@ async def is_file_exists(request_body: FileExists):
     client_id = request_body.client_id
     file_name = request_body.file_name
     version = str(request_body.version)
-    print(client_id)
-    print(file_name)
-    print(version)
+    print(">>> REQUEST /is_file_exists")
+    print(f"client_id: {client_id}")
+    print(f"file_name: {file_name}")
+    print(f"version: {version}")
+    print(">>> REQUEST END")
 
     is_exists = is_sheet_exists(client_id, file_name, version)
 
@@ -181,7 +182,9 @@ class Chat(BaseModel):
 @app.post("/chat")
 async def handle_chat(request_body: Chat):
     status = request_body.status
-    print(status)
+    print(">>> REQUEST /chat")
+    print(f"status: {status}")
+    print(">>> REQUEST END")
     if status == "init":
         return await handle_multi_analyze(request_body)
     if status == "analyze":
@@ -298,8 +301,12 @@ async def handle_multi_analyze(request_body: MultiAnalyze):
             )
             table_list.append(table_info)
 
-    print(">>> multi_analyze Table List:")
+    print(">>> REQUEST /multi_analyze")
+    print("multi_analyze Table List:")
     print(table_list)
+    print("user_prompt:")
+    print(user_prompt)
+    print(">>> REQUEST END")
 
     processed_tables = []
     for table in table_list:
@@ -316,7 +323,7 @@ async def handle_multi_analyze(request_body: MultiAnalyze):
             "is_index_table": sheet_info["is_index_table"],
         }
         processed_tables.append(processed_table)
-    print(processed_tables)
+
     response = multi_analyze(client_id, processed_tables, user_prompt)
     history = get_history(client_id)
 
@@ -351,11 +358,10 @@ class Response(BaseModel):
 @app.post("/response")
 async def handle_response(request_body: Response):
     client_id = request_body.client_id
-    history = get_history(client_id)
     user_response = request_body.response
     response = chat(client_id, user_response)
-    print("Response:")
-    print(response)
+    history = get_history(client_id)
+
     if response["type"] == "question":
         response_question = response["question"]
         response_choices = response["choices"]
@@ -375,6 +381,22 @@ async def handle_response(request_body: Response):
             "type": "finish",
             "status": "generate_dsl",
         }
+        print("\033[1;32;40m>>> MULTI-ANALYZE HISTORY")
+        for item in history:
+            if item["role"] == "system":
+                print("\033[1;31;40mNOTICE: MULTI-ANALYZE SYSTEM PROMPT IS OMITTED")
+                continue
+            if item["role"] == "user":
+                print(f'\033[0;33;40m>>> {item["role"]}:')
+                print("'''")
+                print(item["content"])
+                print("'''")
+            elif item["role"] == "assistant":
+                print(f'\033[0;36;40m>>> {item["role"]}:')
+                print("'''")
+                print(item["content"])
+                print("'''")
+        print("\n")
     return return_message
 
 

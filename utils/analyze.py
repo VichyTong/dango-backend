@@ -271,20 +271,16 @@ def get_multi_analyze(client_id, table_list, user_prompt):
 
     input_user_prompt += user_prompt
 
-    print(">>> final_input_user_prompt:")
+    print("\n>>> final_input_user_prompt:")
+    print("'''")
     print(input_user_prompt)
+    print("'''\n")
 
     history = get_history(client_id)
     append_message(client_id, multi_analyze_system_prompt, "system")
     append_message(client_id, input_user_prompt, "user")
     response = generate_chat_completion(client_id)
-    print(response)
     append_message(client_id, response, "assistant")
-    print(json.dumps(history, indent=4))
-    for item in history:
-        print(">>>> ")
-        print(item["role"])
-        print(item["content"])
     return response
 
 

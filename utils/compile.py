@@ -15,8 +15,6 @@ init_prompt()
 
 
 def create_user_prompt(history):
-    print(">>> create user prompt in compile.py")
-    print(json.dumps(history, indent=4))
     start_index = 0
     for index, message in enumerate(history):
         if message["role"] == "system":
@@ -47,8 +45,12 @@ def create_user_prompt(history):
         question_index += 1
         prompt += question_answer_pair
     
-    print(">>> user prompt created in compile.py")
+    print("\033[1;32;40m>>> COMPILE HISTORY")
+    print("\033[1;31;40mNOTICE: COMPILE SYSTEM PROMPT IS OMITTED")
+    print("\033[0;33;40muser:")
+    print("'''")
     print(prompt)
+    print("'''")
     return prompt
 
 
@@ -136,10 +138,11 @@ def dsl_compile(client_id: str) -> str:
     append_message(tmp_client_id, system_prompt, "system")
     append_message(tmp_client_id, user_prompt, "user")
     response = generate_chat_completion(tmp_client_id)
-    print(">>> dsl_compile -- raw DSL:")
+    print(f"\033[0;36;40m>>> assistant")
+    print("'''")
     print(response)
+    print("'''")
     dsls = json.loads(response)
     for dsl in dsls:
         dsl["natural_language"] = transfer_to_NL(dsl)
-    print(dsls)
     return dsls
