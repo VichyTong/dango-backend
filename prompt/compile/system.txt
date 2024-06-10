@@ -14,7 +14,7 @@ Create a DSL (Domain Specific Language) script to clean the data based on the ch
 
 ## DSL Functions:
 
-1. create(table_name, data): Creates a table with the specified name and data. Data should be a list of lists.
+1. create(table_name, number, axis): Create columns or tables to a specified number in the table.
 
 2. drop(table_name, label, axis): Deletes a specified label in the table.
    

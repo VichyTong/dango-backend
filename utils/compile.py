@@ -59,9 +59,9 @@ def transfer_to_NL(dsl):
         table = dsl["arguments"][0]
         label = dsl["arguments"][1]
         axis = dsl["arguments"][2]
-        if axis == 0 or axis == "index":
+        if axis == 0 or axis == "index" or axis == "0":
             return f"Drop the row $[{label}] in %[{table}]."
-        elif axis == 1 or axis == "column":
+        elif axis == 1 or axis == "columns" or axis == "1":
             return f"Drop the column $[{label}] in %[{table}]."
         else:
             return "Invalid function"
@@ -71,9 +71,9 @@ def transfer_to_NL(dsl):
         target_table = dsl["arguments"][2]
         target_position = dsl["arguments"][3]
         axis = dsl["arguments"][4]
-        if axis == 0 or axis == "index":
+        if axis == 0 or axis == "index" or axis == "0":
             return f"Move the row $[{label}] in %[{table}] to %[{target_table}] at position #[{target_position}]."
-        elif axis == 1 or axis == "column":
+        elif axis == 1 or axis == "columns" or axis == "1":
             return f"Move the column $[{label}] in %[{table}] to %[{target_table}] at position #[{target_position}]."
         else:
             return "Invalid function"
@@ -83,9 +83,9 @@ def transfer_to_NL(dsl):
         target_table = dsl["arguments"][2]
         target_position = dsl["arguments"][3]
         axis = dsl["arguments"][4]
-        if axis == 0 or axis == "index":
+        if axis == 0 or axis == "index" or axis == "0":
             return f"Copy the row $[{label}] in %[{table}] to %[{target_table}] at position #[{target_position}]."
-        elif axis == 1 or axis == "column":
+        elif axis == 1 or axis == "columns" or axis == "1":
             return f"Copy the column $[{label}] in %[{table}] to %[{target_table}] at position #[{target_position}]."
         else:
             return "Invalid function"
@@ -96,9 +96,9 @@ def transfer_to_NL(dsl):
         glue = dsl["arguments"][3]
         new_label = dsl["arguments"][4]
         axis = dsl["arguments"][5]
-        if axis == 0 or axis == "index":
+        if axis == 0 or axis == "index" or axis == "0":
             return f"Merge the row $[{label_1}] and $[{label_2}] in %[{table}] with @{glue} as $[{new_label}]."
-        elif axis == 1 or axis == "column":
+        elif axis == 1 or axis == "columns" or axis == "1":
             return f"Merge the column $[{label_1}] and $[{label_2}] in %[{table}] with @{glue} as $[{new_label}]."
         else:
             return "Invalid function"
@@ -108,9 +108,9 @@ def transfer_to_NL(dsl):
         delimiter = dsl["arguments"][2]
         new_labels = dsl["arguments"][3]
         axis = dsl["arguments"][4]
-        if axis == 0 or axis == "index":
+        if axis == 0 or axis == "index" or axis == "0":
             return f"Split the row $[{label}] in %[{table}] by &[{delimiter}] as $[{new_labels}]."
-        elif axis == 1 or axis == "column":
+        elif axis == 1 or axis == "columns" or axis == "1":
             return f"Split the column $[{label}] in %[{table}] by &[{delimiter}] as $[{new_labels}]."
         else:
             return "Invalid function"
@@ -122,9 +122,9 @@ def transfer_to_NL(dsl):
         label = dsl["arguments"][1]
         operation = dsl["arguments"][2]
         axis = dsl["arguments"][3]
-        if axis == 0 or axis == "index":
+        if axis == 0 or axis == "index" or axis == "0":
             return f"Aggregate the row $[{label}] in %[{table}] with *[{operation}]."
-        elif axis == 1 or axis == "column":
+        elif axis == 1 or axis == "columns" or axis == "1":
             return f"Aggregate the column $[{label}] in %[{table}] with *[{operation}]."
         else:
             return "Invalid function"

@@ -45,6 +45,7 @@ If the intent is clear enough:
 # EXAMPLES #
 
 Example 1:
+'''
 USER:
 # Input 1
 Sheet State: table_1.csv has 3 columns (Headers are A: "2021", B: "2022", C: "2023", D: "2024") and 5 rows (the row 0 is the header row).
@@ -56,7 +57,7 @@ Table Diff: In the given table, the user clears all values in row 4 across all c
 
 User Prompt: (No user prompt)
 
-SYSTEM:
+ASSISTANT:
 {
     "type": "question",
     "summary": "Firstly, the user has deleted row 3 in table_1.csv and replaced it with zero. Secondly, the user delete all values in row 4 in table_2.csv.",
@@ -70,13 +71,11 @@ SYSTEM:
 
 USER:
 {
-    ...,
     "choice": "Other: Actually, I want to replace row 3 with the values from row 5"
-    ...,
 }
 
 
-SYSTEM:
+ASSISTANT:
 {
     "type": "question",
     "summary": "The user intends to copy the values from row 5 to row 3 in table_1.csv after deleting row 3.",
@@ -90,15 +89,48 @@ SYSTEM:
 
 USER:
 {
-    ...,
     "choice": "Yes, delete the entire row"
-    ...,
 }
 
-SYSTEM:
+ASSISTANT:
 {
     "type": "finish",
     "summary": "The user's intent was to completely replace all values in row 3 with those from row 5 in table_1. In table_2, the user intended to delete the entire row 4."
 }
+'''
 
+Example 2:
+'''
+USER:
+# Input 1
+Sheet State: Heart Disease Prediction dataset_v0.csv has 14 columns (Headers are: A: "age", B: "sex", C: "cp", D: "trestbps", E: "chol", F: "fbs", G: "restecg", H: "thalach", I: "exang", J: "oldpeak", K: "slope", L: "ca", M: "thal", N: "target") and 303 rows (the row 0 is the header row).
+Table Diff: In the provided diff information, it appears that the user has copied values from columns 1 to 13 in row 5 to the same columns in row 5. This action involves duplicating data within the same row for the specified columns.
+# Input 2
+Sheet State: test_v0.csv has 10 columns (Headers are: A: "Column1", B: "Column2", C: "Column3", D: "Column4", E: "Column5", F: "Column6", G: "Column7", H: "Column8", I: "Column9", J: "Column10") and 100 rows (the row 0 is the header row).
+Table Diff: In the table diff information provided:
+1. The user created multiple columns starting from column 11 to column 14.
+2. For row 5, the user updated all columns. The old values were [" ", " ", " ", " ", " ", " ", " ", " ", " ", " ", "undefined", "undefined", "undefined", "undefined"], and the new values are ["57", "0", "0", "120", "354", "0", "1", "163", "1", "0", "2", "0", "2", "1"].
 
+ASSISTANT:
+{
+    "type": "question",
+    "summary": "The user has copied values columns 1 to 13 in row 5 in Heart Disease Prediction dataset_v0.csv. In test_v0.csv, the user has created new columns from 11 to 14 and updated all values in row 5.",
+    "question": "Do you want to copy the values in row 5 from Heart Disease Prediction dataset_v0.csv to the row 5 of test_v0.csv?",
+    "choices": [
+        "Yes, copy the values",
+        "No, I want to copy values from/to a different row",
+        "other (please specify)"
+    ]
+}
+
+USER:
+{
+    "choice": "Yes, copy the values"
+}
+
+ASSISTANT:
+{
+    "type": "finish",
+    "summary": "The user's intent was to copy the values from row 5 in Heart Disease Prediction dataset_v0.csv to row 5 in test_v0.csv."
+}
+'''

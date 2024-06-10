@@ -517,8 +517,10 @@ class ExecuteDSLList(BaseModel):
 async def handle_execute_dsl_list(request_body: ExecuteDSLList):
     client_id = request_body.client_id
     dsl_list = request_body.dsl_list
+    print(dsl_list)
 
     single_table_function_list = [
+        "create",
         "drop",
         "merge",
         "split",
@@ -577,16 +579,18 @@ async def handle_execute_dsl_list(request_body: ExecuteDSLList):
             sheet_id = get_sheet_id(arguments[0])
             sheet = tmp_sheet_data_map[sheet_id]
             new_sheet = execute_dsl(sheet, function, arguments[1:])
-            new_data = new_sheet.to_json(orient="records")
+            new_data = new_sheet.fillna('').to_json(orient="records")
             tmp_sheet_data_map[sheet_id] = new_sheet
         elif function in double_table_function_list:
             sheet_id = get_sheet_id(arguments[0])
             target_sheet_id = get_sheet_id(arguments[2])
+            sheet = tmp_sheet_data_map[sheet_id]
+            target_sheet = tmp_sheet_data_map[target_sheet_id]
             new_sheet, new_target_sheet = execute_dsl(
-                sheet, function, arguments[1] + arguments[3:], target_sheet=target_sheet
+                sheet, function, [arguments[1]] + arguments[3:], target_sheet=target_sheet
             )
-            new_data = new_sheet.to_json(orient="records")
-            new_target_data = new_target_sheet.to_json(orient="records")
+            new_data = new_sheet.fillna('').to_json(orient="records")
+            new_target_data = new_target_sheet.fillna('').to_json(orient="records")
             tmp_sheet_data_map[sheet_id] = new_sheet
             tmp_sheet_data_map[target_sheet_id] = new_target_sheet
         else:
@@ -595,7 +599,7 @@ async def handle_execute_dsl_list(request_body: ExecuteDSLList):
     output = []
     for sheet_id, sheet in tmp_sheet_data_map.items():
         sheet_version = find_next_version(client_id, sheet_id)
-        sheet_data = sheet.to_dict(orient="records")
+        sheet_data = sheet.fillna('').to_dict(orient="records")
         upload_sheet(client_id, sheet_id, sheet_version, sheet_data)
         output.append(
             {"sheet_id": sheet_id, "version": sheet_version, "data": sheet_data}

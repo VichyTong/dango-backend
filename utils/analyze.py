@@ -1,5 +1,6 @@
 from typing import List
 import json
+import re
 
 from utils.llm import (
     create_client,
@@ -31,49 +32,117 @@ init_prompt()
 
 
 def extract_changes(data):
-    # Split the input string into lines
     lines = data.strip().split("\n")
-
-    # Prepare a list to hold all changes
     changes = []
 
-    # Process each line
-    for line in lines:
-        # Remove 'Row:', 'Col:', 'Old:', and 'New:' and split by commas
-        parts = (
-            line.replace("Row: ", "")
-            .replace("Col: ", "")
-            .replace("Old: ", "")
-            .replace("New: ", "")
-            .split(", ")
-        )
+    # change pattern
+    pattern_1 = r'Row: (\d+|\d+\.\d+), Col: (\d+|\d+\.\d+), Old: (undefined|null|\d+|\d+\.\d+| ), New: (undefined|null|\d+|\d+\.\d+| )'
+    # create row pattern
+    pattern_2 = r"Created row at index (\d+)"
+    # create column pattern
+    pattern_3 = r"Created column at index (\d+)"
+    # copy cloumn pattern 
+    pattern_4 = r'Copied data from (\d+):(\d+) to (\d+):(\d+) \(col, row\)'
+    
 
-        # Create a dictionary for each line and append to the list
-        change = {
-            "row": int(parts[0]),
-            "col": int(parts[1]),
-            "old_value": parts[2],
-            "new_value": parts[3],
-        }
-        changes.append(change)
+    for line in lines:
+        match_1 = re.match(pattern_1, line)
+        if match_1:
+            change = {
+                "type": "change",
+                "row": int(match_1.group(1)),
+                "col": int(match_1.group(2)),
+                "old_value": match_1.group(3),
+                "new_value": match_1.group(4),
+            }
+            changes.append(change)
+            continue
+
+        match_2 = re.match(pattern_2, line)
+        if match_2:
+            change = {
+                "type": "create_row",
+                "row": int(match_2.group(1)),
+            }
+            changes.append(change)
+            continue
+        
+        match_3 = re.match(pattern_3, line)
+        if match_3:
+            change = {
+                "type": "create_col",
+                "col": int(match_3.group(1)),
+            }
+            changes.append(change)
+            continue
+
+        match_4 = re.match(pattern_4, line)
+        if match_4:
+            change = {
+                "type": "copy_col",
+                "start_col": int(match_4.group(1)),
+                "start_row": int(match_4.group(2)),
+                "end_col": int(match_4.group(3)),
+                "end_row": int(match_4.group(4)),
+            }
+            changes.append(change)
+            continue
+
+        print(f"WARN: Unrecognized line: {line}")
 
     return changes
 
 
 def find_batch_operation(changes, num_rows, num_cols):
-    print(num_cols, num_rows)
-    print(changes)
+    # List to store detected batch operations
+    batch_operations = []
+    # 1. batch create row operations
+    next_index = num_rows + 1
+
+    for change in changes:
+        if change["type"] == "create_row":
+            if change["row"] == next_index:
+                next_index += 1
+
+    if next_index != num_rows + 1:
+        batch_operations.append({
+            "type": "create_multi_rows",
+            "start_row": num_rows + 1,
+            "end_row": next_index - 1,
+        })
+
+    changes = [change for change in changes if change["type"] != "create_row"]
+    num_rows = next_index - 1
+
+    # 2. batch create column operations
+    next_index = num_cols + 1
+
+    for change in changes:
+        if change["type"] == "create_col":
+            if change["col"] == next_index:
+                next_index += 1
+
+    if next_index != num_cols + 1:
+        batch_operations.append({
+            "type": "create_multi_cols",
+            "start_col": num_cols + 1,
+            "end_col": next_index - 1,
+        })
+
+    changes = [change for change in changes if change["type"] != "create_col"]
+    num_cols = next_index - 1
+
+    # 3. batch change operations
     # Initialize dictionaries to track changes across rows and columns
     col_changes = {col: [] for col in range(0, num_cols + 1)}
     row_changes = {row: [] for row in range(0, num_rows + 1)}
 
     # Gather changes by rows and columns
     for change in changes:
+        if change["type"] != "change":
+            continue
         col_changes[change["col"]].append(change)
         row_changes[change["row"]].append(change)
-
-    # List to store detected batch operations
-    batch_operations = []
 
     # Check for column-wise batch operations
     for col, col_changes in col_changes.items():
@@ -167,13 +236,19 @@ def mata_diff_to_NL(
     changes = extract_changes(diff)
     if is_index_table:
         for change in changes:
-            change["col"] += 1
+            if "col" in change:
+                change["col"] += 1
     changes = find_batch_operation(changes, row_count, len(column_names))
     print(">>> Finding batch operations...")
     print(changes)
+
+    changes_text = ""
+    for change in changes:
+        changes_text += json.dumps(change) + "\n"
+
     client_id = create_client()
     append_message(client_id, transfer_prompt, "system")
-    append_message(client_id, diff, "user")
+    append_message(client_id, changes_text, "user")
     response = generate_chat_completion(client_id)
     append_message(client_id, response, "assistant")
     history = get_history(client_id)
@@ -262,7 +337,9 @@ def get_multi_analyze(client_id, table_list, user_prompt):
             .replace("{row_count}", str(row_count))
         )
         if "NL_diff" in table:
-            input_user_prompt += multi_analyze_diff_prompt.replace("{NL_diff}", table["NL_diff"])
+            input_user_prompt += multi_analyze_diff_prompt.replace(
+                "{NL_diff}", table["NL_diff"]
+            )
 
     if user_prompt == "":
         user_prompt = "\nUser Prompt: (No user prompt)"
@@ -297,7 +374,9 @@ def multi_analyze(
         table_diff = table["table_diff"]
         is_index_table = table["is_index_table"]
         if table_diff:
-            NL_diff = mata_diff_to_NL(table_diff, row_count, column_names, is_index_table)
+            NL_diff = mata_diff_to_NL(
+                table_diff, row_count, column_names, is_index_table
+            )
             table["NL_diff"] = NL_diff
 
     print(">>> multi analyze table_list")

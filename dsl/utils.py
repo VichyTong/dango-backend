@@ -2,6 +2,40 @@ import pandas as pd
 import scipy.stats as stats
 import statsmodels.api as sm
 
+def classify_axis(axis):
+    if axis not in [0, 1, "index", "columns", "0", "1"]:
+        raise ValueError("Axis must be 0, 'index', 1, or 'columns'")
+
+    # Convert string axis to numeric
+    if axis == "index":
+        axis = 0
+    elif axis == "columns":
+        axis = 1
+    elif axis == "0":
+        axis = 0
+    elif axis == "1":
+        axis = 1
+
+    return axis
+
+def create(table, axis=0):
+    """
+    Creates a new row or column in the DataFrame.
+
+    Parameters:
+    - table: DataFrame in which the new row/column will be created.
+    - axis: 0 for row, 1 for column. Specifies whether to create a row or a column.
+    """
+
+    axis = classify_axis(axis)
+
+    if axis == 1:
+        table["new_column"] = None
+    else:
+        table.loc[len(table)] = None
+
+    return table
+
 
 def drop(table, label, axis=0):
     """
@@ -13,19 +47,7 @@ def drop(table, label, axis=0):
     - axis: 0 for row, 1 for column. Specifies whether to drop a row or a column.
     """
 
-    if axis not in [0, 1, "index", "columns", '0', '1']:
-        raise ValueError("Axis must be 0, 'index', 1, or 'columns'")
-
-    # Convert string axis to numeric
-    if axis == "index":
-        axis = 0
-    elif axis == "columns":
-        axis = 1
-    elif axis == '0':
-        axis = 0
-    elif axis == '1':
-        axis = 1
-
+    axis = classify_axis(axis)
 
     # Dropping a column
     if axis == 1:
@@ -35,7 +57,7 @@ def drop(table, label, axis=0):
 
     # Dropping a row
     else:
-        label = int(label) - 1 
+        label = int(label) - 1
         if label not in table.index:
             table.drop(labels=table.index[label], axis=axis, inplace=True)
         else:
@@ -55,13 +77,7 @@ def move(table, label, target_table, target_label, axis=0):
     - axis: 0 for row, 1 for column.
     """
 
-    if axis not in [0, 1, "index", "columns"]:
-        raise ValueError("Axis must be 0, 'index', 1, or 'columns'")
-
-    if axis == "index":
-        axis = 0
-    elif axis == "columns":
-        axis = 1
+    axis = classify_axis(axis)
 
     target_label = int(target_label) - 1
 
@@ -107,43 +123,38 @@ def copy(table, label, target_table, target_label, axis=0):
     - axis: 0 for row, 1 for column.
     """
 
-    # Validate axis
-    if axis not in [0, 1, "index", "columns"]:
-        raise ValueError("Axis must be 0, 'index', 1, or 'columns'")
-
-    # Convert string axis to numeric
-    if axis == "index":
-        axis = 0
-    elif axis == "columns":
-        axis = 1
+    axis = classify_axis(axis)
 
     # Copying a column
     if axis == 1:
+        if len(table.index) != len(target_table.index):
+            for i in range(len(table.index) - len(target_table.index)):
+                target_table.loc[f'Added_{i}'] = None
+
         if label not in table.columns:
             raise ValueError(f"Column {label} does not exist in the source DataFrame.")
-        if target_label in target_table.columns:
-            raise ValueError(
-                f"Column {target_label} already exists in the target DataFrame."
-            )
-
         # Copy the column and add it to the target DataFrame
-        target_table[target_label] = table[label].copy()
+        target_table[label] = table[label].copy()
 
     # Copying a row
     else:
+        # if column number does not match, create to match
+        if len(table.columns) != len(target_table.columns):
+            for i in range(len(table.columns) - len(target_table.columns)):
+                target_table[f'Added_{i}'] = None
+        
         label = int(label) - 1
         target_label = int(target_label) - 1
         if label not in table.index:
             raise ValueError(f"Row {label} does not exist in the source DataFrame.")
-        if target_label in target_table.index:
-            raise ValueError(
-                f"Row {target_label} already exists in the target DataFrame."
-            )
-
         # Copy the row and add it to the target DataFrame
-        target_table.loc[target_label] = table.loc[label].copy()
+        source_row = table.loc[label]
+        target_columns = target_table.columns
+        for i, col in enumerate(target_columns):
+            if i < len(source_row):
+                target_table.at[target_label, col] = source_row.iloc[i]
 
-    return target_table
+    return table, target_table
 
 
 def merge(table, label_1, label_2, glue, new_label, axis=0):
@@ -158,15 +169,7 @@ def merge(table, label_1, label_2, glue, new_label, axis=0):
     - axis: 0 for merging rows, 1 for merging columns.
     """
 
-    # Validate axis
-    if axis not in [0, 1, "index", "columns"]:
-        raise ValueError("Axis must be 0, 'index', 1, or 'columns'")
-
-    # Convert string axis to numeric
-    if axis == "index":
-        axis = 0
-    elif axis == "columns":
-        axis = 1
+    axis = classify_axis(axis)
 
     # Merging columns
     if axis == 1:
@@ -211,15 +214,7 @@ def split(table, label, delimiter, new_labels, axis=0):
     - axis: 0 for splitting a row, 1 for splitting a column.
     """
 
-    # Validate axis
-    if axis not in [0, 1, "index", "columns"]:
-        raise ValueError("Axis must be 0, 'index', 1, or 'columns'")
-
-    # Convert string axis to numeric
-    if axis == "index":
-        axis = 0
-    elif axis == "columns":
-        axis = 1
+    axis = classify_axis(axis)
 
     # Splitting a column
     if axis == 1:
@@ -273,8 +268,7 @@ def transpose(table):
 
 def aggregate(table, functions, axis=0):
     # Validate axis
-    if axis not in [0, 1, "index", "columns"]:
-        raise ValueError("Axis must be 0, 'index', 1, or 'columns'")
+    axis = classify_axis(axis)
     return table.agg(functions, axis=axis)
 
 
@@ -290,9 +284,7 @@ def test(table, label_1, label_2, strategy, axis=0):
     - axis: 0 to test between columns, 1 to test between rows.
     """
 
-    # Validate axis
-    if axis not in [0, 1]:
-        raise ValueError("Axis must be 0 or 1")
+    axis = classify_axis(axis)
 
     # Validate strategy
     supported_strategies = ["t-test", "z-test", "chi-squared"]
