@@ -29,6 +29,7 @@ from utils.db import (
     find_next_version,
 )
 from utils.execute import execute_dsl
+from utils.dependency import DependenciesManager
 
 # Initialize FastAPI app
 app = FastAPI()
@@ -44,6 +45,9 @@ app.add_middleware(
 )
 
 clients = {}
+
+# Initialize dependencies manager
+DependenciesManager = DependenciesManager()
 
 UPLOAD_FOLDER = "./files"
 if not os.path.exists(UPLOAD_FOLDER):
@@ -574,7 +578,7 @@ async def handle_execute_dsl_list(request_body: ExecuteDSLList):
     for dsl in dsl_list:
         function = dsl.function_name
         arguments = dsl.arguments
-
+        DependenciesManager.update_dependency(function, arguments)
         if function in single_table_function_list:
             sheet_id = get_sheet_id(arguments[0])
             sheet = tmp_sheet_data_map[sheet_id]
@@ -605,3 +609,10 @@ async def handle_execute_dsl_list(request_body: ExecuteDSLList):
             {"sheet_id": sheet_id, "version": sheet_version, "data": sheet_data}
         )
     return output
+
+@app.get("/get_dependencies/")
+async def get_dependencies():
+    print(">>> REQUEST /get_dependencies")
+    dependency_list = DependenciesManager.get_all_nodes()
+    print("dependency_list: ", dependency_list)
+    return JSONResponse(status_code=200, content={"dependencies": dependency_list})
