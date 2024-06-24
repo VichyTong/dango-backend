@@ -36,7 +36,7 @@ def extract_changes(data):
     changes = []
 
     # change pattern
-    pattern_1 = r'Row: (\d+|\d+\.\d+), Col: (\d+|\d+\.\d+), Old: (undefined|null|\d+|\d+\.\d+| ), New: (undefined|null|\d+|\d+\.\d+| )'
+    pattern_1 = r'Row: (\d+|\d+\.\d+), Col: (\d+|\d+\.\d+), Old: ([a-zA-Z]*|\d+|\d+\.\d+| )\r?, New: ([a-zA-Z]*|\d+|\d+\.\d+| )\r?'
     # create row pattern
     pattern_2 = r"Created row at index (\d+)"
     # create column pattern
@@ -55,6 +55,9 @@ def extract_changes(data):
                 "old_value": match_1.group(3),
                 "new_value": match_1.group(4),
             }
+            print("---------------")
+            print(change)
+            print("---------------")
             changes.append(change)
             continue
 

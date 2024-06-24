@@ -25,6 +25,7 @@ def create_user_prompt(history):
     prompt = f"Information:\n{information}\n"
 
     question_index = 1
+    print(json.dumps(history,indent=4))
     for index in range(start_index + 2, len(history), 2):
         response = json.loads(history[index]["content"])
         if response["type"] == "finish":
