@@ -12,7 +12,7 @@ import pandas as pd
 
 from utils.analyze import analyze, multi_analyze
 from utils.chat import chat
-from utils.compile import dsl_compile
+from utils.synthesize import dsl_synthesize
 from utils.llm import (
     get_history,
     create_client,
@@ -412,7 +412,7 @@ class GenerateDSL(BaseModel):
 async def handle_generate_dsl(request_body: GenerateDSL):
     client_id = request_body.client_id
 
-    response = dsl_compile(client_id)
+    response = dsl_synthesize(client_id)
     return_message = {"dsl": response, "status": "finish"}
     return return_message
 

@@ -5,9 +5,9 @@ from utils.llm import create_client, get_history, append_message, generate_chat_
 
 def init_prompt():
     global system_prompt, user_prompt
-    with open("prompt/compile/system.txt", "r") as f:
+    with open("prompt/synthesize/system.txt", "r") as f:
         system_prompt = f.read()
-    with open("prompt/compile/user.txt", "r") as f:
+    with open("prompt/synthesize/user.txt", "r") as f:
         user_prompt = f.read()
 
 
@@ -46,8 +46,8 @@ def create_user_prompt(history):
         question_index += 1
         prompt += question_answer_pair
     
-    print("\033[1;32;40m>>> COMPILE HISTORY")
-    print("\033[1;31;40mNOTICE: COMPILE SYSTEM PROMPT IS OMITTED")
+    print("\033[1;32;40m>>> SYNTHESIZE HISTORY")
+    print("\033[1;31;40mNOTICE: SYNTHESIZE SYSTEM PROMPT IS OMITTED")
     print("\033[0;33;40muser:")
     print("'''")
     print(prompt)
@@ -131,7 +131,7 @@ def transfer_to_NL(dsl):
             return "Invalid function"
 
 
-def dsl_compile(client_id: str) -> str:
+def dsl_synthesize(client_id: str) -> str:
     history = get_history(client_id)
     user_prompt = create_user_prompt(history)
 

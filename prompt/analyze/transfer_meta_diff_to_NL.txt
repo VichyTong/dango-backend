@@ -39,7 +39,7 @@ table2.csv
 {'row': 5, 'col': 2, 'old_value': null, 'new_value': '2'}
 {'row': 5, 'col': 3, 'old_value': null, 'new_value': '3'}
 ```
-In table2.csv, the user moves row 4 to row 5.
+In table2.csv, the user cut row 4 and pastes to row 5.
 
 ---
 
