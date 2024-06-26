@@ -21,7 +21,7 @@ The input includes the following:
 - Sheet Information:  the name of the sheet, the headers, and the number of rows in the table. 
 - Table Diff: the changes made to the table, including the cells that have been modified.
 - User Instruction: the user's instruction that indicates the changes they want to make.
-- Question Answering History: The history of questions & answers exchanged between the assistant and the user.
+- Question & Answering History: The history of questions & answers exchanged between the assistant and the user.
 
 #############
 
@@ -52,7 +52,7 @@ Table Diff: In table_1.csv, row 3 has been replaced with [null, null, null, null
 
 User Instruction: (No user instruction)
 
-Question Answering History:
+Question & Answering History: 
 ASSISTANT:
 {
     "type": "question",
@@ -91,6 +91,7 @@ Table Diff: In the given table, the user clears all values in row 4 across all c
 
 User Instruction: (No user instruction)
 
+Question & Answering History: 
 ASSISTANT:
 {
     "type": "question",
