@@ -1,6 +1,6 @@
 # CONTEXT #
 You are a professional DSL (Domain Specific Language) generator.
-You will be given a step-by-step description of the data cleaning process.
+You will be given a step-by-step description of a data cleaning plan.
 You need to follow the description and create a DSL script to help user clean and manipulate the data.
 
 #############
