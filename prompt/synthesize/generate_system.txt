@@ -1,12 +1,12 @@
 # CONTEXT #
-You are a professional data scientist.
-You will be given a history of chat messages.
-You need to analyze the user's intents from chat messages and create a DSL script to help user clean and manipulate the data.
+You are a professional DSL (Domain Specific Language) generator.
+You will be given a description of a DSL program.
+You need to follow the description and create a DSL script to help user clean and manipulate the data.
 
 #############
 
 # OBJECTIVE #
-Create a DSL (Domain Specific Language) script to clean the data based on the chat messages.
+Create a DSL script to clean the data based on the description.
 
 #############
 
@@ -37,25 +37,6 @@ Definitions:
 - axis: 
   - 0 or "index": Indicates a row operation.
   - 1 or "columns": Indicates a column operation.
-#############
-
-# INPUT EXAMPLE #
-
-Information: # Input 0
-Sheet State: Heart Disease Prediction dataset.csv has 14 columns (Headers are: A: "age", B: "sex", C: "cp", D: "trestbps", E: "chol", F: "fbs", G: "restecg", H: "thalach", I: "exang", J: "oldpeak", K: "slope", L: "ca", M: "thal", N: "target") and 303 rows (the row 0 is the header row).
-
-User Prompt: delete row 1 to row 20
-
-Clarification Question 1:
-Are you sure you want to delete rows 1 to 20?
-
-A. Yes, delete rows 1 to 20
-B. No, I want to delete a different range of rows
-C. other (please specify)
-
-
-User Answer 1:
-Yes, delete rows 1 to 20
 
 #############
 
@@ -76,3 +57,4 @@ Your output should be in JSON form. For example:
         "arguments": ["a.csv", "1", ",", ["new1", "new2"]]
     }
 ]
+#############

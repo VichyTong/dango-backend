@@ -1,20 +1,31 @@
 import json
 
-from utils.llm import create_client, get_history, append_message, generate_chat_completion, create_client
+from utils.llm import (
+    create_client,
+    get_history,
+    append_message,
+    generate_chat_completion,
+    create_client,
+)
 
 
 def init_prompt():
-    global system_prompt, user_prompt
-    with open("prompt/synthesize/system.txt", "r") as f:
-        system_prompt = f.read()
-    with open("prompt/synthesize/user.txt", "r") as f:
-        user_prompt = f.read()
+    global summarize_system_prompt, summarize_user_prompt_template
+    global generate_system_prompt, generate_user_prompt_template
+    with open("prompt/synthesize/summarize_system.txt", "r") as f:
+        summarize_system_prompt = f.read()
+    with open("prompt/synthesize/summarize_user.txt", "r") as f:
+        summarize_user_prompt_template = f.read()
+    with open("prompt/synthesize/generate_system.txt", "r") as f:
+        generate_system_prompt = f.read()
+    with open("prompt/synthesize/generate_user.txt", "r") as f:
+        generate_user_prompt_template = f.read()
 
 
 init_prompt()
 
 
-def create_user_prompt(history):
+def create_summarize_user_prompt(history):
     start_index = 0
     for index, message in enumerate(history):
         if message["role"] == "system":
@@ -25,7 +36,7 @@ def create_user_prompt(history):
     prompt = f"Information:\n{information}\n"
 
     question_index = 1
-    print(json.dumps(history,indent=4))
+    print(json.dumps(history, indent=4))
     for index in range(start_index + 2, len(history), 2):
         response = json.loads(history[index]["content"])
         if response["type"] == "finish":
@@ -37,15 +48,17 @@ def create_user_prompt(history):
         for i, choice in enumerate(response["choices"]):
             choices += f"{chr(ord('A') + i)}. {choice}\n"
 
+        prompt += "\n"
+
         question_answer_pair = (
-            user_prompt.replace("{INDEX}", str(question_index))
+            summarize_user_prompt_template.replace("{INDEX}", str(question_index))
             .replace("{QUESTION}", response["question"])
             .replace("{CHOICES}", choices)
             .replace("{ANSWER}", history[index + 1]["content"])
         )
         question_index += 1
         prompt += question_answer_pair
-    
+
     print("\033[1;32;40m>>> SYNTHESIZE HISTORY")
     print("\033[1;31;40mNOTICE: SYNTHESIZE SYSTEM PROMPT IS OMITTED")
     print("\033[0;33;40muser:")
@@ -53,6 +66,10 @@ def create_user_prompt(history):
     print(prompt)
     print("'''")
     return prompt
+
+
+def create_generate_user_prompt(summarization):
+    return generate_user_prompt_template.replace("{DESCRIPTION}", summarization)
 
 
 def transfer_to_NL(dsl):
@@ -133,13 +150,25 @@ def transfer_to_NL(dsl):
 
 def dsl_synthesize(client_id: str) -> str:
     history = get_history(client_id)
-    user_prompt = create_user_prompt(history)
+    summarize_user_prompt = create_summarize_user_prompt(history)
 
     tmp_client_id = create_client()
-    append_message(tmp_client_id, system_prompt, "system")
-    append_message(tmp_client_id, user_prompt, "user")
+    append_message(tmp_client_id, summarize_system_prompt, "system")
+    append_message(tmp_client_id, summarize_user_prompt, "user")
+    summarization = generate_chat_completion(tmp_client_id)
+
+    print(f"\033[0;36;40m>>> Summarization assistant")
+    print("'''")
+    print(summarization)
+    print("'''")
+
+    tmp_client_id = create_client()
+    generate_user_prompt = create_generate_user_prompt(summarization)
+    append_message(tmp_client_id, generate_system_prompt, "system")
+    append_message(tmp_client_id, generate_user_prompt, "user")
     response = generate_chat_completion(tmp_client_id)
-    print(f"\033[0;36;40m>>> assistant")
+
+    print(f"\033[0;36;40m>>> DSL generation assistant")
     print("'''")
     print(response)
     print("'''")
