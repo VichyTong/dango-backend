@@ -30,7 +30,7 @@ def create_user_prompt(history):
         response = json.loads(history[index]["content"])
         if response["type"] == "finish":
             if index == len(history) - 1:
-                prompt += f"\nSummary: {response['summary']}"
+                prompt += f"\nUser Intents: {response['user_intents']}"
             continue
 
         choices = ""

@@ -30,14 +30,14 @@ And there will be a user prompt in the end:
 You should respond with following format:
 {
     "type": "question",
-    "summary": "<summary>",
+    "user_intents": "<user_intents>",
     "question": "<question>",
     "choices": ["<choice_1>", "<choice_2>", ..., "<choice_n>", "other"]
 }
 If the intent is clear enough:
 {
    "type": "finish",
-   "summary": "<summary>"
+   "user_intents": "<user_intents>"
 }
 
 #############
@@ -60,7 +60,7 @@ User Prompt: (No user prompt)
 ASSISTANT:
 {
     "type": "question",
-    "summary": "Firstly, the user has deleted row 3 in table_1.csv and replaced it with zero. Secondly, the user delete all values in row 4 in table_2.csv.",
+    "user_intents": "Firstly, the user has deleted row 3 in table_1.csv and replaced it with zero. Secondly, the user delete all values in row 4 in table_2.csv.",
     "question": "Do you want to replace row 3 in table_1.csv with zero?",
     "choices": [
         "Yes, delete the row and replace with 0",
@@ -78,7 +78,7 @@ USER:
 ASSISTANT:
 {
     "type": "question",
-    "summary": "The user intends to copy the values from row 5 to row 3 in table_1.csv after deleting row 3.",
+    "user_intents": "The user intends to copy the values from row 5 to row 3 in table_1.csv after deleting row 3.",
     "question": "For table_2.csv, do you want to delete the entire row 4?",
     "choices": [
         "Yes, delete the entire row",
@@ -95,7 +95,7 @@ USER:
 ASSISTANT:
 {
     "type": "finish",
-    "summary": "The user's intent was to completely replace all values in row 3 with those from row 5 in table_1. In table_2, the user intended to delete the entire row 4."
+    "user_intents": "The user's intent was to completely replace all values in row 3 with those from row 5 in table_1. In table_2, the user intended to delete the entire row 4."
 }
 '''
 
@@ -114,7 +114,7 @@ Table Diff: In the table diff information provided:
 ASSISTANT:
 {
     "type": "question",
-    "summary": "The user has copied values columns 1 to 13 in row 5 in Heart Disease Prediction dataset_v0.csv. In test_v0.csv, the user has created new columns from 11 to 14 and updated all values in row 5.",
+    "user_intents": "The user has copied values columns 1 to 13 in row 5 in Heart Disease Prediction dataset_v0.csv. In test_v0.csv, the user has created new columns from 11 to 14 and updated all values in row 5.",
     "question": "Do you want to copy the values in row 5 from Heart Disease Prediction dataset_v0.csv to the row 5 of test_v0.csv?",
     "choices": [
         "Yes, copy the values",
@@ -131,6 +131,6 @@ USER:
 ASSISTANT:
 {
     "type": "finish",
-    "summary": "The user's intent was to copy the values from row 5 in Heart Disease Prediction dataset_v0.csv to row 5 in test_v0.csv."
+    "user_intents": "The user's intent was to copy the values from row 5 in Heart Disease Prediction dataset_v0.csv to row 5 in test_v0.csv."
 }
 '''

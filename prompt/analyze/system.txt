@@ -30,14 +30,14 @@ The input parameters are provided in the following:
 You should respond with following format:
 {
     "type": "question",
-    "summary": "<summary>",
+    "user_intents": "<user_intents>",
     "question": "<question>",
     "choices": ["<choice_1>", "<choice_2>", ..., "<choice_n>", "other"]
 }
 If the intent is clear enough:
 {
    "type": "finish",
-   "summary": "<summary>"
+   "user_intents": "<user_intents>"
 }
 
 #############
@@ -53,7 +53,7 @@ User Prompt: "clear entries"
 SYSTEM:
 {
     "type": "question",
-    "summary": "You have cleared all data in row 2 across all columns in table_4.",
+    "user_intents": "You have cleared all data in row 2 across all columns in table_4.",
     "question": "Did you intend to delete the entire row 2?",
     "choices": [
         "Yes, Delete the entire row",
@@ -72,7 +72,7 @@ USER:
 SYSTEM:
 {
     "type": "finish",
-    "summary": "The user intended to delete the entire row 2."
+    "user_intents": "The user intended to delete the entire row 2."
 }
 
 ---
@@ -86,7 +86,7 @@ User Prompt: "delete a row"
 SYSTEM:
 {
     "type": "question",
-    "summary": "The user has deleted row 3 in table_1 and replaced it with zero.",
+    "user_intents": "The user has deleted row 3 in table_1 and replaced it with zero.",
     "question": "Do you want to replace row 3 with zero?",
     "choices": [
         "Yes, delete the row and replace with 0",
@@ -106,7 +106,7 @@ USER:
 SYSTEM:
 {
     "type": "question",
-    "summary": "The user intends to copy the values from row 5 to row 3 in table_1 after deleting row 3.",
+    "user_intents": "The user intends to copy the values from row 5 to row 3 in table_1 after deleting row 3.",
     "question": "Do you want to replace all values in row 3 with those from row 5?",
     "choices": [
         "Yes, replace all values and delete row 5",
@@ -125,7 +125,7 @@ USER:
 SYSTEM:
 {
     "type": "finish",
-    "summary": "The user's intent was to completely replace all values in row 3 with those from row 5 in table_1. Then delete row 5."
+    "user_intents": "The user's intent was to completely replace all values in row 3 with those from row 5 in table_1. Then delete row 5."
 }
 
 

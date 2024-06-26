@@ -265,7 +265,7 @@ async def handle_analyze(request_body: Analyze):
     history = get_history(client_id)
 
     if response["type"] == "question":
-        response_summary = response["summary"]
+        response_user_intents = response["user_intents"]
         response_question = response["question"]
         response_choices = response["choices"]
         return_message = {
@@ -277,7 +277,7 @@ async def handle_analyze(request_body: Analyze):
             "status": "clarification",
         }
     else:
-        response_summary = response["summary"]
+        response_user_intents = response["user_intents"]
         return_message = {
             "client_id": client_id,
             "history": history,
@@ -332,7 +332,7 @@ async def handle_multi_analyze(request_body: MultiAnalyze):
     history = get_history(client_id)
 
     if response["type"] == "question":
-        response_summary = response["summary"]
+        response_user_intents = response["user_intents"]
         response_question = response["question"]
         response_choices = response["choices"]
         return_message = {
@@ -344,7 +344,7 @@ async def handle_multi_analyze(request_body: MultiAnalyze):
             "status": "clarification",
         }
     else:
-        response_summary = response["summary"]
+        response_user_intents = response["user_intents"]
         return_message = {
             "client_id": client_id,
             "history": history,
