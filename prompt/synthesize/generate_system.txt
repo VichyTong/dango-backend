@@ -66,6 +66,7 @@ Your output should be in JSON form. For example:
         "arguments": ["a.csv", "1", ",", ["new1", "new2"]]
     }
 ]
+Do not add any other characters to the output.
 #############
 
 # EXAMPLE #

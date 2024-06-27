@@ -1,5 +1,8 @@
 import sqlite3
 import json
+import uuid
+
+from utils.format_text import convert_history_to_text, convert_history_to_dumped_text
 
 con = sqlite3.connect("clean.db")
 
@@ -84,7 +87,7 @@ def find_next_version(client_id, sheet_id):
 
 def create_history(client_id):
     cur.execute(
-        "INSERT INTO histories (client_id, history) VALUES (?, ?)", (client_id, "[]")
+        "INSERT INTO histories (client_id, history) VALUES (?, ?)", (client_id, "{}")
     )
     con.commit()
 
@@ -95,9 +98,7 @@ def get_history(client_id):
     return history
 
 
-def update_history(client_id, message):
-    history = get_history(client_id)
-    history.append(message)
+def update_history(client_id, history):
     history = json.dumps(history)
     cur.execute(
         "UPDATE histories SET history = ? WHERE client_id = ?", (history, client_id)
@@ -105,8 +106,32 @@ def update_history(client_id, message):
     con.commit()
 
 
-def clear_history(client_id):
-    cur.execute(
-        "UPDATE histories SET history = ? WHERE client_id = ?", ("[]", client_id)
-    )
-    con.commit()
+def create_client():
+    client_id = str(uuid.uuid4())
+    create_history(client_id)
+    return client_id
+
+
+def get_history_text(client_id, is_dump=False):
+    print(client_id)
+    cur.execute("SELECT history FROM histories WHERE client_id = ?", (client_id,))
+    history = json.loads(cur.fetchone()[0])
+    if is_dump:
+        history = convert_history_to_dumped_text(history)
+    else:
+        history = convert_history_to_text(history)
+    return history
+
+
+# Organization of "history"
+# {
+#     "infomation": <string>,
+#     "question_answer_list": [
+#         {
+#             "question": <string>,
+#             "choices": [<string>, <string>, ...],
+#             "answer": <string>,
+#         },
+#         ...
+#     ]
+# }

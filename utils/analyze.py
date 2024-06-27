@@ -3,29 +3,27 @@ import json
 import re
 
 from utils.llm import (
-    create_client,
-    get_history,
-    append_message,
     generate_chat_completion,
+    append_message,
 )
+
+from utils.db import update_history, get_history, get_history_text
 
 
 def init_prompt():
     global transfer_prompt
-    global analyze_system_prompt, analyze_user_prompt
-    global multi_analyze_system_prompt, multi_analyze_user_prompt, multi_analyze_diff_prompt
-    with open("prompt/analyze/transfer_meta_diff_to_NL.txt", "r") as f:
+    global init_system_prompt, followup_system_prompt
+    global sheet_state_template, table_diff_template
+    with open("prompt/multi_analyze/transfer_meta_diff_to_NL.txt", "r") as f:
         transfer_prompt = f.read()
-    with open("prompt/analyze/system.txt", "r") as f:
-        analyze_system_prompt = f.read()
-    with open("prompt/analyze/user.txt", "r") as f:
-        analyze_user_prompt = f.read()
-    with open("prompt/multi_analyze/system.txt", "r") as f:
-        multi_analyze_system_prompt = f.read()
-    with open("prompt/multi_analyze/user.txt", "r") as f:
-        multi_analyze_user_prompt = f.read()
-    with open("prompt/multi_analyze/diff.txt", "r") as f:
-        multi_analyze_diff_prompt = f.read()
+    with open("prompt/multi_analyze/init_system.txt") as f:
+        init_system_prompt = f.read()
+    with open("prompt/multi_analyze/followup_system.txt") as f:
+        followup_system_prompt = f.read()
+    with open("prompt/template/sheet_state.txt") as f:
+        sheet_state_template = f.read()
+    with open("prompt/template/table_diff.txt") as f:
+        table_diff_template = f.read()
 
 
 init_prompt()
@@ -36,14 +34,13 @@ def extract_changes(data):
     changes = []
 
     # change pattern
-    pattern_1 = r'Row: (\d+|\d+\.\d+), Col: (\d+|\d+\.\d+), Old: ([a-zA-Z]*|\d+|\d+\.\d+| )\r?, New: ([a-zA-Z]*|\d+|\d+\.\d+| )\r?'
+    pattern_1 = r"Row: (\d+|\d+\.\d+), Col: (\d+|\d+\.\d+), Old: ([a-zA-Z]*|\d+|\d+\.\d+| )\r?, New: ([a-zA-Z]*|\d+|\d+\.\d+| )\r?"
     # create row pattern
     pattern_2 = r"Created row at index (\d+)"
     # create column pattern
     pattern_3 = r"Created column at index (\d+)"
-    # copy cloumn pattern 
-    pattern_4 = r'Copied data from (\d+):(\d+) to (\d+):(\d+) \(col, row\)'
-    
+    # copy cloumn pattern
+    pattern_4 = r"Copied data from (\d+):(\d+) to (\d+):(\d+) \(col, row\)"
 
     for line in lines:
         match_1 = re.match(pattern_1, line)
@@ -69,7 +66,7 @@ def extract_changes(data):
             }
             changes.append(change)
             continue
-        
+
         match_3 = re.match(pattern_3, line)
         if match_3:
             change = {
@@ -108,11 +105,13 @@ def find_batch_operation(changes, num_rows, num_cols):
                 next_index += 1
 
     if next_index != num_rows + 1:
-        batch_operations.append({
-            "type": "create_multi_rows",
-            "start_row": num_rows + 1,
-            "end_row": next_index - 1,
-        })
+        batch_operations.append(
+            {
+                "type": "create_multi_rows",
+                "start_row": num_rows + 1,
+                "end_row": next_index - 1,
+            }
+        )
 
     changes = [change for change in changes if change["type"] != "create_row"]
     num_rows = next_index - 1
@@ -126,11 +125,13 @@ def find_batch_operation(changes, num_rows, num_cols):
                 next_index += 1
 
     if next_index != num_cols + 1:
-        batch_operations.append({
-            "type": "create_multi_cols",
-            "start_col": num_cols + 1,
-            "end_col": next_index - 1,
-        })
+        batch_operations.append(
+            {
+                "type": "create_multi_cols",
+                "start_col": num_cols + 1,
+                "end_col": next_index - 1,
+            }
+        )
 
     changes = [change for change in changes if change["type"] != "create_col"]
     num_cols = next_index - 1
@@ -249,66 +250,9 @@ def mata_diff_to_NL(
     for change in changes:
         changes_text += json.dumps(change) + "\n"
 
-    client_id = create_client()
-    append_message(client_id, transfer_prompt, "system")
-    append_message(client_id, changes_text, "user")
-    response = generate_chat_completion(client_id)
-    append_message(client_id, response, "assistant")
-    history = get_history(client_id)
-    print(json.dumps(history, indent=4))
-    return response
-
-
-def get_analyze(
-    client_id, sheet_id, version, row_count, column_names, NL_diff, user_prompt
-):
-    column_number = len(column_names)
-    index = "A"
-    column_string_list = []
-    for item in column_names:
-        item = f'{index}: "{item}"'
-        index = chr(ord(index) + 1)
-        column_string_list.append(item)
-        # TODO: What if number of columns is more than 26?
-    column_names = ", ".join(column_string_list)
-
-    input_user_prompt = (
-        analyze_user_prompt.replace(
-            "{sheet_id}",
-            f"{sheet_id.split('.')[0]}_v{version}.{sheet_id.split('.')[1]}",
-        )
-        .replace("{row_count}", str(row_count))
-        .replace("{column_names}", column_names)
-        .replace("{column_count}", str(column_number))
-        .replace("{NL_diff}", NL_diff)
-        .replace("{user_prompt}", user_prompt)
-    )
-
-    history = get_history(client_id)
-    append_message(client_id, analyze_system_prompt, "system")
-    append_message(client_id, input_user_prompt, "user")
-    response = generate_chat_completion(client_id)
-    print(response)
-    append_message(client_id, response, "assistant")
-    print(json.dumps(history, indent=4))
-    return response
-
-
-def analyze(
-    client_id: str,
-    sheet_id: str,
-    version: int,
-    row_count: int,
-    column_names: List[str],
-    table_diff: str,
-    user_promt: str,
-    is_index_table: bool,
-) -> str:
-    NL_diff = mata_diff_to_NL(table_diff, row_count, column_names, is_index_table)
-    response = get_analyze(
-        client_id, sheet_id, version, row_count, column_names, NL_diff, user_promt
-    )
-    response = json.loads(response)
+    messages = append_message(transfer_prompt, "system")
+    messages = append_message(changes_text, "user", messages)
+    response = generate_chat_completion(messages)
 
     return response
 
@@ -333,34 +277,43 @@ def get_multi_analyze(client_id, table_list, user_prompt):
         column_names = ", ".join(column_string_list)
 
         input_user_prompt += (
-            multi_analyze_user_prompt.replace("{index}", str(index))
+            sheet_state_template.replace("{index}", str(index))
             .replace("{file_name}", file_name)
             .replace("{column_count}", str(column_number))
             .replace("{column_names}", column_names)
             .replace("{row_count}", str(row_count))
         )
         if "NL_diff" in table:
-            input_user_prompt += multi_analyze_diff_prompt.replace(
+            input_user_prompt += table_diff_template.replace(
                 "{NL_diff}", table["NL_diff"]
             )
 
     if user_prompt == "":
-        user_prompt = "\nUser Prompt: (No user prompt)"
+        user_prompt = "\nUser Instruction: (No user instruction)"
     else:
-        user_prompt = "\nUser Prompt: " + user_prompt
+        user_prompt = "\nUser Instruction: " + user_prompt
 
     input_user_prompt += user_prompt
+    update_history(client_id, {"information": input_user_prompt})
 
     print("\n>>> final_input_user_prompt:")
     print("'''")
     print(input_user_prompt)
     print("'''\n")
 
-    history = get_history(client_id)
-    append_message(client_id, multi_analyze_system_prompt, "system")
-    append_message(client_id, input_user_prompt, "user")
-    response = generate_chat_completion(client_id)
-    append_message(client_id, response, "assistant")
+    messages = append_message(init_system_prompt, "system")
+    messages = append_message(input_user_prompt, "user", messages)
+    response = json.loads(generate_chat_completion(messages))
+    if response["type"] == "question":
+        history = get_history(client_id)
+        history["question_answer_pairs"] = [
+            {
+                "summary": response["summary"],
+                "question": response["question"],
+                "choices": response["choices"],
+            }
+        ]
+        update_history(client_id, history)
     return response
 
 
@@ -386,6 +339,31 @@ def multi_analyze(
     print(table_list)
 
     response = get_multi_analyze(client_id, table_list, user_promt)
+    return response
 
+
+def followup(client_id, response):
+    history = get_history(client_id)
+    if "response" in history["question_answer_pairs"][-1]:
+        print("WARN: Followup already done")
+        return
+    history["question_answer_pairs"][-1]["answer"] = response
+    update_history(client_id, history)
+
+    history_text = get_history_text(client_id, is_dump=True)
+    messages = append_message(followup_system_prompt, "system")
+    messages = append_message(history_text, "user", messages)
+
+    response = generate_chat_completion(messages)
     response = json.loads(response)
+    if response["type"] == "question":
+        history = get_history(client_id)
+        history["question_answer_pairs"] = [
+            {
+                "summary": response["summary"],
+                "question": response["question"],
+                "choices": response["choices"],
+            }
+        ]
+        update_history(client_id, history)
     return response

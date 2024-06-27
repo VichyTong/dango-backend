@@ -1,2 +1,0 @@
-Sheet State: {sheet_id} has {column_count} columns (Headers are: {column_names}) and {row_count} rows (the row 0 is the header row).
-User Prompt: "{user_prompt}"

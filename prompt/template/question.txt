@@ -1,5 +1,3 @@
 Clarification Question {INDEX}:
 {QUESTION}
 {CHOICES}
-User Answer {INDEX}:
-{ANSWER}

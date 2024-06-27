@@ -10,23 +10,21 @@ import json
 import aiofiles
 import pandas as pd
 
-from utils.analyze import analyze, multi_analyze
-from utils.chat import chat
+from utils.analyze import multi_analyze, followup
 from utils.synthesize import dsl_synthesize
 from utils.llm import (
-    get_history,
-    create_client,
-    update_history,
     append_message,
     generate_chat_completion,
 )
 from utils.db import (
+    create_client,
     upload_sheet,
     get_sheet,
     delete_sheet,
     is_sheet_exists,
     get_all_sheets,
     find_next_version,
+    get_history,
 )
 from utils.execute import execute_dsl
 from utils.dependency import DependenciesManager
@@ -191,8 +189,6 @@ async def handle_chat(request_body: Chat):
     print(">>> REQUEST END")
     if status == "init":
         return await handle_multi_analyze(request_body)
-    if status == "analyze":
-        return await handle_analyze(request_body)
     if status == "multi_analyze":
         return await handle_multi_analyze(request_body)
     if status == "clarification":
@@ -227,63 +223,6 @@ async def simple_chat(request_body: SimpleChat):
         "status": "init",
     }
 
-    return return_message
-
-
-class Analyze(BaseModel):
-    client_id: str
-    sheet_id: str
-    version: Optional[int] = Field(0)
-    row_count: int
-    column_names: List[str]
-    table_diff: str
-    user_prompt: str
-
-
-@app.post("/analyze")
-async def handle_analyze(request_body: Analyze):
-    client_id = request_body.client_id
-    sheet_id = request_body.sheet_id
-    version = request_body.version
-    row_count = request_body.row_count
-    column_names = request_body.column_names
-    table_diff = request_body.table_diff
-    user_prompt = request_body.user_prompt
-
-    sheet_info = get_sheet_info(client_id, sheet_id, version)
-
-    response = analyze(
-        client_id,
-        sheet_id,
-        version,
-        len(sheet_info["row_names"]),
-        sheet_info["column_names"],
-        table_diff,
-        user_prompt,
-        sheet_info["is_index_table"],
-    )
-    history = get_history(client_id)
-
-    if response["type"] == "question":
-        response_user_intents = response["user_intents"]
-        response_question = response["question"]
-        response_choices = response["choices"]
-        return_message = {
-            "client_id": client_id,
-            "history": history,
-            "question": response_question,
-            "choices": response_choices,
-            "type": "question",
-            "status": "clarification",
-        }
-    else:
-        response_user_intents = response["user_intents"]
-        return_message = {
-            "client_id": client_id,
-            "history": history,
-            "type": "finish",
-            "status": "generate_dsl",
-        }
     return return_message
 
 
@@ -329,25 +268,20 @@ async def handle_multi_analyze(request_body: MultiAnalyze):
         processed_tables.append(processed_table)
 
     response = multi_analyze(client_id, processed_tables, user_prompt)
-    history = get_history(client_id)
 
     if response["type"] == "question":
-        response_user_intents = response["user_intents"]
         response_question = response["question"]
         response_choices = response["choices"]
         return_message = {
             "client_id": client_id,
-            "history": history,
             "question": response_question,
             "choices": response_choices,
             "type": "question",
             "status": "clarification",
         }
     else:
-        response_user_intents = response["user_intents"]
         return_message = {
             "client_id": client_id,
-            "history": history,
             "type": "finish",
             "status": "generate_dsl",
         }
@@ -363,8 +297,7 @@ class Response(BaseModel):
 async def handle_response(request_body: Response):
     client_id = request_body.client_id
     user_response = request_body.response
-    response = chat(client_id, user_response)
-    history = get_history(client_id)
+    response = followup(client_id, user_response)
 
     if response["type"] == "question":
         response_question = response["question"]
@@ -372,7 +305,6 @@ async def handle_response(request_body: Response):
 
         return_message = {
             "client_id": client_id,
-            "history": history,
             "question": response_question,
             "choices": response_choices,
             "type": "question",
@@ -381,26 +313,19 @@ async def handle_response(request_body: Response):
     elif response["type"] == "finish":
         return_message = {
             "client_id": client_id,
-            "history": history,
             "type": "finish",
             "status": "generate_dsl",
         }
+
+        history = get_history(client_id)
         print("\033[1;32;40m>>> MULTI-ANALYZE HISTORY")
-        for item in history:
-            if item["role"] == "system":
-                print("\033[1;31;40mNOTICE: MULTI-ANALYZE SYSTEM PROMPT IS OMITTED")
-                continue
-            if item["role"] == "user":
-                print(f'\033[0;33;40m>>> {item["role"]}:')
-                print("'''")
-                print(item["content"])
-                print("'''")
-            elif item["role"] == "assistant":
-                print(f'\033[0;36;40m>>> {item["role"]}:')
-                print("'''")
-                print(item["content"])
-                print("'''")
-        print("\n")
+        print(f"\033[1;32;40m>>> Info:\n{history['information']}")
+        for item in history["question_answer_pairs"]:
+            print(f"\033[0;33;40m>>> Summary:\n{item['summary']}")
+            print(f"\033[0;33;40m>>> Question:\n{item['question']}")
+            print(f"\033[0;33;40m>>> Choices:\n{item['choices']}")
+            print(f"\033[0;36;40m>>> Answer:\n{item['answer']}")
+
     return return_message
 
 
@@ -583,7 +508,7 @@ async def handle_execute_dsl_list(request_body: ExecuteDSLList):
             sheet_id = get_sheet_id(arguments[0])
             sheet = tmp_sheet_data_map[sheet_id]
             new_sheet = execute_dsl(sheet, function, arguments[1:])
-            new_data = new_sheet.fillna('').to_json(orient="records")
+            new_data = new_sheet.fillna("").to_json(orient="records")
             tmp_sheet_data_map[sheet_id] = new_sheet
         elif function in double_table_function_list:
             sheet_id = get_sheet_id(arguments[0])
@@ -591,10 +516,13 @@ async def handle_execute_dsl_list(request_body: ExecuteDSLList):
             sheet = tmp_sheet_data_map[sheet_id]
             target_sheet = tmp_sheet_data_map[target_sheet_id]
             new_sheet, new_target_sheet = execute_dsl(
-                sheet, function, [arguments[1]] + arguments[3:], target_sheet=target_sheet
+                sheet,
+                function,
+                [arguments[1]] + arguments[3:],
+                target_sheet=target_sheet,
             )
-            new_data = new_sheet.fillna('').to_json(orient="records")
-            new_target_data = new_target_sheet.fillna('').to_json(orient="records")
+            new_data = new_sheet.fillna("").to_json(orient="records")
+            new_target_data = new_target_sheet.fillna("").to_json(orient="records")
             tmp_sheet_data_map[sheet_id] = new_sheet
             tmp_sheet_data_map[target_sheet_id] = new_target_sheet
         else:
@@ -603,12 +531,13 @@ async def handle_execute_dsl_list(request_body: ExecuteDSLList):
     output = []
     for sheet_id, sheet in tmp_sheet_data_map.items():
         sheet_version = find_next_version(client_id, sheet_id)
-        sheet_data = sheet.fillna('').to_dict(orient="records")
+        sheet_data = sheet.fillna("").to_dict(orient="records")
         upload_sheet(client_id, sheet_id, sheet_version, sheet_data)
         output.append(
             {"sheet_id": sheet_id, "version": sheet_version, "data": sheet_data}
         )
     return output
+
 
 @app.get("/get_dependencies/")
 async def get_dependencies():
