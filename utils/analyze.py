@@ -40,7 +40,7 @@ def extract_changes(data):
     # create column pattern
     pattern_3 = r"Created column at index (\d+)"
     # copy cloumn pattern
-    pattern_4 = r"Copied data from (\d+):(\d+) to (\d+):(\d+) \(col, row\)"
+    pattern_4 = r"Copied data from column (\d+), row (\d+), to column (\d+), row (\d+) in ([a-zA-Z]*).csv"
 
     for line in lines:
         match_1 = re.match(pattern_1, line)
