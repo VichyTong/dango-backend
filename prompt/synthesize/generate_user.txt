@@ -1,2 +1,2 @@
-DSL Description:
-{DESCRIPTION}
+Step-by-step plan:
+{PLAN}

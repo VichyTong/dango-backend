@@ -4,16 +4,19 @@ from utils.llm import (
     append_message,
     generate_chat_completion,
 )
-from utils.db import get_history_text
+from utils.db import get_history_text, get_history
 
 
 def init_prompt():
-    global summarize_system_prompt, summarize_user_prompt_template
+    global summarize_system_prompt
+    global plan_system_prompt, plan_user_prompt_template
     global generate_system_prompt, generate_user_prompt_template
     with open("prompt/synthesize/summarize_system.txt", "r") as f:
         summarize_system_prompt = f.read()
-    with open("prompt/synthesize/summarize_user.txt", "r") as f:
-        summarize_user_prompt_template = f.read()
+    with open("prompt/synthesize/plan_system.txt", "r") as f:
+        plan_system_prompt = f.read()
+    with open("prompt/synthesize/plan_user.txt", "r") as f:
+        plan_user_prompt_template = f.read()
     with open("prompt/synthesize/generate_system.txt", "r") as f:
         generate_system_prompt = f.read()
     with open("prompt/synthesize/generate_user.txt", "r") as f:
@@ -104,15 +107,29 @@ def transfer_to_NL(dsl):
 
 
 def dsl_synthesize(client_id: str) -> str:
+    history = get_history(client_id)
     summarize_user_prompt = get_history_text(client_id)
 
     messages = append_message(summarize_system_prompt, "system")
     messages = append_message(summarize_user_prompt, "user", messages)
     summarization = generate_chat_completion(messages)
 
-    print(f"\033[0;36;40m>>> Summarization assistant")
+    print(f"\033[0;34;40m>>> Summarization assistant")
     print("'''")
     print(summarization)
+    print("'''")
+
+    plan_user_prompt = plan_user_prompt_template.replace(
+        "{USER_INTENTS}", summarization
+    ).replace("{INFORMATION}", history["information"])
+
+    messages = append_message(plan_system_prompt, "system")
+    messages = append_message(plan_user_prompt, "user", messages)
+    response = generate_chat_completion(messages)
+
+    print(f"\033[0;35;40m>>> Planning assistant")
+    print("'''")
+    print(response)
     print("'''")
 
     generate_user_prompt = create_generate_user_prompt(summarization)

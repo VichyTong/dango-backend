@@ -355,7 +355,11 @@ def followup(client_id, response):
     messages = append_message(history_text, "user", messages)
 
     response = generate_chat_completion(messages)
-    response = json.loads(response)
+    try:
+        response = json.loads(response)
+    except json.JSONDecodeError as e:
+        print(response)
+        raise e
     if response["type"] == "question":
         history = get_history(client_id)
         history["question_answer_pairs"] = [
