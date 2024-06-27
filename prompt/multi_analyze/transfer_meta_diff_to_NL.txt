@@ -5,6 +5,7 @@ You are a professional data scientist. You want to summarize the table diff info
 
 # OBJECTIVE #
 Summarize the table diff information in Natural Language.
+Please note that a value replaced with 'null' means deleted, and a value replaced from 'null' means inserted.
 
 #############
 
