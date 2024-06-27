@@ -73,6 +73,18 @@ def get_all_sheets(client_id):
     return sheets
 
 
+def get_same_sheet_version(client_id, sheet_id, data):
+    cur.execute(
+        "SELECT version, data FROM sheets WHERE client_id = ? AND sheet_id = ?",
+        (client_id, sheet_id),
+    )
+    versions = cur.fetchall()
+    for version, sheet_data in versions:
+        if json.loads(sheet_data) == data:
+            return version
+    return None
+
+
 def find_next_version(client_id, sheet_id):
     cur.execute(
         "SELECT version FROM sheets WHERE client_id = ? AND sheet_id = ?",
@@ -121,6 +133,7 @@ def get_history_text(client_id, is_dump=False):
     else:
         history = convert_history_to_text(history)
     return history
+
 
 """
 Organization of "history"

@@ -23,6 +23,7 @@ from utils.db import (
     delete_sheet,
     is_sheet_exists,
     get_all_sheets,
+    get_same_sheet_version,
     find_next_version,
     get_history,
 )
@@ -530,8 +531,14 @@ async def handle_execute_dsl_list(request_body: ExecuteDSLList):
 
     output = []
     for sheet_id, sheet in tmp_sheet_data_map.items():
-        sheet_version = find_next_version(client_id, sheet_id)
         sheet_data = sheet.fillna("").to_dict(orient="records")
+        same_sheet_version = get_same_sheet_version(client_id, sheet_id, sheet_data)
+        if same_sheet_version:
+            output.append(
+                {"sheet_id": sheet_id, "version": same_sheet_version, "data": sheet_data}
+            )
+            continue
+        sheet_version = find_next_version(client_id, sheet_id)
         upload_sheet(client_id, sheet_id, sheet_version, sheet_data)
         output.append(
             {"sheet_id": sheet_id, "version": sheet_version, "data": sheet_data}
