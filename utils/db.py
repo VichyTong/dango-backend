@@ -122,17 +122,18 @@ def get_history_text(client_id, is_dump=False):
         history = convert_history_to_text(history)
     return history
 
-
-# Organization of "history"
-# {
-#     "infomation": <string>,
-#     "question_answer_list": [
-#         {
-#             "summary": <string>,
-#             "question": <string>,
-#             "choices": [<string>, <string>, ...],
-#             "answer": <string>,
-#         },
-#         ...
-#     ]
-# }
+"""
+Organization of "history"
+{
+    "infomation": <string>,
+    "question_answer_list": [
+        {
+            "summary": <string>,
+            "question": <string>,
+            "choices": [<string>, <string>, ...],
+            "answer": <string>,
+        },
+        ...
+    ]
+}
+"""
