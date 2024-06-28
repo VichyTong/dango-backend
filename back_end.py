@@ -48,10 +48,6 @@ clients = {}
 # Initialize dependencies manager
 DependenciesManager = DependenciesManager()
 
-UPLOAD_FOLDER = "./files"
-if not os.path.exists(UPLOAD_FOLDER):
-    os.makedirs(UPLOAD_FOLDER)
-
 
 @app.post("/login/")
 async def login():
@@ -535,7 +531,11 @@ async def handle_execute_dsl_list(request_body: ExecuteDSLList):
         same_sheet_version = get_same_sheet_version(client_id, sheet_id, sheet_data)
         if same_sheet_version:
             output.append(
-                {"sheet_id": sheet_id, "version": same_sheet_version, "data": sheet_data}
+                {
+                    "sheet_id": sheet_id,
+                    "version": same_sheet_version,
+                    "data": sheet_data,
+                }
             )
             continue
         sheet_version = find_next_version(client_id, sheet_id)
