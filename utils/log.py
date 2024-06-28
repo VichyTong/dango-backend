@@ -42,3 +42,13 @@ def log_messages(client_id, function_name, messages):
 def log_text(client_id, text):
     logger = get_logger(client_id)
     logger.info(text)
+
+
+def log_warn(client_id, text):
+    logger = get_logger(client_id)
+    logger.warning(text)
+
+
+def log_error(client_id, text):
+    logger = get_logger(client_id)
+    logger.error(text)

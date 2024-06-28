@@ -9,7 +9,6 @@ import uuid
 import json
 import aiofiles
 import pandas as pd
-import logging
 
 
 from utils.analyze import multi_analyze, followup
@@ -45,14 +44,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# Initialize logger
-logging.basicConfig(
-    filename="app.log",
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s\n%(message)s",
-)
-
 
 # Initialize dependencies manager
 DependenciesManager = DependenciesManager()
@@ -442,7 +433,10 @@ async def handle_execute_dsl_list(request_body: ExecuteDSLList):
             tmp_sheet_version_map[sheet_id] = sheet_version
         else:
             if tmp_sheet_version_map[sheet_id] != sheet_version:
-                log_text(client_id, f">>> Execute_DSL\nError: {sheet_id} version {tmp_sheet_version_map[sheet_id]} and {sheet_version} mismatch.")
+                log_text(
+                    client_id,
+                    f">>> Execute_DSL\nError: {sheet_id} version {tmp_sheet_version_map[sheet_id]} and {sheet_version} mismatch.",
+                )
                 return None
 
     for dsl in dsl_list:

@@ -2,13 +2,12 @@ from typing import List
 import json
 import re
 import copy
-import logging
 
 from utils.llm import (
     generate_chat_completion,
     append_message,
 )
-from utils.log import log_messages, log_text
+from utils.log import log_messages, log_text, log_warn, log_error
 from utils.db import update_history, get_history, get_history_text
 
 
@@ -31,18 +30,20 @@ def init_prompt():
 init_prompt()
 
 
-def extract_changes(data):
+def extract_changes(client_id, data):
     lines = data.strip().split("\n")
     changes = []
 
     # change pattern
     pattern_1 = r"Row: (\d+|\d+\.\d+), Col: (\d+|\d+\.\d+), Old: ([a-zA-Z]*|\d+|\d+\.\d+| )\r?, New: ([a-zA-Z]*|\d+|\d+\.\d+| )\r?"
     # create row pattern
-    pattern_2 = r"Created row at index (\d+)"
+    pattern_2 = r"Inserted row at index (\d+)"
     # create column pattern
-    pattern_3 = r"Created column at index (\d+)"
-    # copy cloumn pattern
+    pattern_3 = r"Inserted column at index (\d+)"
+    # copy data pattern
     pattern_4 = r"Copied data from column (\d+), row (\d+), to column (\d+), row (\d+) in ([a-zA-Z]*).csv"
+    # paste data pattern
+    pattern_5 = r"Pasted data from column (\d+), row (\d+), to column (\d+), row (\d+) in ([a-zA-Z]*).csv"
 
     for line in lines:
         match_1 = re.match(pattern_1, line)
@@ -60,7 +61,7 @@ def extract_changes(data):
         match_2 = re.match(pattern_2, line)
         if match_2:
             change = {
-                "type": "create_row",
+                "type": "insert_row",
                 "row": int(match_2.group(1)),
             }
             changes.append(change)
@@ -69,7 +70,7 @@ def extract_changes(data):
         match_3 = re.match(pattern_3, line)
         if match_3:
             change = {
-                "type": "create_col",
+                "type": "insert_col",
                 "col": int(match_3.group(1)),
             }
             changes.append(change)
@@ -87,7 +88,19 @@ def extract_changes(data):
             changes.append(change)
             continue
 
-        logging.warning(f">>> extract_changes\nUnrecognized line: {line}")
+        match_5 = re.match(pattern_5, line)
+        if match_5:
+            change = {
+                "type": "paste_col",
+                "start_col": int(match_5.group(1)),
+                "start_row": int(match_5.group(2)),
+                "end_col": int(match_5.group(3)),
+                "end_row": int(match_5.group(4)),
+            }
+            changes.append(change)
+            continue
+
+        log_warn(client_id, f">>> extract_changes\nUnrecognized line: {line}")
 
     return changes
 
@@ -341,7 +354,7 @@ def multi_analyze(
 def followup(client_id, response):
     history = get_history(client_id)
     if "response" in history["question_answer_pairs"][-1]:
-        logging.warning(f">>> followup\nFollowup already done\nresponse:{response}")
+        log_warn(client_id, f">>> followup\nFollowup already done\nresponse:{response}")
         return
     history["question_answer_pairs"][-1]["answer"] = response
     update_history(client_id, history)
@@ -356,7 +369,7 @@ def followup(client_id, response):
     try:
         response = json.loads(response)
     except json.JSONDecodeError as e:
-        logging.error(f">>> followup\nFailed to decode response:\n{response}")
+        log_error(client_id, f">>> followup\nFailed to decode response:\n{response}")
         raise e
     if response["type"] == "question":
         history = get_history(client_id)
