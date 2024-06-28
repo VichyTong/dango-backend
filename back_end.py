@@ -9,6 +9,8 @@ import uuid
 import json
 import aiofiles
 import pandas as pd
+import logging
+
 
 from utils.analyze import multi_analyze, followup
 from utils.synthesize import dsl_synthesize
@@ -29,6 +31,7 @@ from utils.db import (
 )
 from utils.execute import execute_dsl
 from utils.dependency import DependenciesManager
+from utils.log import log_messages, log_text
 
 # Initialize FastAPI app
 app = FastAPI()
@@ -43,7 +46,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-clients = {}
+# Initialize logger
+logging.basicConfig(
+    filename="app.log",
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s\n%(message)s",
+)
+
 
 # Initialize dependencies manager
 DependenciesManager = DependenciesManager()
@@ -88,11 +97,6 @@ async def is_file_exists(request_body: FileExists):
     client_id = request_body.client_id
     file_name = request_body.file_name
     version = str(request_body.version)
-    print(">>> REQUEST /is_file_exists")
-    print(f"client_id: {client_id}")
-    print(f"file_name: {file_name}")
-    print(f"version: {version}")
-    print(">>> REQUEST END")
 
     is_exists = is_sheet_exists(client_id, file_name, version)
 
@@ -181,9 +185,6 @@ class Chat(BaseModel):
 @app.post("/chat")
 async def handle_chat(request_body: Chat):
     status = request_body.status
-    print(">>> REQUEST /chat")
-    print(f"status: {status}")
-    print(">>> REQUEST END")
     if status == "init":
         return await handle_multi_analyze(request_body)
     if status == "multi_analyze":
@@ -192,35 +193,6 @@ async def handle_chat(request_body: Chat):
         return await handle_response(request_body)
     if status == "generate_dsl":
         return await handle_generate_dsl(request_body)
-
-
-class SimpleChat(BaseModel):
-    client_id: Optional[str] = Field(None)
-    message: str
-
-
-@app.post("/simple_chat")
-async def simple_chat(request_body: SimpleChat):
-    client_id = request_body.client_id
-    message = request_body.message
-
-    if not client_id:
-        return JSONResponse(
-            status_code=400, content={"message": "Client ID is required"}
-        )
-
-    history = get_history(client_id)
-    append_message(client_id, message, "user")
-    response = generate_chat_completion(client_id)
-    append_message(client_id, response, "assistant")
-    return_message = {
-        "client_id": client_id,
-        "history": history,
-        "response": response,
-        "status": "init",
-    }
-
-    return return_message
 
 
 @app.post("/multi_analyze")
@@ -240,13 +212,6 @@ async def handle_multi_analyze(request_body: MultiAnalyze):
                 sheet_id=sheet_id, version=version, table_diff=table_diff
             )
             table_list.append(table_info)
-
-    print(">>> REQUEST /multi_analyze")
-    print("multi_analyze Table List:")
-    print(table_list)
-    print("user_prompt:")
-    print(user_prompt)
-    print(">>> REQUEST END")
 
     processed_tables = []
     for table in table_list:
@@ -314,15 +279,6 @@ async def handle_response(request_body: Response):
             "status": "generate_dsl",
         }
 
-        history = get_history(client_id)
-        print("\033[1;32;40m>>> MULTI-ANALYZE HISTORY")
-        print(f"\033[1;32;40m>>> Info:\n{history['information']}")
-        for item in history["question_answer_pairs"]:
-            print(f"\033[0;33;40m>>> Summary:\n{item['summary']}")
-            print(f"\033[0;33;40m>>> Question:\n{item['question']}")
-            print(f"\033[0;33;40m>>> Choices:\n{item['choices']}")
-            print(f"\033[0;36;40m>>> Answer:\n{item['answer']}")
-
     return return_message
 
 
@@ -352,9 +308,10 @@ async def handle_execute_dsl(request_body: ExecuteDSL):
     dsl = request_body.dsl
     arguments = request_body.arguments
 
-    print(f"client_id: {client_id}")
-    print(f"dsl: {dsl}")
-    print(f"arguments: {arguments}")
+    log_text(
+        client_id,
+        f">>> /execute_dsl\nclient_id: {client_id}\ndsl:\n{json.dumps(dsl, indent=4)}\narguments: {arguments}",
+    )
 
     def get_sheet_info(sheet_name):
         sheet_id = "_".join(sheet_name.split("_")[:-1]) + ".csv"
@@ -443,7 +400,6 @@ class ExecuteDSLList(BaseModel):
 async def handle_execute_dsl_list(request_body: ExecuteDSLList):
     client_id = request_body.client_id
     dsl_list = request_body.dsl_list
-    print(dsl_list)
 
     single_table_function_list = [
         "create",
@@ -486,7 +442,8 @@ async def handle_execute_dsl_list(request_body: ExecuteDSLList):
             tmp_sheet_version_map[sheet_id] = sheet_version
         else:
             if tmp_sheet_version_map[sheet_id] != sheet_version:
-                return f"Error: {sheet_id} version {tmp_sheet_version_map[sheet_id]} and {sheet_version} mismatch."
+                log_text(client_id, f">>> Execute_DSL\nError: {sheet_id} version {tmp_sheet_version_map[sheet_id]} and {sheet_version} mismatch.")
+                return None
 
     for dsl in dsl_list:
         function = dsl.function_name
@@ -548,7 +505,5 @@ async def handle_execute_dsl_list(request_body: ExecuteDSLList):
 
 @app.get("/get_dependencies/")
 async def get_dependencies():
-    print(">>> REQUEST /get_dependencies")
     dependency_list = DependenciesManager.get_all_nodes()
-    print("dependency_list: ", dependency_list)
     return JSONResponse(status_code=200, content={"dependencies": dependency_list})

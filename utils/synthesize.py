@@ -5,6 +5,7 @@ from utils.llm import (
     generate_chat_completion,
 )
 from utils.db import get_history_text, get_history
+from utils.log import log_messages
 
 
 def init_prompt():
@@ -110,44 +111,30 @@ def dsl_synthesize(client_id: str) -> str:
     history = get_history(client_id)
     summarize_user_prompt = get_history_text(client_id)
 
-    messages = append_message(summarize_system_prompt, "system")
+    messages = append_message(summarize_system_prompt, "system", [])
     messages = append_message(summarize_user_prompt, "user", messages)
     summarization = generate_chat_completion(messages)
-
-    print(f"\033[0;34;40m>>> Summarization assistant")
-    print(summarize_user_prompt)
-    print("--------------------------")
-    print("'''")
-    print(summarization)
-    print("'''")
+    messages = append_message(summarization, "assistant", messages)
+    log_messages(client_id, "generate_summarization", messages)
 
     plan_user_prompt = plan_user_prompt_template.replace(
         "{USER_INTENTS}", summarization
     ).replace("{INFORMATION}", history["information"])
 
-    messages = append_message(plan_system_prompt, "system")
+    messages = append_message(plan_system_prompt, "system", [])
     messages = append_message(plan_user_prompt, "user", messages)
-    response = generate_chat_completion(messages)
+    step_by_step_plan = generate_chat_completion(messages)
+    messages = append_message(step_by_step_plan, "assistant", messages)
+    log_messages(client_id, "generate_step_by_step_plan", messages)
 
-    print(f"\033[0;35;40m>>> Planning assistant")
-    print(plan_user_prompt)
-    print("--------------------------")
-    print("'''")
-    print(response)
-    print("'''")
-
-    generate_user_prompt = create_generate_user_prompt(response)
-    messages = append_message(generate_system_prompt, "system")
+    generate_user_prompt = create_generate_user_prompt(step_by_step_plan)
+    messages = append_message(generate_system_prompt, "system", [])
     messages = append_message(generate_user_prompt, "user", messages)
-    response = generate_chat_completion(messages)
+    generated_dsl = generate_chat_completion(messages)
+    messages = append_message(generated_dsl, "assistant", messages)
+    log_messages(client_id, "generate_dsl", messages)
 
-    print(f"\033[0;36;40m>>> DSL generation assistant")
-    print(generate_user_prompt)
-    print("--------------------------")
-    print("'''")
-    print(response)
-    print("'''")
-    dsls = json.loads(response)
+    dsls = json.loads(generated_dsl)
     for dsl in dsls:
         dsl["natural_language"] = transfer_to_NL(dsl)
     return dsls

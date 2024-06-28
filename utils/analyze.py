@@ -1,12 +1,14 @@
 from typing import List
 import json
 import re
+import copy
+import logging
 
 from utils.llm import (
     generate_chat_completion,
     append_message,
 )
-
+from utils.log import log_messages, log_text
 from utils.db import update_history, get_history, get_history_text
 
 
@@ -52,9 +54,6 @@ def extract_changes(data):
                 "old_value": match_1.group(3),
                 "new_value": match_1.group(4),
             }
-            print("---------------")
-            print(change)
-            print("---------------")
             changes.append(change)
             continue
 
@@ -88,12 +87,13 @@ def extract_changes(data):
             changes.append(change)
             continue
 
-        print(f"WARN: Unrecognized line: {line}")
+        logging.warning(f">>> extract_changes\nUnrecognized line: {line}")
 
     return changes
 
 
-def find_batch_operation(changes, num_rows, num_cols):
+def find_batch_operation(client_id, changes, num_rows, num_cols):
+    original_changes = copy.deepcopy(changes)
     # List to store detected batch operations
     batch_operations = []
     # 1. batch create row operations
@@ -230,30 +230,32 @@ def find_batch_operation(changes, num_rows, num_cols):
 
     # Add batch operations to the changes list
     changes.extend(batch_operations)
-
+    log_text(
+        client_id,
+        f">>> find_batch_operation\nChanges:\n{json.dumps(changes, indent=4)}\nBatch Operations:\n{json.dumps(batch_operations, indent=4)}",
+    )
     return changes
 
 
 def mata_diff_to_NL(
-    diff: str, row_count: int, column_names: list, is_index_table: bool
+    client_id: str, diff: str, row_count: int, column_names: list, is_index_table: bool
 ) -> str:
     changes = extract_changes(diff)
     if is_index_table:
         for change in changes:
             if "col" in change:
                 change["col"] += 1
-    changes = find_batch_operation(changes, row_count, len(column_names))
-    print(">>> Finding batch operations...")
-    print(changes)
+    changes = find_batch_operation(client_id, changes, row_count, len(column_names))
 
     changes_text = ""
     for change in changes:
         changes_text += json.dumps(change) + "\n"
 
-    messages = append_message(transfer_prompt, "system")
+    messages = append_message(transfer_prompt, "system", [])
     messages = append_message(changes_text, "user", messages)
     response = generate_chat_completion(messages)
-
+    messages = append_message(response, "assistant", messages)
+    log_messages(client_id, "mata_diff_to_NL", messages)
     return response
 
 
@@ -296,14 +298,10 @@ def get_multi_analyze(client_id, table_list, user_prompt):
     input_user_prompt += user_prompt
     update_history(client_id, {"information": input_user_prompt})
 
-    print("\n>>> final_input_user_prompt:")
-    print("'''")
-    print(input_user_prompt)
-    print("'''\n")
-
-    messages = append_message(init_system_prompt, "system")
+    messages = append_message(init_system_prompt, "system", [])
     messages = append_message(input_user_prompt, "user", messages)
     response = json.loads(generate_chat_completion(messages))
+    messages = append_message(response, "assistant", messages)
     if response["type"] == "question":
         history = get_history(client_id)
         history["question_answer_pairs"] = [
@@ -314,6 +312,7 @@ def get_multi_analyze(client_id, table_list, user_prompt):
             }
         ]
         update_history(client_id, history)
+    log_messages(client_id, "analyze_init", messages)
     return response
 
 
@@ -331,12 +330,9 @@ def multi_analyze(
         is_index_table = table["is_index_table"]
         if table_diff:
             NL_diff = mata_diff_to_NL(
-                table_diff, row_count, column_names, is_index_table
+                client_id, table_diff, row_count, column_names, is_index_table
             )
             table["NL_diff"] = NL_diff
-
-    print(">>> multi analyze table_list")
-    print(table_list)
 
     response = get_multi_analyze(client_id, table_list, user_promt)
     return response
@@ -345,20 +341,22 @@ def multi_analyze(
 def followup(client_id, response):
     history = get_history(client_id)
     if "response" in history["question_answer_pairs"][-1]:
-        print("WARN: Followup already done")
+        logging.warning(f">>> followup\nFollowup already done\nresponse:{response}")
         return
     history["question_answer_pairs"][-1]["answer"] = response
     update_history(client_id, history)
 
     history_text = get_history_text(client_id, is_dump=True)
-    messages = append_message(followup_system_prompt, "system")
+    messages = append_message(followup_system_prompt, "system", [])
     messages = append_message(history_text, "user", messages)
-
     response = generate_chat_completion(messages)
+    message = append_message(response, "assistant", messages)
+    log_messages(client_id, "followup", message)
+
     try:
         response = json.loads(response)
     except json.JSONDecodeError as e:
-        print(response)
+        logging.error(f">>> followup\nFailed to decode response:\n{response}")
         raise e
     if response["type"] == "question":
         history = get_history(client_id)

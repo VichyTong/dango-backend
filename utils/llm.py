@@ -5,7 +5,7 @@ from openai import OpenAI
 client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
 
-def append_message(content, role, messages=[]):
+def append_message(content, role, messages):
     messages.append(
         {
             "role": role,

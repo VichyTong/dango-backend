@@ -134,10 +134,8 @@ def convert_axis(token):
 # Function to parse and execute commands
 def execute_dsl(tables, dsl_code):
     parsed = dsl_parser.parse(dsl_code)
-    # print(parsed.pretty())  # This line prints the parsed tree in a readable format.
 
     for command in parsed.children:
-        # print("Executing command:", command)
         if isinstance(command, Tree):
             command = command.children[0]
             command_type = list(command.keys())[0]
@@ -191,6 +189,6 @@ def execute_dsl(tables, dsl_code):
             #     axis = convert_axis(command["test"]["axis"])
             #     tables[table_name] = utils.test(table, label1, label2, strategy, axis)
         else:
-            print("Invalid command:", command)
+            raise ValueError(f"Unexpected command type: {type(command)}")
         
         return tables
