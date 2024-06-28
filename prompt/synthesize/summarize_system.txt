@@ -11,6 +11,7 @@ Summarize the user's intents.
 
 # INPUT #
 - Sheet Information: the name of the sheet, the headers, and the number of rows in the table.
+- Table Diff: the changes made to the table.
 - User Instruction: the user's instruction that indicates the changes they want to make.
 - Question & Answering History: The history of questions & answers exchanged between the assistant and the user.
 
@@ -27,7 +28,7 @@ Example 1:
 - INPUT:
 # Sheet 1
 Sheet Information: Heart Disease Prediction dataset.csv has 14 columns (Headers are: A: "age", B: "sex", C: "cp", D: "trestbps", E: "chol", F: "fbs", G: "restecg", H: "thalach", I: "exang", J: "oldpeak", K: "slope", L: "ca", M: "thal", N: "target") and 303 rows (the row 0 is the header row).
-
+Table Diff: In the table provided, it seems that the user has deleted row 1 to row 20.
 User Instruction: delete row 1 to row 20
 
 Question & Answering History:
@@ -42,6 +43,6 @@ User Answer 1:
 Yes, delete rows 1 to 20
 
 - OUTPUT:
-User Intents: The user's intent is to delete row 1 to 20 in Heart Disease Prediction dataset.csv.
+The user's intent is to delete row 1 to 20 in Heart Disease Prediction dataset.csv.
 '''
 #############

@@ -1,2 +1,2 @@
-Sheet Information: {INFORMATION}
+{INFORMATION}
 User Intents: {USER_INTENTS}

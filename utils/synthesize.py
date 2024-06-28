@@ -27,7 +27,7 @@ init_prompt()
 
 
 def create_generate_user_prompt(summarization):
-    return generate_user_prompt_template.replace("{DESCRIPTION}", summarization)
+    return generate_user_prompt_template.replace("{PLAN}", summarization)
 
 
 def transfer_to_NL(dsl):
@@ -115,6 +115,8 @@ def dsl_synthesize(client_id: str) -> str:
     summarization = generate_chat_completion(messages)
 
     print(f"\033[0;34;40m>>> Summarization assistant")
+    print(summarize_user_prompt)
+    print("--------------------------")
     print("'''")
     print(summarization)
     print("'''")
@@ -128,16 +130,20 @@ def dsl_synthesize(client_id: str) -> str:
     response = generate_chat_completion(messages)
 
     print(f"\033[0;35;40m>>> Planning assistant")
+    print(plan_user_prompt)
+    print("--------------------------")
     print("'''")
     print(response)
     print("'''")
 
-    generate_user_prompt = create_generate_user_prompt(summarization)
+    generate_user_prompt = create_generate_user_prompt(response)
     messages = append_message(generate_system_prompt, "system")
     messages = append_message(generate_user_prompt, "user", messages)
     response = generate_chat_completion(messages)
 
     print(f"\033[0;36;40m>>> DSL generation assistant")
+    print(generate_user_prompt)
+    print("--------------------------")
     print("'''")
     print(response)
     print("'''")
