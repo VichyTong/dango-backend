@@ -253,7 +253,7 @@ def find_batch_operation(client_id, changes, num_rows, num_cols):
 def mata_diff_to_NL(
     client_id: str, diff: str, row_count: int, column_names: list, is_index_table: bool
 ) -> str:
-    changes = extract_changes(diff)
+    changes = extract_changes(client_id, diff)
     if is_index_table:
         for change in changes:
             if "col" in change:
