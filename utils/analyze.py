@@ -8,7 +8,8 @@ from utils.llm import (
     append_message,
 )
 from utils.log import log_messages, log_text, log_warn, log_error
-from utils.db import update_history, get_history, get_history_text
+from utils.db import update_history, get_history
+from utils.format_text import get_history_text
 
 
 def init_prompt():
@@ -274,6 +275,8 @@ def mata_diff_to_NL(
 
 def get_multi_analyze(client_id, table_list, user_prompt):
     input_user_prompt = ""
+    sheet_state_list = []
+    table_diff_list = []
     for index, table in enumerate(table_list, start=1):
         column_names = table["column_names"]
         column_number = len(column_names)
@@ -291,25 +294,36 @@ def get_multi_analyze(client_id, table_list, user_prompt):
             # TODO: What if number of columns is more than 26?
         column_names = ", ".join(column_string_list)
 
-        input_user_prompt += (
+        sheet_state_string = (
             sheet_state_template.replace("{index}", str(index))
             .replace("{file_name}", file_name)
             .replace("{column_count}", str(column_number))
             .replace("{column_names}", column_names)
             .replace("{row_count}", str(row_count))
         )
+        sheet_state_list.append(sheet_state_string)
+        input_user_prompt += sheet_state_string
         if "NL_diff" in table:
-            input_user_prompt += table_diff_template.replace(
-                "{NL_diff}", table["NL_diff"]
-            )
+            table_diff = table_diff_template.replace("{NL_diff}", table["NL_diff"])
+            table_diff_list.append(table_diff)
+            input_user_prompt += table_diff
 
     if user_prompt == "":
         user_prompt = "\nUser Instruction: (No user instruction)"
     else:
         user_prompt = "\nUser Instruction: " + user_prompt
-
     input_user_prompt += user_prompt
-    update_history(client_id, {"information": input_user_prompt})
+
+    update_history(
+        client_id,
+        {
+            "information": {
+                "sheet_state": sheet_state_list,
+                "table_diff": table_diff_list,
+                "user_prompt": user_prompt,
+            }
+        },
+    )
 
     messages = append_message(init_system_prompt, "system", [])
     messages = append_message(input_user_prompt, "user", messages)
@@ -359,7 +373,8 @@ def followup(client_id, response):
     history["question_answer_pairs"][-1]["answer"] = response
     update_history(client_id, history)
 
-    history_text = get_history_text(client_id, is_dump=True)
+    history = get_history(client_id)
+    history_text = get_history_text(history, is_dump=True)
     messages = append_message(followup_system_prompt, "system", [])
     messages = append_message(history_text, "user", messages)
     response = generate_chat_completion(messages)

@@ -12,11 +12,31 @@ def init_prompt():
 init_prompt()
 
 
-def convert_history_to_text(history):
+def get_history_text(history, is_dump=False, with_table_diff=True):
+    if is_dump:
+        history = convert_history_to_dumped_text(history, with_table_diff=with_table_diff)
+    else:
+        history = convert_history_to_text(history, with_table_diff=with_table_diff)
+    return history
+
+
+def format_information(information, with_table_diff=True):
+    result = ""
+    for index, item in enumerate(information["sheet_state"]):
+        result += item
+        if with_table_diff:
+            result += "\n"
+            result += information["table_diff"][index]
+    result += "\n"
+    result += information["user_prompt"]
+    result += "\n"
+    return result
+
+
+def convert_history_to_text(history, with_table_diff=True):
     start_index = 0
 
-    information = history["information"]
-    prompt = f"{information}\n"
+    prompt = format_information(history["information"], with_table_diff)
 
     question_index = 1
     for pair in history["question_answer_pairs"]:
@@ -45,11 +65,11 @@ def convert_history_to_text(history):
     return prompt
 
 
-def convert_history_to_dumped_text(history):
+def convert_history_to_dumped_text(history, with_table_diff=True):
     start_index = 0
 
-    information = history["information"]
-    prompt = f"{information}\nQuestion & Answering History:\n"
+    prompt = format_information(history["information"], with_table_diff)
+    prompt += "Question & Answering History:\n"
 
     for pair in history["question_answer_pairs"]:
         question = pair["question"]

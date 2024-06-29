@@ -4,8 +4,9 @@ from utils.llm import (
     append_message,
     generate_chat_completion,
 )
-from utils.db import get_history_text, get_history
+from utils.db import get_history
 from utils.log import log_messages
+from utils.format_text import get_history_text, format_information
 
 
 def init_prompt():
@@ -109,7 +110,7 @@ def transfer_to_NL(dsl):
 
 def dsl_synthesize(client_id: str) -> str:
     history = get_history(client_id)
-    summarize_user_prompt = get_history_text(client_id)
+    summarize_user_prompt = get_history_text(history)
 
     messages = append_message(summarize_system_prompt, "system", [])
     messages = append_message(summarize_user_prompt, "user", messages)
@@ -119,7 +120,7 @@ def dsl_synthesize(client_id: str) -> str:
 
     plan_user_prompt = plan_user_prompt_template.replace(
         "{USER_INTENTS}", summarization
-    ).replace("{INFORMATION}", history["information"])
+    ).replace("{INFORMATION}", format_information(history["information"], with_table_diff=False))
 
     messages = append_message(plan_system_prompt, "system", [])
     messages = append_message(plan_user_prompt, "user", messages)

@@ -124,16 +124,6 @@ def create_client():
     return client_id
 
 
-def get_history_text(client_id, is_dump=False):
-    cur.execute("SELECT history FROM histories WHERE client_id = ?", (client_id,))
-    history = json.loads(cur.fetchone()[0])
-    if is_dump:
-        history = convert_history_to_dumped_text(history)
-    else:
-        history = convert_history_to_text(history)
-    return history
-
-
 """
 Organization of "history"
 {
