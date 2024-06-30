@@ -18,7 +18,7 @@ Create a DSL script to clean the data based on the description.
 
 2. delete_table(table_name): Deletes the specified table.
 
-3. insert(table_name, label, axis): Insert columns or rows to a specified index in the table.
+3. insert(table_name, label, axis): Insert a empty column or row after a specified label in the table.
 
 4. drop(table_name, label, axis): Deletes a specified label in the table.
 

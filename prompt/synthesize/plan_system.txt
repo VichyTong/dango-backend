@@ -17,7 +17,7 @@ Generate a step-by-step plan to clean the data based on the user's intents.
 
 2. delete_table: Deletes the specified table.
 
-3. insert: Insert columns or rows to a specified index in the table.
+3. insert: Insert a empty column or row after a specified label in the table.
 
 4. drop: Deletes a specified label in the table.
 

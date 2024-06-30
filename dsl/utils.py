@@ -20,21 +20,27 @@ def classify_axis(axis):
     return axis
 
 
-def create(table, axis=0):
+def insert(table, label, axis=0):
     """
-    Creates a new row or column in the DataFrame.
+    Insert a empty column or row after a specified label in the table.
 
     Parameters:
-    - table: DataFrame in which the new row/column will be created.
-    - axis: 0 for row, 1 for column. Specifies whether to create a row or a column.
+    - table: DataFrame in which the column/row will be inserted.
+    - label: The label which the new column/row will be inserted after.
+    - axis: 0 for row, 1 for column. Specifies whether to insert a row or a column.
     """
-
     axis = classify_axis(axis)
 
-    if axis == 1:
-        table["new_column"] = None
-    else:
-        table.loc[len(table)] = None
+    if axis == 1:  # Insert column
+        idx = table.columns.get_loc(label)
+        new_col_name = "new_col"  # or generate a unique name
+        table.insert(idx + 1, new_col_name, [None] * len(table))
+    else:  # Insert row
+        idx = table.index.get_loc(label)
+        new_row = pd.Series([None] * len(table.columns), index=table.columns)
+        table = pd.concat(
+            [table.iloc[: idx + 1], pd.DataFrame([new_row]), table.iloc[idx + 1 :]]
+        ).reset_index(drop=True)
 
     return table
 
@@ -64,6 +70,47 @@ def drop(table, label, axis=0):
             table.drop(labels=table.index[label], axis=axis, inplace=True)
         else:
             table.drop(labels=label, axis=axis, inplace=True)
+    return table
+
+
+def assign(table, label, values, axis=0):
+    """
+    Assigns new values to a row or column in the DataFrame.
+
+    Parameters:
+    - table: DataFrame in which the row/column will be assigned new values.
+    - label: The label of the row/column to be assigned new values.
+    - values: List of new values to be assigned to the row/column.
+    - axis: 0 for row, 1 for column.
+    """
+
+    axis = classify_axis(axis)
+
+    # Assigning values to a column
+    if axis == 1:
+        if label not in table.columns:
+            raise ValueError(f"Column {label} does not exist in the DataFrame.")
+        if len(values) != len(table):
+            raise ValueError(
+                f"Number of values ({len(values)}) does not match the number of rows in the DataFrame ({len(table)})."
+            )
+
+        # Assign the new values to the column
+        table[label] = values
+
+    # Assigning values to a row
+    else:
+        label = int(label) - 1
+        if label not in table.index:
+            raise ValueError(f"Row {label} does not exist in the DataFrame.")
+        if len(values) != len(table.columns):
+            raise ValueError(
+                f"Number of values ({len(values)}) does not match the number of columns in the DataFrame ({len(table.columns)})."
+            )
+
+        # Assign the new values to the row
+        table.loc[label] = values
+
     return table
 
 

@@ -392,9 +392,15 @@ async def handle_execute_dsl_list(request_body: ExecuteDSLList):
     client_id = request_body.client_id
     dsl_list = request_body.dsl_list
 
+    no_return_function_list = [
+        "create_table",
+        "delete_table",
+    ]
+
     single_table_function_list = [
-        "create",
+        "insert",
         "drop",
+        "assign",
         "merge",
         "split",
         "transpose",
@@ -442,17 +448,41 @@ async def handle_execute_dsl_list(request_body: ExecuteDSLList):
     for dsl in dsl_list:
         function = dsl.function_name
         arguments = dsl.arguments
-        if function in single_table_function_list:
+        if function in no_return_function_list:
+            pass
+        elif function in single_table_function_list:
             load_sheet(arguments[0])
         elif function in double_table_function_list:
             load_sheet(arguments[0])
             load_sheet(arguments[2])
+        else:
+            return "Error: Invalid function"
 
     for dsl in dsl_list:
         function = dsl.function_name
         arguments = dsl.arguments
         DependenciesManager.update_dependency(function, arguments)
-        if function in single_table_function_list:
+        if function in no_return_function_list:
+            full_sheet_name = arguments[0]
+            sheet_id = get_sheet_id(full_sheet_name)
+            version = find_next_version(client_id, sheet_id)
+            if function == "create_table":
+                # create a dataframe have row_number and column_number
+                row_number = arguments[1]
+                column_number = arguments[2]
+                data = pd.DataFrame(
+                    index=range(row_number), columns=range(column_number)
+                )
+                upload_sheet(
+                    client_id, sheet_id, version, data.to_dict(orient="records")
+                )
+            elif function == "delete_table":
+                delete_file(
+                    client_id,
+                    sheet_id=sheet_id,
+                    version=version,
+                )
+        elif function in single_table_function_list:
             sheet_id = get_sheet_id(arguments[0])
             sheet = tmp_sheet_data_map[sheet_id]
             new_sheet = execute_dsl(sheet, function, arguments[1:])
