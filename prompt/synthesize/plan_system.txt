@@ -16,7 +16,7 @@ Generate a step-by-step plan to clean the data based on the user's intents.
 1. create: Create columns or tables to a specified number in the table.
 
 2. drop: Deletes a specified label in the table.
-   
+
 3. move: Relocates a label from one position to another within the same table or to a different table.
 
 4. copy: Copies a label and appends it to the end of the target table.

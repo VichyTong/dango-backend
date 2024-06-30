@@ -2,6 +2,7 @@ import pandas as pd
 import scipy.stats as stats
 import statsmodels.api as sm
 
+
 def classify_axis(axis):
     if axis not in [0, 1, "index", "columns", "0", "1"]:
         raise ValueError("Axis must be 0, 'index', 1, or 'columns'")
@@ -17,6 +18,7 @@ def classify_axis(axis):
         axis = 1
 
     return axis
+
 
 def create(table, axis=0):
     """
@@ -129,7 +131,7 @@ def copy(table, label, target_table, target_label, axis=0):
     if axis == 1:
         if len(table.index) != len(target_table.index):
             for i in range(len(table.index) - len(target_table.index)):
-                target_table.loc[f'Added_{i}'] = None
+                target_table.loc[f"Added_{i}"] = None
 
         if label not in table.columns:
             raise ValueError(f"Column {label} does not exist in the source DataFrame.")
@@ -141,8 +143,8 @@ def copy(table, label, target_table, target_label, axis=0):
         # if column number does not match, create to match
         if len(table.columns) != len(target_table.columns):
             for i in range(len(table.columns) - len(target_table.columns)):
-                target_table[f'Added_{i}'] = None
-        
+                target_table[f"Added_{i}"] = None
+
         label = int(label) - 1
         target_label = int(target_label) - 1
         if label not in table.index:
@@ -333,3 +335,21 @@ def test(table, label_1, label_2, strategy, axis=0):
         test_stat = chi2_stat
 
     return test_stat, p_value
+
+
+def create_table(row_number, column_number):
+    """
+    Creates a new DataFrame with the specified number of rows and columns.
+
+    Parameters:
+    - row_number: The number of rows in the DataFrame.
+    - column_number: The number of columns in the DataFrame.
+
+    Returns:
+    - A new DataFrame with the specified number of rows and columns.
+    """
+
+    # Create a new DataFrame with the specified dimensions
+    new_table = pd.DataFrame(index=range(row_number), columns=range(column_number))
+
+    return new_table
