@@ -472,8 +472,8 @@ async def handle_execute_dsl_list(request_body: ExecuteDSLList):
         DependenciesManager.update_dependency(function, arguments)
         if function in no_return_function_list:
             sheet_id = arguments[0]
-            version = find_next_version(client_id, sheet_id)
             if function == "create_table":
+                version = find_next_version(client_id, sheet_id)
                 # create a dataframe have row_number and column_number
                 row_number = arguments[1]
                 column_number = arguments[2]
@@ -485,11 +485,16 @@ async def handle_execute_dsl_list(request_body: ExecuteDSLList):
                 )
                 tmp_sheet_data_map[sheet_id] = data
             elif function == "delete_table":
-                delete_file(
+                version = find_next_version(client_id, sheet_id) - 1
+                if version < 0:
+                    print("Error: Invalid Table")
+                delete_sheet(
                     client_id,
                     sheet_id=sheet_id,
                     version=version,
                 )
+                print(sheet_id, version)
+                print(get_all_sheets(client_id))
         elif function in single_table_function_list:
             sheet_id = get_sheet_id(arguments[0])
             sheet = tmp_sheet_data_map[sheet_id]
