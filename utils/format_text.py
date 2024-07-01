@@ -24,7 +24,7 @@ def format_information(information, with_table_diff=True):
     result = ""
     for index, item in enumerate(information["sheet_state"]):
         result += item
-        if with_table_diff:
+        if with_table_diff and "table_diff" in information and index < len(information["table_diff"]):
             result += "\n"
             result += information["table_diff"][index]
     result += "\n"

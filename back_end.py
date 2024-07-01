@@ -412,10 +412,18 @@ async def handle_execute_dsl_list(request_body: ExecuteDSLList):
     ]
 
     def get_sheet_id(sheet_name):
-        return "_".join(sheet_name.split("_")[:-1]) + ".csv"
+        name = sheet_name.split("_")[:-1]
+        if len(name) == 1:
+            return "_".join(sheet_name.split("_")[:-1]) + ".csv"
+        else:
+            return sheet_name
 
     def get_sheet_version(sheet_name):
-        return int(sheet_name.split("_")[-1][1:].split(".csv")[0])
+        version = sheet_name.split("_")[-1][1:].split(".csv")
+        if len(version) == 1:
+            return int(version)
+        else:
+            return 0
 
     def get_sheet_info(sheet_name):
         sheet_id = get_sheet_id(sheet_name)

@@ -309,10 +309,10 @@ def get_multi_analyze(client_id, table_list, user_prompt):
             input_user_prompt += table_diff
 
     if user_prompt == "":
-        user_prompt = "\nUser Instruction: (No user instruction)"
+        user_prompt = "User Instruction: (No user instruction)"
     else:
-        user_prompt = "\nUser Instruction: " + user_prompt
-    input_user_prompt += user_prompt
+        user_prompt = "User Instruction: " + user_prompt
+    input_user_prompt += "\n" + user_prompt
 
     update_history(
         client_id,
