@@ -22,7 +22,7 @@ Create a DSL script to clean the data based on the description.
 
 4. drop(table_name, label, axis): Deletes a specified label in the table.
 
-5. assign(table_name, label, values): Assign new values to the specified label in the table.
+5. assign(table_name, label, values, axis): Assign new values to the specified label in the table.
 
 6. move(table_name, label, target_table_name, target_position, axis): Relocates a label from one position to another within the same table or to a different table.
 

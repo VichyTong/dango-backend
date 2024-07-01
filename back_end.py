@@ -463,8 +463,7 @@ async def handle_execute_dsl_list(request_body: ExecuteDSLList):
         arguments = dsl.arguments
         DependenciesManager.update_dependency(function, arguments)
         if function in no_return_function_list:
-            full_sheet_name = arguments[0]
-            sheet_id = get_sheet_id(full_sheet_name)
+            sheet_id = arguments[0]
             version = find_next_version(client_id, sheet_id)
             if function == "create_table":
                 # create a dataframe have row_number and column_number
@@ -476,6 +475,7 @@ async def handle_execute_dsl_list(request_body: ExecuteDSLList):
                 upload_sheet(
                     client_id, sheet_id, version, data.to_dict(orient="records")
                 )
+                tmp_sheet_data_map[sheet_id] = data
             elif function == "delete_table":
                 delete_file(
                     client_id,

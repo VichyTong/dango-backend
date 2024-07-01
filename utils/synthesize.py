@@ -33,7 +33,25 @@ def create_generate_user_prompt(summarization):
 
 
 def transfer_to_NL(dsl):
-    if dsl["function_name"] == "drop":
+    if dsl["function_name"] == "create_table":
+        table = dsl["arguments"][0]
+        row_number = dsl["arguments"][1]
+        column_number = dsl["arguments"][2]
+        return f"Create a table %[{table}] with {row_number} rows and {column_number} columns."
+    elif dsl["function_name"] == "delete_table":
+        table = dsl["arguments"][0]
+        return f"Delete the table %[{table}]."
+    elif dsl["function_name"] == "insert":
+        table = dsl["arguments"][0]
+        label = dsl["arguments"][1]
+        axis = dsl["arguments"][2]
+        if axis == 0 or axis == "index" or axis == "0":
+            return f"Insert a row $[{label}] into %[{table}]."
+        elif axis == 1 or axis == "columns" or axis == "1":
+            return f"Insert a column $[{label}] into %[{table}]."
+        else:
+            return "Invalid function"
+    elif dsl["function_name"] == "drop":
         table = dsl["arguments"][0]
         label = dsl["arguments"][1]
         axis = dsl["arguments"][2]
@@ -43,6 +61,18 @@ def transfer_to_NL(dsl):
             return f"Drop the column $[{label}] in %[{table}]."
         else:
             return "Invalid function"
+    elif dsl["function_name"] == "assign":
+        table = dsl["arguments"][0]
+        label = dsl["arguments"][1]
+        values = dsl["arguments"][2]
+        axis = dsl["arguments"][3]
+        if axis == 0 or axis == "index" or axis == "0":
+            return f"Assign the values @{values} to the row $[{label}] in %[{table}]."
+        elif axis == 1 or axis == "columns" or axis == "1":
+            return f"Assign the values @{values} to the column $[{label}] in %[{table}]."
+        else:
+            return "Invalid function"
+
     elif dsl["function_name"] == "move":
         table = dsl["arguments"][0]
         label = dsl["arguments"][1]
