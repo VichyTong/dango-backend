@@ -32,7 +32,10 @@ def insert(table, label, axis=0):
     axis = classify_axis(axis)
 
     if axis == 1:  # Insert column
-        idx = table.columns.get_loc(label)
+        if isinstance(label, int):
+            idx = label - 1
+        else:
+            idx = table.columns.get_loc(label)
         new_col_name = "new_col"  # or generate a unique name
         table.insert(idx + 1, new_col_name, [None] * len(table))
     else:  # Insert row

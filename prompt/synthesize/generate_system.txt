@@ -39,7 +39,7 @@ Create a DSL script to clean the data based on the description.
 12. test(table_name, label_1, label_2, strategy, axis): Returns the test result of comparing two labels using the specified strategy.
 
 Definitions:
-- label: Refers to a row or column in the table.
+- label: Refers to a row or column in the table. If the label is the name of a row or column, it should be a string. If the label is the index of a row or column, it should be an integer.
 - axis: 
   - 0 or "index": Indicates a row operation.
   - 1 or "columns": Indicates a column operation.
@@ -61,15 +61,15 @@ Your output should be in JSON form. For example:
 [
     {
         "function_name": "copy",
-        "arguments": ["a.csv", "1", "Table2", "4", "index"]
+        "arguments": ["a.csv", 1, "Table2", 4, "index"]
     },
     {
         "function_name": "drop",
-        "arguments": ["a.csv", "1", "index"]
+        "arguments": ["a.csv", 1, "index"]
     },
     {
         "function_name": "split",
-        "arguments": ["a.csv", "1", ",", ["new1", "new2"]]
+        "arguments": ["a.csv", 1, ",", ["new1", "new2"]]
     }
 ]
 Do not add any other characters to the output.
