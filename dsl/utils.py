@@ -36,6 +36,7 @@ def insert(table, label, axis=0):
         new_col_name = "new_col"  # or generate a unique name
         table.insert(idx + 1, new_col_name, [None] * len(table))
     else:  # Insert row
+        label = int(label) - 1
         idx = table.index.get_loc(label)
         new_row = pd.Series([None] * len(table.columns), index=table.columns)
         table = pd.concat(
