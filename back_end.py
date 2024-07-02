@@ -330,7 +330,7 @@ async def handle_execute_dsl_list(request_body: ExecuteDSLList):
     def get_sheet_version(sheet_name):
         version = sheet_name.split("_")[-1][1:].split(".csv")
         if len(version) == 1:
-            return int(version)
+            return int(version[0])
         else:
             return 0
 
