@@ -321,7 +321,8 @@ def get_multi_analyze(client_id, table_list, user_prompt):
                 "sheet_state": sheet_state_list,
                 "table_diff": table_diff_list,
                 "user_prompt": user_prompt,
-            }
+            },
+            "question_answer_pairs": [],
         },
     )
 
