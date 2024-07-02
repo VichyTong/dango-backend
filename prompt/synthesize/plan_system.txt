@@ -19,7 +19,7 @@ Generate a step-by-step plan to clean the data based on the user's intents.
 
 3. insert: Insert an empty column or row after a specified label in the table.
 
-4. drop: Deletes a specified label in the table.
+4. drop: Drops a column or row in the table.
 
 5. assign: Assign new values to the specified label in the table.
 
@@ -41,6 +41,7 @@ Generate a step-by-step plan to clean the data based on the user's intents.
 
 # GUIDELINES #
 1. You should only use the DSL functions provided in the DSL Grammar. Do not add or invent new functions.
+2. You should point out the correct table to apply the functions to.
 
 #############
 
@@ -65,8 +66,8 @@ User Intents: The user's intent is to drop the column "ca" and "thal".
 
 - OUTPUT:
 Step-by-step plan:
-1. Drop the column "ca". (drop function)
-2. Drop the column "thal". (drop function)
+1. Delete the column "ca". (drop function)
+2. Delete the column "thal". (drop function)
 '''
 
 Example 2:

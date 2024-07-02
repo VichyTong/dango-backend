@@ -282,7 +282,7 @@ def get_multi_analyze(client_id, table_list, user_prompt):
         column_number = len(column_names)
         sheet_id = table["sheet_id"]
         version = table["version"]
-        file_name = f"{sheet_id.split('.')[0]}_v{version}.{sheet_id.split('.')[1]}"
+        file_name = f"{sheet_id.split('.csv')[0]}_v{version}.{sheet_id.split('.csv')[1]}"
         row_count = len(table["row_names"])
 
         column_index = "A"

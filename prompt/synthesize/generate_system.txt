@@ -20,7 +20,7 @@ Create a DSL script to clean the data based on the description.
 
 3. insert(table_name, label, axis): Insert an empty column or row after a specified label in the table.
 
-4. drop(table_name, label, axis): Deletes a specified label in the table.
+4. drop(table_name, label, axis): Drops a column or row in the table.
 
 5. assign(table_name, label, values, axis): Assign new values to the specified label in the table.
 
@@ -48,6 +48,7 @@ Definitions:
 
 # GUIDELINES #
 1. You should only use the DSL functions provided in the DSL Grammar. Do not add or invent new functions.
+2. For every step, you need to find the best function from the DSL Grammar to perform the described action.
 
 #############
 
