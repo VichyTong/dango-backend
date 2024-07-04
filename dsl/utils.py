@@ -20,13 +20,14 @@ def classify_axis(axis):
     return axis
 
 
-def insert(table, label, axis=0):
+def insert(table, label, name="new_column", axis=0):
     """
-    Insert a empty column or row after a specified label in the table.
+    Inserts an empty row or column after a specified label in the table.
 
     Parameters:
-    - table: DataFrame in which the column/row will be inserted.
-    - label: The label which the new column/row will be inserted after.
+    - table: DataFrame in which the row/column will be inserted.
+    - label: The label of the row/column after which the new row/column will be inserted.
+    - name: The name of the new row/column to be inserted.
     - axis: 0 for row, 1 for column. Specifies whether to insert a row or a column.
     """
     axis = classify_axis(axis)
@@ -36,7 +37,7 @@ def insert(table, label, axis=0):
             idx = label - 1
         else:
             idx = table.columns.get_loc(label)
-        new_col_name = "new_col"  # or generate a unique name
+        new_col_name = name
         table.insert(idx + 1, new_col_name, [None] * len(table))
     else:  # Insert row
         label = int(label) - 1
@@ -77,91 +78,25 @@ def drop(table, label, axis=0):
     return table
 
 
-def assign(table, label, values, axis=0):
+def assign(table, row, column, value):
     """
-    Assigns new values to a row or column in the DataFrame.
+    Assigns a value to a specific cell in the DataFrame.
 
     Parameters:
-    - table: DataFrame in which the row/column will be assigned new values.
-    - label: The label of the row/column to be assigned new values.
-    - values: List of new values to be assigned to the row/column.
-    - axis: 0 for row, 1 for column.
+    - table: DataFrame in which the cell will be assigned.
+    - row: The row index of the cell to be assigned.
+    - column: The column index of the cell to be assigned.
+    - value: The value to be assigned to the cell.
     """
 
-    axis = classify_axis(axis)
+    if row not in table.index:
+        raise ValueError(f"Row {row} does not exist in the DataFrame.")
+    if column not in table.columns:
+        raise ValueError(f"Column {column} does not exist in the DataFrame.")
 
-    # Assigning values to a column
-    if axis == 1:
-        if label not in table.columns:
-            raise ValueError(f"Column {label} does not exist in the DataFrame.")
-        if len(values) != len(table):
-            raise ValueError(
-                f"Number of values ({len(values)}) does not match the number of rows in the DataFrame ({len(table)})."
-            )
-
-        # Assign the new values to the column
-        table[label] = values
-
-    # Assigning values to a row
-    else:
-        label = int(label) - 1
-        if label not in table.index:
-            raise ValueError(f"Row {label} does not exist in the DataFrame.")
-        if len(values) != len(table.columns):
-            raise ValueError(
-                f"Number of values ({len(values)}) does not match the number of columns in the DataFrame ({len(table.columns)})."
-            )
-
-        # Assign the new values to the row
-        table.loc[label] = values
+    table.at[row, column] = value
 
     return table
-
-
-def move(table, label, target_table, target_label, axis=0):
-    """
-    Moves a row or column from source_table to target_table at the specified position.
-
-    Parameters:
-    - source_table: DataFrame from which the row/column will be moved.
-    - label: The label of the row/column to be moved.
-    - target_table: DataFrame to which the row/column will be added.
-    - position: Position at which the row/column will be inserted into the target_table.
-    - axis: 0 for row, 1 for column.
-    """
-
-    axis = classify_axis(axis)
-
-    target_label = int(target_label) - 1
-
-    if axis == 1:
-        if label not in table.columns:
-            raise ValueError(
-                f"Column '{label}' does not exist in the source DataFrame."
-            )
-        if target_label < 0 or target_label > len(target_table.columns):
-            raise ValueError("Position out of range in the target DataFrame.")
-        column_data = table.pop(label)
-        target_table.insert(loc=target_label, column=label, value=column_data)
-    else:
-        label = int(label) - 1
-        if label not in table.index:
-            raise ValueError(f"Row '{label}' does not exist in the source DataFrame.")
-        if target_label < 0 or target_label > len(target_table.index):
-            raise ValueError("Position out of range in the target DataFrame.")
-
-        row_data = table.loc[[label]]
-
-        table.drop(labels=label, axis=0, inplace=True)
-
-        if target_label == len(target_table.index):
-            target_table = pd.concat([target_table, row_data])
-        else:
-            top_half = target_table.iloc[:target_label]
-            bottom_half = target_table.iloc[target_label:]
-            target_table = pd.concat([top_half, row_data, bottom_half])
-
-    return table, target_table
 
 
 def copy(table, label, target_table, target_label, axis=0):

@@ -6,6 +6,7 @@ from typing import List, Optional, Union
 from io import StringIO
 import os
 import uuid
+import re
 import json
 import aiofiles
 import pandas as pd
@@ -320,23 +321,23 @@ async def handle_execute_dsl_list(request_body: ExecuteDSLList):
         "copy",
     ]
 
-    def get_sheet_id(sheet_name):
-        name = sheet_name.split("_")[:-1]
-        if len(name) == 1:
-            return "_".join(sheet_name.split("_")[:-1]) + ".csv"
+    def split_sheet_name(sheet_name):
+        print(sheet_name)
+        # Regular expression to find "v{int}" suffix
+        match = re.search(r"_v(\d+)\.csv$", sheet_name)
+        if match:
+            # Extract base name and version number
+            base_name = sheet_name[: match.start()] + ".csv"
+            version = int(match.group(1))
         else:
-            return sheet_name
+            # No version number present
+            base_name = sheet_name
+            version = 0
 
-    def get_sheet_version(sheet_name):
-        version = sheet_name.split("_")[-1][1:].split(".csv")
-        if len(version) == 1:
-            return int(version[0])
-        else:
-            return 0
+        return base_name, version
 
     def get_sheet_info(sheet_name):
-        sheet_id = get_sheet_id(sheet_name)
-        version = get_sheet_version(sheet_name)
+        sheet_id, version = split_sheet_name(sheet_name)
         sheet_data = get_sheet(client_id, sheet_id, version)
         sheet = pd.DataFrame(sheet_data)
         flag = False
@@ -349,8 +350,7 @@ async def handle_execute_dsl_list(request_body: ExecuteDSLList):
     tmp_sheet_version_map = {}
 
     def load_sheet(sheet_name):
-        sheet_id = get_sheet_id(sheet_name)
-        sheet_version = get_sheet_version(sheet_name)
+        sheet_id, sheet_version = split_sheet_name(sheet_name)
         if sheet_id not in tmp_sheet_data_map:
             tmp_sheet_data_map[sheet_id] = get_sheet_info(sheet_name)
             tmp_sheet_version_map[sheet_id] = sheet_version
@@ -382,16 +382,13 @@ async def handle_execute_dsl_list(request_body: ExecuteDSLList):
         if function in no_return_function_list:
             sheet_id = arguments[0]
             if function == "create_table":
-                version = find_next_version(client_id, sheet_id)
                 # create a dataframe have row_number and column_number
                 row_number = arguments[1]
                 column_number = arguments[2]
                 data = pd.DataFrame(
                     index=range(row_number), columns=range(column_number)
                 )
-                upload_sheet(
-                    client_id, sheet_id, version, data.to_dict(orient="records")
-                )
+                upload_sheet(client_id, sheet_id, 0, data.to_dict(orient="records"))
                 tmp_sheet_data_map[sheet_id] = data
             elif function == "delete_table":
                 version = find_next_version(client_id, sheet_id) - 1
@@ -405,14 +402,14 @@ async def handle_execute_dsl_list(request_body: ExecuteDSLList):
                 print(sheet_id, version)
                 print(get_all_sheets(client_id))
         elif function in single_table_function_list:
-            sheet_id = get_sheet_id(arguments[0])
+            sheet_id, _ = split_sheet_name(arguments[0])
             sheet = tmp_sheet_data_map[sheet_id]
             new_sheet = execute_dsl(sheet, function, arguments[1:])
             new_data = new_sheet.fillna("").to_json(orient="records")
             tmp_sheet_data_map[sheet_id] = new_sheet
         elif function in double_table_function_list:
-            sheet_id = get_sheet_id(arguments[0])
-            target_sheet_id = get_sheet_id(arguments[2])
+            sheet_id, _ = split_sheet_name(arguments[0])
+            target_sheet_id, _ = split_sheet_name(arguments[2])
             sheet = tmp_sheet_data_map[sheet_id]
             target_sheet = tmp_sheet_data_map[target_sheet_id]
             new_sheet, new_target_sheet = execute_dsl(

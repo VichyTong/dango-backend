@@ -14,29 +14,27 @@ Create a DSL script to clean the data based on the description.
 
 ## DSL Functions:
 
-1. create_table(table_name, row_number, column_number): Creates a new table with the specified number of rows and columns.
+1. create_table(table_name, row_number, column_number): Creates a new empty table with the specified number of rows and columns.
 
 2. delete_table(table_name): Deletes the specified table.
 
-3. insert(table_name, label, axis): Insert an empty column or row after a specified label in the table.
+3. insert(table_name, label, name, axis): Inserts an empty row or column after a specified label in the table.
 
-4. drop(table_name, label, axis): Drops a column or row in the table.
+4. drop(table_name, label, axis): Drops a row or column in the table.
 
-5. assign(table_name, label, values, axis): Assign new values to the specified label in the table.
+5. assign(table_name, row, column, value): Assigns a value to a specific cell in the table.
 
-6. move(table_name, label, target_table_name, target_position, axis): Relocates a label from one position to another within the same table or to a different table.
+6. copy(origin_table_name, label, target_table_name, target_label, axis): Copies the values of a label in the origin table to the target table after the target label position.
 
-7. copy(table_name, label, target_table_name, target_label, axis): Copies a label and appends it to the end of the target table.
+7. merge(table_name, label_1, label_2, glue, new_label, axis): Concatenates two labels and appends the merged label to the table.
 
-8. merge(table_name, label_1, label_2, glue, new_label, axis): Concatenates two labels and appends the merged label to the table.
+8. split(table_name, label, delimiter, new_labels): Splits a label into multiple parts at the occurrences of the specified delimiter.
 
-9. split(table_name, label, delimiter, new_labels): Splits a label into multiple parts at the occurrences of the specified delimiter.
+9. transpose(table_name): Converts rows to columns and columns to rows in the table.
 
-10. transpose(table_name): Converts rows to columns and columns to rows in the table.
+10. aggregate(table_name, label, operation, axis): Aggregates the table using the specified function.
 
-11. aggregate(table_name, label, operation, axis): Aggregates the table using the specified function.
-
-12. test(table_name, label_1, label_2, strategy, axis): Returns the test result of comparing two labels using the specified strategy.
+11. test(table_name, label_1, label_2, strategy, axis): Returns a new result table of comparing two labels using the specified strategy.
 
 Definitions:
 - label: Refers to a row or column in the table. If the label is the name of a row or column, it should be a string. If the label is the index of a row or column, it should be an integer.
