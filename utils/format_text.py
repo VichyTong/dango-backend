@@ -44,8 +44,8 @@ def convert_history_to_text(history, with_table_diff=True):
         choices = pair["choices"]
 
         choices_text = ""
-        for i, choice in enumerate(choices):
-            choices_text += f"{chr(ord('A') + i)}. {choice}\n"
+        for i, choice in enumerate(choices, start=1):
+            choices_text += f"{i}. {choice}\n"
 
         prompt += "\n"
 

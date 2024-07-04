@@ -88,7 +88,8 @@ def transfer_to_NL(dsl):
         label = dsl["arguments"][1]
         target_table = dsl["arguments"][2]
         target_position = dsl["arguments"][3]
-        axis = dsl["arguments"][4]
+        new_label = dsl["arguments"][4]
+        axis = dsl["arguments"][5]
         if axis == 0 or axis == "index" or axis == "0":
             return f"Copy the row $[{label}] in %[{table}] to %[{target_table}] at position #[{target_position}]."
         elif axis == 1 or axis == "columns" or axis == "1":

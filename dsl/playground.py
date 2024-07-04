@@ -14,6 +14,7 @@ dsl_grammar = """
     split: "split(" "table=" NAME "," "label=" label "," "delimiter=" string "," "new_labels=" labels "," "axis=" AXIS ")"
     transpose: "transpose(" "table=" NAME ")"
     aggregate: "aggregate(" "table=" NAME "," "functions=" functions "," "axis=" AXIS ")"
+    test: "test(" "table=" NAME "," "label1=" label "," "label2=" label "," "strategy=" STRATEGY "," "axis=" AXIS ")"
 
     labels: "[" [label ("," label)*] "]"
     label: NAME | NUMBER
@@ -95,16 +96,16 @@ class DSLTransformer(Transformer):
             }
         }
 
-    # def test(self, args):
-    #     return {
-    #         "test": {
-    #             "table": args[0],
-    #             "label1": args[1],
-    #             "label2": args[2],
-    #             "strategy": args[3],
-    #             "axis": args[4],
-    #         }
-    #     }
+    def test(self, args):
+        return {
+            "test": {
+                "table": args[0],
+                "label1": args[1],
+                "label2": args[2],
+                "strategy": args[3],
+                "axis": args[4],
+            }
+        }
 
     def labels(self, args):
         # Convert the list of label Trees into a list of label values
@@ -182,12 +183,12 @@ def execute_dsl(tables, dsl_code):
                 functions = command["aggregate"]["functions"]
                 axis = convert_axis(command["aggregate"]["axis"])
                 tables[table_name] = utils.aggregate(table, functions, axis)
-            # elif command_type == "test":
-            #     label1 = command["test"]["label1"]
-            #     label2 = command["test"]["label2"]
-            #     strategy = command["test"]["strategy"]
-            #     axis = convert_axis(command["test"]["axis"])
-            #     tables[table_name] = utils.test(table, label1, label2, strategy, axis)
+            elif command_type == "test":
+                label1 = command["test"]["label1"]
+                label2 = command["test"]["label2"]
+                strategy = command["test"]["strategy"]
+                axis = convert_axis(command["test"]["axis"])
+                tables[table_name] = utils.test(table, label1, label2, strategy, axis)
         else:
             raise ValueError(f"Unexpected command type: {type(command)}")
         

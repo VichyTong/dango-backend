@@ -18,13 +18,13 @@ Create a DSL script to clean the data based on the description.
 
 2. delete_table(table_name): Deletes the specified table.
 
-3. insert(table_name, label, name, axis): Inserts an empty row or column after a specified label in the table.
+3. insert(table_name, index, name, axis): Inserts an empty row or column at the specified index in the table.
 
 4. drop(table_name, label, axis): Drops a row or column in the table.
 
 5. assign(table_name, row, column, value): Assigns a value to a specific cell in the table.
 
-6. copy(origin_table_name, label, target_table_name, target_label, axis): Copies the values of a label in the origin table to the target table after the target label position.
+6. copy(origin_table_name, index, target_table_name, target_index, new_label, axis): Copies a row or column from index in the origin table to the target table at the target index.
 
 7. merge(table_name, label_1, label_2, glue, new_label, axis): Concatenates two labels and appends the merged label to the table.
 

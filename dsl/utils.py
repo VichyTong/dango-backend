@@ -20,31 +20,31 @@ def classify_axis(axis):
     return axis
 
 
-def insert(table, label, name="new_column", axis=0):
+def insert(table, index, name="new_column", axis=0):
     """
-    Inserts an empty row or column after a specified label in the table.
+    Inserts a new row or column into the given DataFrame at the specified index.
 
     Parameters:
     - table: DataFrame in which the row/column will be inserted.
-    - label: The label of the row/column after which the new row/column will be inserted.
+    - index: The index at which the new row/column will be inserted.
     - name: The name of the new row/column to be inserted.
     - axis: 0 for row, 1 for column. Specifies whether to insert a row or a column.
     """
-    axis = classify_axis(axis)
+    import pandas as pd
 
-    if axis == 1:  # Insert column
-        if isinstance(label, int):
-            idx = label - 1
-        else:
-            idx = table.columns.get_loc(label)
-        new_col_name = name
-        table.insert(idx + 1, new_col_name, [None] * len(table))
-    else:  # Insert row
-        label = int(label) - 1
-        idx = table.index.get_loc(label)
-        new_row = pd.Series([None] * len(table.columns), index=table.columns)
+    # Inserting a column
+    if axis == 1:
+        if name in table.columns:
+            raise ValueError(f"Column {name} already exists in the DataFrame.")
+        table.insert(loc=index, column=name, value=pd.Series([None] * len(table)))
+    else:
+        if name in table.index:
+            raise ValueError(f"Row {name} already exists in the DataFrame.")
+        new_row = pd.DataFrame([None] * len(table.columns)).T
+        new_row.columns = table.columns
+        new_row.index = [name]
         table = pd.concat(
-            [table.iloc[: idx + 1], pd.DataFrame([new_row]), table.iloc[idx + 1 :]]
+            [table.iloc[:index], new_row, table.iloc[index:]]
         ).reset_index(drop=True)
 
     return table
@@ -99,48 +99,32 @@ def assign(table, row, column, value):
     return table
 
 
-def copy(table, label, target_table, target_label, axis=0):
+def copy(table, index, target_table, target_index, new_label=None, axis=0):
     """
-    Copies a row or column from table to target_table, assigning it a new label.
+    Copies a row or column from one DataFrame to another DataFrame.
 
     Parameters:
     - table: DataFrame from which the row/column will be copied.
-    - label: The label of the row/column to be copied.
-    - target_table: DataFrame to which the copied row/column will be added.
-    - target_label: The label for the copied row/column in the target DataFrame.
-    - axis: 0 for row, 1 for column.
+    - index: The index of the row/column to be copied.
+    - target_table: DataFrame to which the row/column will be copied.
+    - target_index: The index at which the row/column will be copied in the target DataFrame.
+    - axis: 0 for row, 1 for column. Specifies whether to copy a row or a column.
     """
-
-    axis = classify_axis(axis)
-
-    # Copying a column
     if axis == 1:
-        if len(table.index) != len(target_table.index):
-            for i in range(len(table.index) - len(target_table.index)):
-                target_table.loc[f"Added_{i}"] = None
-
-        if label not in table.columns:
-            raise ValueError(f"Column {label} does not exist in the source DataFrame.")
-        # Copy the column and add it to the target DataFrame
-        target_table[label] = table[label].copy()
-
-    # Copying a row
+        # Copy column
+        if target_index in target_table.columns:
+            raise ValueError(f"Column {target_index} already exists in the target DataFrame.")
+        column = table.iloc[:, index]
+        target_table.insert(loc=target_index, column=new_label, value=column)
     else:
-        # if column number does not match, create to match
-        if len(table.columns) != len(target_table.columns):
-            for i in range(len(table.columns) - len(target_table.columns)):
-                target_table[f"Added_{i}"] = None
-
-        label = int(label) - 1
-        target_label = int(target_label) - 1
-        if label not in table.index:
-            raise ValueError(f"Row {label} does not exist in the source DataFrame.")
-        # Copy the row and add it to the target DataFrame
-        source_row = table.loc[label]
-        target_columns = target_table.columns
-        for i, col in enumerate(target_columns):
-            if i < len(source_row):
-                target_table.at[target_label, col] = source_row.iloc[i]
+        # Copy row
+        if target_index in target_table.index:
+            raise ValueError(f"Row {target_index} already exists in the target DataFrame.")
+        row = table.iloc[index]
+        new_row = pd.DataFrame([row.values], columns=target_table.columns)
+        target_table = pd.concat(
+            [target_table.iloc[:target_index], new_row, target_table.iloc[target_index:]]
+        ).reset_index(drop=True)
 
     return table, target_table
 
