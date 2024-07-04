@@ -320,7 +320,11 @@ def test(table, label_1, label_2, strategy, axis=0):
 
         test_stat = chi2_stat
 
-    return test_stat, p_value
+    # Create a new table to store the test results
+    result_table = pd.DataFrame(index=range(2), columns=["Test Statistic", "P-Value"])
+    result_table = assign(result_table, 1, 1, test_stat)
+    result_table = assign(result_table, 1, 2, p_value)
+    return result_table
 
 
 def create_table(row_number, column_number):

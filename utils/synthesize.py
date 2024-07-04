@@ -28,10 +28,6 @@ def init_prompt():
 init_prompt()
 
 
-def create_generate_user_prompt(summarization):
-    return generate_user_prompt_template.replace("{PLAN}", summarization)
-
-
 def transfer_to_NL(dsl):
     if dsl["function_name"] == "create_table":
         table = dsl["arguments"][0]
@@ -69,7 +65,9 @@ def transfer_to_NL(dsl):
         if axis == 0 or axis == "index" or axis == "0":
             return f"Assign the values @{values} to the row $[{label}] in %[{table}]."
         elif axis == 1 or axis == "columns" or axis == "1":
-            return f"Assign the values @{values} to the column $[{label}] in %[{table}]."
+            return (
+                f"Assign the values @{values} to the column $[{label}] in %[{table}]."
+            )
         else:
             return "Invalid function"
 
@@ -150,7 +148,10 @@ def dsl_synthesize(client_id: str) -> str:
 
     plan_user_prompt = plan_user_prompt_template.replace(
         "{USER_INTENTS}", summarization
-    ).replace("{INFORMATION}", format_information(history["information"], with_table_diff=False))
+    ).replace(
+        "{INFORMATION}",
+        format_information(history["information"], with_table_diff=False),
+    )
 
     messages = append_message(plan_system_prompt, "system", [])
     messages = append_message(plan_user_prompt, "user", messages)
@@ -158,7 +159,12 @@ def dsl_synthesize(client_id: str) -> str:
     messages = append_message(step_by_step_plan, "assistant", messages)
     log_messages(client_id, "generate_step_by_step_plan", messages)
 
-    generate_user_prompt = create_generate_user_prompt(step_by_step_plan)
+    generate_user_prompt = generate_user_prompt_template.replace(
+        "{PLAN}", step_by_step_plan
+    ).replace(
+        "{INFORMATION}",
+        format_information(history["information"], with_table_diff=False),
+    )
     messages = append_message(generate_system_prompt, "system", [])
     messages = append_message(generate_user_prompt, "user", messages)
     generated_dsl = generate_chat_completion(messages)

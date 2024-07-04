@@ -315,14 +315,13 @@ async def handle_execute_dsl_list(request_body: ExecuteDSLList):
         "split",
         "transpose",
         "aggregate",
+        "test",
     ]
     double_table_function_list = [
-        "move",
         "copy",
     ]
 
     def split_sheet_name(sheet_name):
-        print(sheet_name)
         # Regular expression to find "v{int}" suffix
         match = re.search(r"_v(\d+)\.csv$", sheet_name)
         if match:
@@ -353,6 +352,8 @@ async def handle_execute_dsl_list(request_body: ExecuteDSLList):
         sheet_id, sheet_version = split_sheet_name(sheet_name)
         if sheet_id not in tmp_sheet_data_map:
             tmp_sheet_data_map[sheet_id] = get_sheet_info(sheet_name)
+            print(sheet_id)
+            print(sheet_version)
             tmp_sheet_version_map[sheet_id] = sheet_version
         else:
             if tmp_sheet_version_map[sheet_id] != sheet_version:
@@ -365,23 +366,11 @@ async def handle_execute_dsl_list(request_body: ExecuteDSLList):
     for dsl in dsl_list:
         function = dsl.function_name
         arguments = dsl.arguments
-        if function in no_return_function_list:
-            pass
-        elif function in single_table_function_list:
-            load_sheet(arguments[0])
-        elif function in double_table_function_list:
-            load_sheet(arguments[0])
-            load_sheet(arguments[2])
-        else:
-            return "Error: Invalid function"
-
-    for dsl in dsl_list:
-        function = dsl.function_name
-        arguments = dsl.arguments
         DependenciesManager.update_dependency(function, arguments)
         if function in no_return_function_list:
             sheet_id = arguments[0]
             if function == "create_table":
+                continue
                 # create a dataframe have row_number and column_number
                 row_number = arguments[1]
                 column_number = arguments[2]
@@ -390,6 +379,7 @@ async def handle_execute_dsl_list(request_body: ExecuteDSLList):
                 )
                 upload_sheet(client_id, sheet_id, 0, data.to_dict(orient="records"))
                 tmp_sheet_data_map[sheet_id] = data
+                tmp_sheet_version_map = 0
             elif function == "delete_table":
                 version = find_next_version(client_id, sheet_id) - 1
                 if version < 0:
@@ -402,12 +392,21 @@ async def handle_execute_dsl_list(request_body: ExecuteDSLList):
                 print(sheet_id, version)
                 print(get_all_sheets(client_id))
         elif function in single_table_function_list:
+            load_sheet(arguments[0])
             sheet_id, _ = split_sheet_name(arguments[0])
             sheet = tmp_sheet_data_map[sheet_id]
             new_sheet = execute_dsl(sheet, function, arguments[1:])
             new_data = new_sheet.fillna("").to_json(orient="records")
-            tmp_sheet_data_map[sheet_id] = new_sheet
+            if function == "test":
+                tmp_sheet_data_map["Test_Result.csv"] = new_sheet
+                upload_sheet(
+                    client_id, "Test_Result.csv", 0, new_sheet.to_dict(orient="records")
+                )
+            else:
+                tmp_sheet_data_map[sheet_id] = new_sheet
         elif function in double_table_function_list:
+            load_sheet(arguments[0])
+            load_sheet(arguments[2])
             sheet_id, _ = split_sheet_name(arguments[0])
             target_sheet_id, _ = split_sheet_name(arguments[2])
             sheet = tmp_sheet_data_map[sheet_id]

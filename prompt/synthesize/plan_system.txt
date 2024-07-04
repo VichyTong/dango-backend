@@ -39,7 +39,7 @@ Generate a step-by-step plan to clean the data based on the user's intents.
 
 # GUIDELINES #
 1. You should only use the DSL functions provided in the DSL Grammar. Do not add or invent new functions.
-2. You should point out the correct table to apply the functions to.
+2. You should point out the arguments for each function based on the given description.
 
 #############
 
@@ -93,8 +93,10 @@ User Intents: The user's intent is to move "age" and "sex" columns from Sheet 1 
 
 - OUTPUT:
 Step-by-step plan:
-1. Move the column "age" from Heart Disease Prediction dataset.csv to New.csv. (move function)
-2. Move the column "sex" from Heart Disease Prediction dataset.csv to New.csv. (move function)
+1. Copy the column "age" from Heart Disease Prediction dataset.csv to New.csv. (copy function)
+2. Copy the column "sex" from Heart Disease Prediction dataset.csv to New.csv. (copy function)
+3. Delete the column "age" from Heart Disease Prediction dataset.csv. (drop function)
+4. Delete the column "sex" from Heart Disease Prediction dataset.csv. (drop function)
 '''
 
 Example 4:
@@ -107,8 +109,7 @@ User Intents: The user's intent is to test the similarity between the columns "a
 
 - OUTPUT:
 Step-by-step plan:
-1. Create a new table name test_result.csv to store the test result. (create function)
-2. Test the similarity between the columns "age" and "sex" in Heart Disease Prediction dataset.csv using t-test. (test function)
+1. Test the similarity between the columns "age" and "sex" in Heart Disease Prediction dataset.csv using t-test. (test function)
 '''
 
 #############

@@ -47,6 +47,7 @@ Definitions:
 # GUIDELINES #
 1. You should only use the DSL functions provided in the DSL Grammar. Do not add or invent new functions.
 2. For every step, you need to find the best function from the DSL Grammar to perform the described action.
+3. Table names should end with ".csv" to indicate that they are CSV files.
 
 #############
 
@@ -87,7 +88,7 @@ Step-by-step plan:
 [
     {
         "function_name": "create",
-        "arguments": ["test_result.csv", 2, "columns"]
+        "arguments": ["test_result.csv", 1, 2]
     },
     {
         "function_name": "test",
@@ -100,18 +101,28 @@ Example 2:
 '''
 - INPUT:
 Step-by-step plan:
-1. Move the column "age" from Heart Disease Prediction dataset.csv to New.csv. (move function)
-2. Move the column "sex" from Heart Disease Prediction dataset.csv to New.csv. (move function)
+1. Copy the column "age" from Heart Disease Prediction dataset.csv to New.csv. (copy function)
+2. Copy the column "sex" from Heart Disease Prediction dataset.csv to New.csv. (copy function)
+3. Delete the column "age" from Heart Disease Prediction dataset.csv. (drop function)
+4. Delete the column "sex" from Heart Disease Prediction dataset.csv. (drop function)
 
 - OUTPUT:
 [
     {
-        "function_name": "move",
-        "arguments": ["Heart Disease Prediction dataset.csv", "age", "New.csv", 0, "columns"]
+        "function_name": "copy",
+        "arguments": ["Heart Disease Prediction dataset.csv", "age", "New.csv", "age", "columns"]
     },
     {
-        "function_name": "move",
-        "arguments": ["Heart Disease Prediction dataset.csv", "sex", "New.csv", 1, "columns"]
+        "function_name": "copy",
+        "arguments": ["Heart Disease Prediction dataset.csv", "sex", "New.csv", "sex", "columns"]
     },
+    {
+        "function_name": "drop",
+        "arguments": ["Heart Disease Prediction dataset.csv", "age", "columns"]
+    },
+    {
+        "function_name": "drop",
+        "arguments": ["Heart Disease Prediction dataset.csv", "sex", "columns"]
+    }
 ]
 '''
