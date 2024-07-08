@@ -249,7 +249,7 @@ def get_dsls(client_id, history, step_by_step_plan, feedback=None):
     return dsls
 
 
-def get_feedback(client_id, history, summarization, dsls):
+def verify(client_id, history, summarization, dsls):
     verifier_user_prompt = (
         verifier_user_prompt_template.replace(
             "{INFORMATION}",
@@ -272,14 +272,14 @@ def dsl_synthesize(client_id: str) -> str:
     summarization = get_summarization(client_id, history)
     step_by_step_plan = get_step_by_step_plan(client_id, history, summarization)
     dsls = get_dsls(client_id, history, step_by_step_plan)
-    feedback = get_feedback(client_id, history, summarization, dsls)
+    feedback = verify(client_id, history, summarization, dsls)
 
     while feedback["correctness"] == "incorrect":
         step_by_step_plan = get_step_by_step_plan(
             client_id, history, summarization, feedback
         )
         dsls = get_dsls(client_id, history, step_by_step_plan, feedback)
-        feedback = get_feedback(client_id, history, summarization, dsls)
+        feedback = verify(client_id, history, summarization, dsls)
 
     for dsl in dsls:
         dsl["natural_language"] = transfer_to_NL(dsl)
