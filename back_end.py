@@ -289,7 +289,7 @@ async def handle_generate_dsl(request_body: GenerateDSL):
 
 class DSL(BaseModel):
     function_name: str
-    arguments: List[Union[str, int]]
+    arguments: List[Union[str, int, list, dict]]
 
 
 class ExecuteDSLList(BaseModel):
@@ -360,8 +360,6 @@ async def handle_execute_dsl_list(request_body: ExecuteDSLList):
         sheet_id, sheet_version = split_sheet_name(sheet_name)
         if sheet_id not in tmp_sheet_data_map:
             tmp_sheet_data_map[sheet_id] = get_sheet_info(sheet_name)
-            print(sheet_id)
-            print(sheet_version)
             tmp_sheet_version_map[sheet_id] = sheet_version
         else:
             if tmp_sheet_version_map[sheet_id] != sheet_version:
@@ -435,6 +433,18 @@ async def handle_execute_dsl_list(request_body: ExecuteDSLList):
             target_sheet_id, _ = split_sheet_name(arguments[1])
             sheet = tmp_sheet_data_map[sheet_id]
             target_sheet = tmp_sheet_data_map[target_sheet_id]
+            if function == "merge":
+                merged_table = execute_dsl(
+                    sheet,
+                    function,
+                    arguments[2:],
+                    target_sheet=target_sheet,
+                )
+                tmp_sheet_data_map["merged.csv"] = merged_table
+                upload_sheet(
+                    client_id, "merged.csv", 0, merged_table.to_dict(orient="records")
+                )
+                continue
             new_sheet, new_target_sheet = execute_dsl(
                 sheet,
                 function,
@@ -452,7 +462,8 @@ async def handle_execute_dsl_list(request_body: ExecuteDSLList):
     for sheet_id, sheet in tmp_sheet_data_map.items():
         sheet_data = sheet.fillna("").to_dict(orient="records")
         same_sheet_version = get_same_sheet_version(client_id, sheet_id, sheet_data)
-        if same_sheet_version:
+        if same_sheet_version is not None:
+            print(f"Sheet {sheet_id} already exists in version {same_sheet_version}")
             output.append(
                 {
                     "sheet_id": sheet_id,

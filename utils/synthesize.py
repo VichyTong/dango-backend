@@ -66,13 +66,7 @@ def transfer_to_NL(dsl):
         end_column_index = dsl["arguments"][4]
         values = dsl["arguments"][5]
         string_values = json.dumps(values)
-
-        if axis == 0 or axis == "index" or axis == "0":
-            return f"Assign the values {string_values} to the rows $[{start_row_index}] to $[{end_row_index}] and columns $[{start_column_index}] to $[{end_column_index}] in %[{table}]."
-        elif axis == 1 or axis == "columns" or axis == "1":
-            return f"Assign the values {string_values} to the columns $[{start_column_index}] to $[{end_column_index}] and rows $[{start_row_index}] to $[{end_row_index}] in %[{table}]."
-        else:
-            return "Invalid function"
+        return f"Assign the values {string_values} to the rows $[{start_row_index}] to $[{end_row_index}] and the columns $[{start_column_index}] to $[{end_column_index}] in %[{table}]."
     elif dsl["function_name"] == "move":
         origin_table = dsl["arguments"][0]
         origin_index = dsl["arguments"][1]

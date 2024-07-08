@@ -59,11 +59,11 @@ def insert(table, index, index_name="new_column", axis=0):
 
 def drop(table, label, axis=0):
     """
-    Drops a row or column in the table.
+    Drops rows or columns in the table.
 
     Parameters:
-    - table: DataFrame from which the row/column will be dropped.
-    - label: The label of the row/column to be dropped. For rows, this is the index label; for columns, this is the column name.
+    - table: DataFrame from which the row(s)/column(s) will be dropped.
+    - label: The label(s) of the row(s)/column(s) to be dropped. For rows, this is the index label; for columns, this is the column name. It can be a single label or a list of labels.
     - axis:
       - 0 or "index": Indicates a row operation.
       - 1 or "columns": Indicates a column operation.
@@ -71,19 +71,29 @@ def drop(table, label, axis=0):
 
     axis = classify_axis(axis)
 
-    # Dropping a column
+    # Ensure label is a list
+    if not isinstance(label, list):
+        label = [label]
+
+    # Dropping columns
     if axis == 1:
-        if label not in table.columns:
-            raise ValueError(f"Column {label} does not exist in the DataFrame.")
+        missing_columns = [col for col in label if col not in table.columns]
+        if missing_columns:
+            raise ValueError(
+                f"Column(s) {missing_columns} do not exist in the DataFrame."
+            )
         table.drop(labels=label, axis=axis, inplace=True)
 
-    # Dropping a row
+    # Dropping rows
     else:
-        label = int(label) - 1
-        if label not in table.index:
-            table.drop(labels=table.index[label], axis=axis, inplace=True)
-        else:
-            table.drop(labels=label, axis=axis, inplace=True)
+        label = [int(l) - 1 for l in label]
+        missing_rows = [l for l in label if l not in table.index]
+        if missing_rows:
+            raise ValueError(
+                f"Row index(es) {missing_rows} do not exist in the DataFrame."
+            )
+        table.drop(labels=label, axis=axis, inplace=True)
+
     return table
 
 
@@ -242,10 +252,18 @@ def swap(table_a, label_a, table_b, label_b, axis=0):
                 "One or both specified column labels do not exist in the respective DataFrames."
             )
 
-        # Swap the columns between the two DataFrames
-        table_a[label_a], table_b[label_b] = table_b[label_b], table_a[label_a]
-        table_a.rename(columns={label_a: label_b}, inplace=True)
-        table_b.rename(columns={label_b: label_a}, inplace=True)
+        # Use temporary column names to avoid duplicates
+        temp_label_a = '__temp__' + label_a
+        temp_label_b = '__temp__' + label_b
+
+        table_a.rename(columns={label_a: temp_label_a}, inplace=True)
+        table_b.rename(columns={label_b: temp_label_b}, inplace=True)
+
+        # Swap the columns
+        table_a[temp_label_a], table_b[temp_label_b] = table_b[temp_label_b], table_a[temp_label_a]
+
+        table_a.rename(columns={temp_label_a: label_b}, inplace=True)
+        table_b.rename(columns={temp_label_b: label_a}, inplace=True)
 
     # Swapping rows
     else:
@@ -258,10 +276,9 @@ def swap(table_a, label_a, table_b, label_b, axis=0):
             )
 
         # Swap the rows between the two DataFrames
-        table_a.loc[label_a], table_b.loc[label_b] = (
-            table_b.loc[label_b],
-            table_a.loc[label_a],
-        )
+        temp_row_a = table_a.loc[label_a].copy()
+        table_a.loc[label_a] = table_b.loc[label_b]
+        table_b.loc[label_b] = temp_row_a
 
     return table_a, table_b
 
@@ -280,11 +297,15 @@ def merge(table_a, table_b, on=None, how="inner", axis=0):
       - 1 or "columns": Indicates a column operation.
     """
 
+    axis = classify_axis(axis)
+
     if axis == 1:
         # Merge along columns
         result = pd.concat([table_a, table_b], axis=1, join=how)
     else:
         # Merge along rows based on the 'on' column(s)
+        if on == []:
+            on = None
         if isinstance(on, list):
             on_a, on_b = on
             result = pd.merge(
@@ -418,6 +439,8 @@ def aggregate(table, functions, axis=0):
       - 0 or "index": Indicates a row operation.
       - 1 or "columns": Indicates a column operation.
     """
+
+    axis = classify_axis(axis)
 
     try:
         result = table.agg(functions, axis=axis)

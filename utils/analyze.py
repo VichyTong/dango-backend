@@ -285,11 +285,9 @@ def get_multi_analyze(client_id, table_list, user_prompt):
         file_name = f"{sheet_id.split('.csv')[0]}_v{version}.csv"
         row_count = len(table["row_names"])
 
-        column_index = "A"
         column_string_list = []
-        for item in column_names:
+        for column_index, item in enumerate(column_names, start=1):
             item = f'{column_index}: "{item}"'
-            column_index = chr(ord(column_index) + 1)
             column_string_list.append(item)
             # TODO: What if number of columns is more than 26?
         column_names = ", ".join(column_string_list)
@@ -299,7 +297,8 @@ def get_multi_analyze(client_id, table_list, user_prompt):
             .replace("{file_name}", file_name)
             .replace("{column_count}", str(column_number))
             .replace("{column_names}", column_names)
-            .replace("{row_count}", str(row_count))
+            .replace("{row_count}", str(row_count + 1))
+            .replace("{row_end}", str(row_count))
         )
         sheet_state_list.append(sheet_state_string)
         input_user_prompt += sheet_state_string

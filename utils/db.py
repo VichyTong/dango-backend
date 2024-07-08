@@ -80,7 +80,7 @@ def get_same_sheet_version(client_id, sheet_id, data):
     )
     versions = cur.fetchall()
     for version, sheet_data in versions:
-        if json.loads(sheet_data) == data:
+        if sheet_data == json.dumps(data):
             return version
     return None
 
