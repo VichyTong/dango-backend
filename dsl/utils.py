@@ -4,6 +4,9 @@ import statsmodels.api as sm
 
 
 def classify_axis(axis):
+    """
+    Converts the axis parameter to a numeric value if it is a string.
+    """
     if axis not in [0, 1, "index", "columns", "0", "1"]:
         raise ValueError("Axis must be 0, 'index', 1, or 'columns'")
 
@@ -20,29 +23,46 @@ def classify_axis(axis):
     return axis
 
 
-def insert(table, index, name="new_column", axis=0):
+def create_table(row_number, column_number):
     """
-    Inserts a new row or column into the given DataFrame at the specified index.
+    Creates a new empty table with the specified number of rows and columns.
+
+    Parameters:
+    - row_number: The number of rows in the DataFrame.
+    - column_number: The number of columns in the DataFrame.
+    """
+
+    # Create a new DataFrame with the specified dimensions
+    new_table = pd.DataFrame(index=range(row_number), columns=range(column_number))
+
+    return new_table
+
+
+def insert(table, index, index_name="new_column", axis=0):
+    """
+    Inserts an empty row or column at the specified index in the table.
 
     Parameters:
     - table: DataFrame in which the row/column will be inserted.
-    - index: The index at which the new row/column will be inserted.
-    - name: The name of the new row/column to be inserted.
+    - index: The index at which the row/column will be inserted.
+    - index_name: The name of the new row/column.
     - axis: 0 for row, 1 for column. Specifies whether to insert a row or a column.
     """
-    import pandas as pd
+
+    axis = classify_axis(axis)
+    index = index - 1
 
     # Inserting a column
     if axis == 1:
-        if name in table.columns:
-            raise ValueError(f"Column {name} already exists in the DataFrame.")
-        table.insert(loc=index, column=name, value=pd.Series([None] * len(table)))
+        if index_name in table.columns:
+            raise ValueError(f"Column {index_name} already exists in the DataFrame.")
+        table.insert(loc=index, column=index_name, value=pd.Series([None] * len(table)))
     else:
-        if name in table.index:
-            raise ValueError(f"Row {name} already exists in the DataFrame.")
+        if index_name in table.index:
+            raise ValueError(f"Row {index_name} already exists in the DataFrame.")
         new_row = pd.DataFrame([None] * len(table.columns)).T
         new_row.columns = table.columns
-        new_row.index = [name]
+        new_row.index = [index_name]
         table = pd.concat(
             [table.iloc[:index], new_row, table.iloc[index:]]
         ).reset_index(drop=True)
@@ -52,7 +72,7 @@ def insert(table, index, name="new_column", axis=0):
 
 def drop(table, label, axis=0):
     """
-    Drops a row or column from the given DataFrame based on the label and axis.
+    Drops a row or column in the table.
 
     Parameters:
     - table: DataFrame from which the row/column will be dropped.
@@ -78,96 +98,246 @@ def drop(table, label, axis=0):
     return table
 
 
-def assign(table, row, column, value):
+def assign(
+    table, start_row_index, end_row_index, start_column_index, end_column_index, values
+):
     """
-    Assigns a value to a specific cell in the DataFrame.
+    Assigns a value to specific cells in the table.
 
     Parameters:
-    - table: DataFrame in which the cell will be assigned.
-    - row: The row index of the cell to be assigned.
-    - column: The column index of the cell to be assigned.
-    - value: The value to be assigned to the cell.
+    - table: DataFrame in which the value will be assigned.
+    - start_row_index, end_row_index: The range of row indices to assign the value to.
+    - start_column_index, end_column_index: The range of column indices to assign the value to.
+    - values: The value(s) to assign to the specified cell(s). Can be a single number or a list of lists of numbers.
     """
+    # Adjust indices to be zero-based
+    start_row_index -= 1
+    end_row_index -= 1
+    start_column_index -= 1
+    end_column_index -= 1
 
-    if row not in table.index:
-        raise ValueError(f"Row {row} does not exist in the DataFrame.")
-    if column not in table.columns:
-        raise ValueError(f"Column {column} does not exist in the DataFrame.")
+    # If values is a single number, create a matrix of that value
+    if isinstance(values, (int, float)):
+        num_rows = end_row_index - start_row_index + 1
+        num_columns = end_column_index - start_column_index + 1
+        values = [[values] * num_columns] * num_rows
 
-    table.at[row, column] = value
+    # Assign the value(s) to the specified cell(s)
+    table.iloc[
+        start_row_index : end_row_index + 1, start_column_index : end_column_index + 1
+    ] = values
 
     return table
 
 
-def copy(table, index, target_table, target_index, new_label=None, axis=0):
+def move(origin_table, origin_index, target_table, target_index, axis=0):
     """
-    Copies a row or column from one DataFrame to another DataFrame.
+    Moves a row or column from the origin table to the target table.
 
     Parameters:
-    - table: DataFrame from which the row/column will be copied.
-    - index: The index of the row/column to be copied.
+    - origin_table: DataFrame from which the row/column will be moved.
+    - origin_index: The index of the row/column to be moved.
+    - target_table: DataFrame to which the row/column will be moved.
+    - target_index: The index at which the row/column will be moved in the target DataFrame.
+    - axis: 0 for row, 1 for column. Specifies whether to move a row or a column.
+    """
+
+    axis = classify_axis(axis)
+    origin_index -= 1
+    target_index -= 1
+
+    if axis == 0:  # Move row
+        row = origin_table.iloc[origin_index]
+        origin_table = origin_table.drop(origin_table.index[origin_index])
+        target_table = pd.concat(
+            [
+                target_table.iloc[:target_index],
+                row.to_frame().T,
+                target_table.iloc[target_index:],
+            ]
+        ).reset_index(drop=True)
+    elif axis == 1:  # Move column
+        col = origin_table.iloc[:, origin_index]
+        origin_table = origin_table.drop(origin_table.columns[origin_index], axis=1)
+        target_table = pd.concat(
+            [
+                target_table.iloc[:, :target_index],
+                col.to_frame(),
+                target_table.iloc[:, target_index:],
+            ],
+            axis=1,
+        )
+
+    return origin_table, target_table
+
+
+def copy(
+    origin_table,
+    origin_index,
+    target_table,
+    target_index,
+    target_label_name=None,
+    axis=0,
+):
+    """
+    Copies a row or column from the origin table to the target table at the specified index.
+
+    Parameters:
+    - origin_table: DataFrame from which the row/column will be copied.
+    - origin_index: The index of the row/column to be copied.
     - target_table: DataFrame to which the row/column will be copied.
     - target_index: The index at which the row/column will be copied in the target DataFrame.
-    - axis: 0 for row, 1 for column. Specifies whether to copy a row or a column.
+    - target_label_name: The name of the new row/column in the target DataFrame.
     """
-    if axis == 1:
-        # Copy column
-        if target_index in target_table.columns:
-            raise ValueError(f"Column {target_index} already exists in the target DataFrame.")
-        column = table.iloc[:, index]
-        target_table.insert(loc=target_index, column=new_label, value=column)
-    else:
-        # Copy row
-        if target_index in target_table.index:
-            raise ValueError(f"Row {target_index} already exists in the target DataFrame.")
-        row = table.iloc[index]
-        new_row = pd.DataFrame([row.values], columns=target_table.columns)
+
+    axis = classify_axis(axis)
+    origin_index -= 1
+    target_index -= 1
+
+    if axis == 0:  # Copy row
+        row = origin_table.iloc[origin_index]
+        if target_label_name is not None:
+            row.name = target_label_name
+        else:
+            row.name = target_index
         target_table = pd.concat(
-            [target_table.iloc[:target_index], new_row, target_table.iloc[target_index:]]
+            [
+                target_table.iloc[:target_index],
+                row.to_frame().T,
+                target_table.iloc[target_index:],
+            ]
         ).reset_index(drop=True)
+    elif axis == 1:  # Copy column
+        col = origin_table.iloc[:, origin_index]
+        if target_label_name is not None:
+            col.name = target_label_name
+        else:
+            col.name = target_index
+        target_table = pd.concat(
+            [
+                target_table.iloc[:, :target_index],
+                col.to_frame(),
+                target_table.iloc[:, target_index:],
+            ],
+            axis=1,
+        )
 
-    return table, target_table
+    return origin_table, target_table
 
 
-def merge(table, label_1, label_2, glue, new_label, axis=0):
+def swap(table_a, label_a, table_b, label_b, axis=0):
     """
-    Merges two rows or columns in a DataFrame into a new row or column, concatenating their contents with a specified glue string.
+    Swaps rows or columns between two tables.
 
     Parameters:
-    - table: DataFrame in which the rows/columns will be merged.
-    - label_1, label_2: The labels of the rows/columns to be merged.
-    - glue: String used to concatenate the contents of the rows/columns.
-    - new_label: The label for the new merged row/column.
-    - axis: 0 for merging rows, 1 for merging columns.
+    - table_a: The first DataFrame from which the row/column will be swapped.
+    - label_a: The label of the row/column to be swapped in the first DataFrame.
+    - table_b: The second DataFrame from which the row/column will be swapped.
+    - label_b: The label of the row/column to be swapped in the second DataFrame.
+    - axis: 0 for row, 1 for column. Specifies whether to swap a row or a column.
+    """
+
+    axis = classify_axis(axis)
+
+    # Swapping columns
+    if axis == 1:
+        if label_a not in table_a.columns or label_b not in table_b.columns:
+            raise ValueError(
+                "One or both specified column labels do not exist in the respective DataFrames."
+            )
+
+        # Swap the columns between the two DataFrames
+        table_a[label_a], table_b[label_b] = table_b[label_b], table_a[label_a]
+        table_a.rename(columns={label_a: label_b}, inplace=True)
+        table_b.rename(columns={label_b: label_a}, inplace=True)
+
+    # Swapping rows
+    else:
+        label_a = int(label_a) - 1
+        label_b = int(label_b) - 1
+
+        if label_a not in table_a.index or label_b not in table_b.index:
+            raise ValueError(
+                "One or both specified row labels do not exist in the respective DataFrames."
+            )
+
+        # Swap the rows between the two DataFrames
+        table_a.loc[label_a], table_b.loc[label_b] = (
+            table_b.loc[label_b],
+            table_a.loc[label_a],
+        )
+
+    return table_a, table_b
+
+
+def merge(table_a, table_b, on=None, how="inner", axis=0):
+    """
+    Merges two tables based on a common column or along columns.
+
+    Parameters:
+    - table_a: The first DataFrame.
+    - table_b: The second DataFrame.
+    - on: The column or index level name to join on (ignored if axis=1).
+    - how: The type of merge to perform ('inner', 'outer', 'left', 'right').
+    - axis: 0 for rows, 1 for columns. Specifies whether to merge along rows or columns.
+    """
+
+    if axis == 1:
+        # Merge along columns
+        result = pd.concat([table_a, table_b], axis=1, join=how)
+    else:
+        # Merge along rows based on the 'on' column(s)
+        if isinstance(on, list):
+            on_a, on_b = on
+            result = pd.merge(
+                table_a, table_b, left_on=on_a, right_on=on_b, how=how, sort=False
+            )
+        else:
+            result = pd.merge(table_a, table_b, on=on, how=how, sort=False)
+
+    return result
+
+
+def concatenate(table, label_a, label_b, glue, new_label, axis=0):
+    """
+    Concatenates two labels and appends the merged label to the table.
+
+    Parameters:
+    - table: DataFrame in which the rows/columns will be concatenated.
+    - label_a: The label of the first row/column to be concatenated.
+    - label_b: The label of the second row/column to be concatenated.
+    - glue: The string to be used to concatenate the two rows/columns.
+    - new_label: The label of the new row/column created by the concatenation.
+    - axis: 0 for concatenating rows, 1 for concatenating columns.
     """
 
     axis = classify_axis(axis)
 
     # Merging columns
     if axis == 1:
-        if label_1 not in table.columns or label_2 not in table.columns:
+        if label_a not in table.columns or label_b not in table.columns:
             raise ValueError("One or both column labels do not exist in the DataFrame.")
         if new_label in table.columns:
             raise ValueError(f"Column {new_label} already exists in the DataFrame.")
 
         # Concatenate the columns with the specified glue and create a new column
         table[new_label] = (
-            table[label_1].astype(str) + glue + table[label_2].astype(str)
+            table[label_a].astype(str) + glue + table[label_b].astype(str)
         )
 
     # Merging rows
     else:
-        label_1 = int(label_1) - 1
-        label_2 = int(label_2) - 1
+        label_a = int(label_a) - 1
+        label_b = int(label_b) - 1
         new_label = int(new_label) - 1
-        if label_1 not in table.index or label_2 not in table.index:
+        if label_a not in table.index or label_b not in table.index:
             raise ValueError("One or both row labels do not exist in the DataFrame.")
         if new_label in table.index:
             raise ValueError(f"Row {new_label} already exists in the DataFrame.")
 
         # Concatenate the rows with the specified glue and create a new row
         new_row = (
-            table.loc[label_1].astype(str) + glue + table.loc[label_2].astype(str)
+            table.loc[label_a].astype(str) + glue + table.loc[label_b].astype(str)
         ).rename(new_label)
         table.loc[new_label] = new_row.copy()
 
@@ -176,7 +346,7 @@ def merge(table, label_1, label_2, glue, new_label, axis=0):
 
 def split(table, label, delimiter, new_labels, axis=0):
     """
-    Splits the contents of a row or column in the DataFrame into multiple new rows or columns.
+    Splits a label into multiple parts at each occurrence of the specified delimiter.
 
     Parameters:
     - table: DataFrame in which the row/column will be split.
@@ -223,13 +393,10 @@ def split(table, label, delimiter, new_labels, axis=0):
 
 def transpose(table):
     """
-    Transposes the given DataFrame, swapping its rows and columns.
+    Transposes the given table.
 
     Parameters:
     - table: DataFrame to be transposed.
-
-    Returns:
-    - A new DataFrame that is the transpose of the input DataFrame.
     """
 
     # Transpose the DataFrame
@@ -239,19 +406,36 @@ def transpose(table):
 
 
 def aggregate(table, functions, axis=0):
-    # Validate axis
-    axis = classify_axis(axis)
-    return table.agg(functions, axis=axis)
-
-
-def test(table, label_1, label_2, strategy, axis=0):
     """
-    Performs a specified statistical test between two rows or columns in the DataFrame.
+    Aggregates the table using the specified function.
+
+    Parameters:
+    - table: DataFrame to be aggregated.
+    - functions: A function or list of functions to apply to each column/row.
+    - axis: 0 for rows, 1 for columns.
+
+    Returns:
+    - A DataFrame with the aggregation results.
+    """
+
+    try:
+        result = table.agg(functions, axis=axis)
+        if isinstance(result, pd.Series):
+            result = result.to_frame().transpose() if axis == 0 else result.to_frame()
+    except Exception as e:
+        raise ValueError(f"Error applying aggregation functions: {e}")
+
+    return result
+
+
+def test(table, label_a, label_b, strategy, axis=0):
+    """
+    Returns a new result table by comparing two labels using the specified strategy.
 
     Parameters:
     - table: DataFrame on which the test will be performed.
-    - label_1: The label of the first row/column to be tested.
-    - label_2: The label of the second row/column to be tested.
+    - label_a: The label of the first row/column to be tested.
+    - label_b: The label of the second row/column to be tested.
     - strategy: The statistical test to perform ('t-test', 'z-test', 'chi-squared').
     - axis: 0 to test between columns, 1 to test between rows.
     """
@@ -267,25 +451,25 @@ def test(table, label_1, label_2, strategy, axis=0):
 
     # Perform the test between two columns
     if axis == 0:
-        if label_1 not in table.columns or label_2 not in table.columns:
+        if label_a not in table.columns or label_b not in table.columns:
             raise ValueError(
                 "One or both specified labels do not exist in the DataFrame's columns."
             )
 
         # Extract the data for each column
-        data_1 = table[label_1]
-        data_2 = table[label_2]
+        data_1 = table[label_a]
+        data_2 = table[label_b]
 
     # Perform the test between two rows
     else:
-        if label_1 not in table.index or label_2 not in table.index:
+        if label_a not in table.index or label_b not in table.index:
             raise ValueError(
                 "One or both specified labels do not exist in the DataFrame's index."
             )
 
         # Extract the data for each row
-        data_1 = table.loc[label_1]
-        data_2 = table.loc[label_2]
+        data_1 = table.loc[label_a]
+        data_2 = table.loc[label_b]
 
     # Perform a t-test
     if strategy == "t-test":
@@ -305,25 +489,7 @@ def test(table, label_1, label_2, strategy, axis=0):
         test_stat = chi2_stat
 
     # Create a new table to store the test results
-    result_table = pd.DataFrame(index=range(2), columns=["Test Statistic", "P-Value"])
-    result_table = assign(result_table, 1, 1, test_stat)
-    result_table = assign(result_table, 1, 2, p_value)
+    result_table = pd.DataFrame(index=range(1), columns=["Test Statistic", "P-Value"])
+    result_table = assign(result_table, 1, 1, 1, 1, test_stat)
+    result_table = assign(result_table, 1, 1, 2, 2, p_value)
     return result_table
-
-
-def create_table(row_number, column_number):
-    """
-    Creates a new DataFrame with the specified number of rows and columns.
-
-    Parameters:
-    - row_number: The number of rows in the DataFrame.
-    - column_number: The number of columns in the DataFrame.
-
-    Returns:
-    - A new DataFrame with the specified number of rows and columns.
-    """
-
-    # Create a new DataFrame with the specified dimensions
-    new_table = pd.DataFrame(index=range(row_number), columns=range(column_number))
-
-    return new_table

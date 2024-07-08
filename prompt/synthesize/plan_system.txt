@@ -17,23 +17,29 @@ Generate a step-by-step plan to clean the data based on the user's intents.
 
 2. delete_table(table_name): Deletes the specified table.
 
-3. insert(table_name, index, name, axis): Inserts an empty row or column at the specified index in the table.
+3. insert(table_name, index, index_name, axis): Inserts an empty row or column at the specified index in the table.
 
 4. drop(table_name, label, axis): Drops a row or column in the table.
 
-5. assign(table_name, row, column, value): Assigns a value to a specific cell in the table.
+5. assign(table, start_row_index, end_row_index, start_column_index, end_column_index, values): Assigns a value to specific cells in the table.
 
-6. copy(origin_table_name, index, target_table_name, target_index, new_label, axis): Copies a row or column from index in the origin table to the target table at the target index.
+6. move(origin_table_name, origin_index, target_table_name, target_index, axis): Moves a row or column from the origin table to the target table.
 
-7. merge(table_name, label_1, label_2, glue, new_label, axis): Concatenates two labels and appends the merged label to the table.
+7. copy(origin_table_name, origin_index, target_table_name, target_index, index_name, axis): Copies a row or column from the origin table to the target table at the specified index.
 
-8. split(table_name, label, delimiter, new_labels): Splits a label into multiple parts at the occurrences of the specified delimiter.
+8. swap(table_name_a, label_a, table_name_b, label_b, axis): Swaps rows or columns between two tables.
 
-9. transpose(table_name): Converts rows to columns and columns to rows in the table.
+9. merge(table_1, table_2, on): Merges two tables based on a common column or along columns.
 
-10. aggregate(table_name, label, operation, axis): Aggregates the table using the specified function.
+10. concatenate(table_name, label_1, label_2, glue, new_label, axis): Concatenates two labels and appends the merged label to the table.
 
-11. test(table_name, label_1, label_2, strategy, axis): Returns a new result table of comparing two labels using the specified strategy.
+11. split(table_name, label, delimiter, new_labels): Splits a label into multiple parts at each occurrence of the specified delimiter.
+
+12. transpose(table_name): Transposes the given table.
+
+13. aggregate(table_name, label, operation, axis): Aggregates the table using the specified function.
+
+14. test(table_name, label_1, label_2, strategy, axis): Returns a new result table by comparing two labels using the specified strategy.
 
 #############
 
