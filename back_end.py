@@ -302,23 +302,31 @@ async def handle_execute_dsl_list(request_body: ExecuteDSLList):
     client_id = request_body.client_id
     dsl_list = request_body.dsl_list
 
-    no_return_function_list = [
-        "create_table",
+    # table-level operations
+    table_function_list = [
         "delete_table",
+        "create_table",
     ]
-
-    single_table_function_list = [
+    # table_name in arguments[0]
+    type_a_function_list = [
         "insert",
         "drop",
         "assign",
-        "merge",
+        "concatenate",
         "split",
         "transpose",
         "aggregate",
         "test",
     ]
-    double_table_function_list = [
+    # table_name_a in arguments[0], table_name_b in arguments[2]
+    type_b_function_list = [
+        "move",
         "copy",
+        "swap",
+    ]
+    # table_name_a in arguments[0], table_name_b in arguments[1]
+    type_c_function_list = [
+        "merge",
     ]
 
     def split_sheet_name(sheet_name):
@@ -367,10 +375,9 @@ async def handle_execute_dsl_list(request_body: ExecuteDSLList):
         function = dsl.function_name
         arguments = dsl.arguments
         DependenciesManager.update_dependency(function, arguments)
-        if function in no_return_function_list:
+        if function in table_function_list:
             sheet_id = arguments[0]
             if function == "create_table":
-                continue
                 # create a dataframe have row_number and column_number
                 row_number = arguments[1]
                 column_number = arguments[2]
@@ -391,7 +398,7 @@ async def handle_execute_dsl_list(request_body: ExecuteDSLList):
                 )
                 print(sheet_id, version)
                 print(get_all_sheets(client_id))
-        elif function in single_table_function_list:
+        elif function in type_a_function_list:
             load_sheet(arguments[0])
             sheet_id, _ = split_sheet_name(arguments[0])
             sheet = tmp_sheet_data_map[sheet_id]
@@ -404,7 +411,7 @@ async def handle_execute_dsl_list(request_body: ExecuteDSLList):
                 )
             else:
                 tmp_sheet_data_map[sheet_id] = new_sheet
-        elif function in double_table_function_list:
+        elif function in type_b_function_list:
             load_sheet(arguments[0])
             load_sheet(arguments[2])
             sheet_id, _ = split_sheet_name(arguments[0])
@@ -415,6 +422,23 @@ async def handle_execute_dsl_list(request_body: ExecuteDSLList):
                 sheet,
                 function,
                 [arguments[1]] + arguments[3:],
+                target_sheet=target_sheet,
+            )
+            new_data = new_sheet.fillna("").to_json(orient="records")
+            new_target_data = new_target_sheet.fillna("").to_json(orient="records")
+            tmp_sheet_data_map[sheet_id] = new_sheet
+            tmp_sheet_data_map[target_sheet_id] = new_target_sheet
+        elif function in type_c_function_list:
+            load_sheet(arguments[0])
+            load_sheet(arguments[1])
+            sheet_id, _ = split_sheet_name(arguments[0])
+            target_sheet_id, _ = split_sheet_name(arguments[1])
+            sheet = tmp_sheet_data_map[sheet_id]
+            target_sheet = tmp_sheet_data_map[target_sheet_id]
+            new_sheet, new_target_sheet = execute_dsl(
+                sheet,
+                function,
+                arguments[2:],
                 target_sheet=target_sheet,
             )
             new_data = new_sheet.fillna("").to_json(orient="records")

@@ -39,12 +39,13 @@ def transfer_to_NL(dsl):
         return f"Delete the table %[{table}]."
     elif dsl["function_name"] == "insert":
         table = dsl["arguments"][0]
-        label = dsl["arguments"][1]
-        axis = dsl["arguments"][2]
+        index = dsl["arguments"][1]
+        index_name = dsl["arguments"][2]
+        axis = dsl["arguments"][3]
         if axis == 0 or axis == "index" or axis == "0":
-            return f"Insert a row $[{label}] into %[{table}]."
+            return f"Insert a row $[{index_name}] at position #[{index}] in %[{table}]."
         elif axis == 1 or axis == "columns" or axis == "1":
-            return f"Insert a column $[{label}] into %[{table}]."
+            return f"Insert a column $[{index_name}] at position #[{index}] in %[{table}]."
         else:
             return "Invalid function"
     elif dsl["function_name"] == "drop":
@@ -59,54 +60,79 @@ def transfer_to_NL(dsl):
             return "Invalid function"
     elif dsl["function_name"] == "assign":
         table = dsl["arguments"][0]
-        label = dsl["arguments"][1]
-        values = dsl["arguments"][2]
-        axis = dsl["arguments"][3]
+        start_row_index = dsl["arguments"][1]
+        end_row_index = dsl["arguments"][2]
+        start_column_index = dsl["arguments"][3]
+        end_column_index = dsl["arguments"][4]
+        values = dsl["arguments"][5]
+        string_values = json.dumps(values)
+
         if axis == 0 or axis == "index" or axis == "0":
-            return f"Assign the values @{values} to the row $[{label}] in %[{table}]."
+            return f"Assign the values {string_values} to the rows $[{start_row_index}] to $[{end_row_index}] and columns $[{start_column_index}] to $[{end_column_index}] in %[{table}]."
         elif axis == 1 or axis == "columns" or axis == "1":
-            return (
-                f"Assign the values @{values} to the column $[{label}] in %[{table}]."
-            )
+            return f"Assign the values {string_values} to the columns $[{start_column_index}] to $[{end_column_index}] and rows $[{start_row_index}] to $[{end_row_index}] in %[{table}]."
         else:
             return "Invalid function"
-
     elif dsl["function_name"] == "move":
-        table = dsl["arguments"][0]
-        label = dsl["arguments"][1]
+        origin_table = dsl["arguments"][0]
+        origin_index = dsl["arguments"][1]
         target_table = dsl["arguments"][2]
-        target_position = dsl["arguments"][3]
+        target_index = dsl["arguments"][3]
         axis = dsl["arguments"][4]
         if axis == 0 or axis == "index" or axis == "0":
-            return f"Move the row $[{label}] in %[{table}] to %[{target_table}] at position #[{target_position}]."
+            return f"Move the row $[{origin_index}] in %[{origin_table}] to %[{target_table}] at position #[{target_index}]."
         elif axis == 1 or axis == "columns" or axis == "1":
-            return f"Move the column $[{label}] in %[{table}] to %[{target_table}] at position #[{target_position}]."
+            return f"Move the column $[{origin_index}] in %[{origin_table}] to %[{target_table}] at position #[{target_index}]."
         else:
             return "Invalid function"
     elif dsl["function_name"] == "copy":
-        table = dsl["arguments"][0]
-        label = dsl["arguments"][1]
+        origin_table = dsl["arguments"][0]
+        origin_index = dsl["arguments"][1]
         target_table = dsl["arguments"][2]
-        target_position = dsl["arguments"][3]
-        new_label = dsl["arguments"][4]
+        target_index = dsl["arguments"][3]
+        target_label_name = dsl["arguments"][4]
         axis = dsl["arguments"][5]
         if axis == 0 or axis == "index" or axis == "0":
-            return f"Copy the row $[{label}] in %[{table}] to %[{target_table}] at position #[{target_position}]."
+            return f"Copy the row $[{origin_index}] in %[{origin_table}] to %[{target_table}] at position #[{target_index}] with the name $[{target_label_name}]."
         elif axis == 1 or axis == "columns" or axis == "1":
-            return f"Copy the column $[{label}] in %[{table}] to %[{target_table}] at position #[{target_position}]."
+            return f"Copy the column $[{origin_index}] in %[{origin_table}] to %[{target_table}] at position #[{target_index}] with the name $[{target_label_name}]."
+        else:
+            return "Invalid function"
+    elif dsl["function_name"] == "swap":
+        table_a = dsl["arguments"][0]
+        label_a = dsl["arguments"][1]
+        table_b = dsl["arguments"][2]
+        label_b = dsl["arguments"][3]
+        axis = dsl["arguments"][4]
+        if axis == 0 or axis == "index" or axis == "0":
+            return f"Swap the row $[{label_a}] in %[{table_a}] with the row $[{label_b}] in %[{table_b}]."
+        elif axis == 1 or axis == "columns" or axis == "1":
+            return f"Swap the column $[{label_a}] in %[{table_a}] with the column $[{label_b}] in %[{table_b}]."
         else:
             return "Invalid function"
     elif dsl["function_name"] == "merge":
+        table_a = dsl["arguments"][0]
+        table_b = dsl["arguments"][1]
+        on = dsl["arguments"][2]
+        how = dsl["arguments"][3]
+        axis = dsl["arguments"][4]
+        if axis == 0 or axis == "index" or axis == "0":
+            return f"Merge %[{table_a}] and %[{table_b}] on $[{on}] with the method *[{how}] along the rows."
+        elif axis == 1 or axis == "columns" or axis == "1":
+            return f"Merge %[{table_a}] and %[{table_b}] on $[{on}] with the method *[{how}] along the columns."
+        else:
+            return "Invalid function"
+    elif dsl["function_name"] == "concatenate":
         table = dsl["arguments"][0]
-        label_1 = dsl["arguments"][1]
-        label_2 = dsl["arguments"][2]
+        label_a = dsl["arguments"][1]
+        label_b = dsl["arguments"][2]
         glue = dsl["arguments"][3]
         new_label = dsl["arguments"][4]
         axis = dsl["arguments"][5]
         if axis == 0 or axis == "index" or axis == "0":
-            return f"Merge the row $[{label_1}] and $[{label_2}] in %[{table}] with @{glue} as $[{new_label}]."
+            return f"Concatenate the rows $[{label_a}] and $[{label_b}] in %[{table}] with the glue &[{glue}] as $[{new_label}]."
         elif axis == 1 or axis == "columns" or axis == "1":
-            return f"Merge the column $[{label_1}] and $[{label_2}] in %[{table}] with @{glue} as $[{new_label}]."
+            return f"Concatenate the columns $[{label_a}] and $[{label_b}] in %[{table}] with the glue &[{glue}] as $[{new_label}]."
         else:
             return "Invalid function"
     elif dsl["function_name"] == "split":
@@ -126,15 +152,28 @@ def transfer_to_NL(dsl):
         return f"Transpose %[{table}]."
     elif dsl["function_name"] == "aggregate":
         table = dsl["arguments"][0]
-        label = dsl["arguments"][1]
-        operation = dsl["arguments"][2]
-        axis = dsl["arguments"][3]
+        functions = dsl["arguments"][1]
+        axis = dsl["arguments"][2]
         if axis == 0 or axis == "index" or axis == "0":
-            return f"Aggregate the row $[{label}] in %[{table}] with *[{operation}]."
+            return f"Aggregate %[{table}] with the functions $[{functions}] along the rows."
         elif axis == 1 or axis == "columns" or axis == "1":
-            return f"Aggregate the column $[{label}] in %[{table}] with *[{operation}]."
+            return f"Aggregate %[{table}] with the functions $[{functions}] along the columns."
         else:
             return "Invalid function"
+    elif dsl["function_name"] == "test":
+        table = dsl["arguments"][0]
+        label_a = dsl["arguments"][1]
+        label_b = dsl["arguments"][2]
+        strategy = dsl["arguments"][3]
+        axis = dsl["arguments"][4]
+        if axis == 0 or axis == "index" or axis == "0":
+            return f"Test the rows $[{label_a}] and $[{label_b}] in %[{table}] with the strategy *[{strategy}]."
+        elif axis == 1 or axis == "columns" or axis == "1":
+            return f"Test the columns $[{label_a}] and $[{label_b}] in %[{table}] with the strategy *[{strategy}]."
+        else:
+            return "Invalid function"
+    else:
+        return "Invalid function"
 
 
 def dsl_synthesize(client_id: str) -> str:

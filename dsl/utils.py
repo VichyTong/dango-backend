@@ -23,21 +23,6 @@ def classify_axis(axis):
     return axis
 
 
-def create_table(row_number, column_number):
-    """
-    Creates a new empty table with the specified number of rows and columns.
-
-    Parameters:
-    - row_number: The number of rows in the DataFrame.
-    - column_number: The number of columns in the DataFrame.
-    """
-
-    # Create a new DataFrame with the specified dimensions
-    new_table = pd.DataFrame(index=range(row_number), columns=range(column_number))
-
-    return new_table
-
-
 def insert(table, index, index_name="new_column", axis=0):
     """
     Inserts an empty row or column at the specified index in the table.
@@ -46,7 +31,7 @@ def insert(table, index, index_name="new_column", axis=0):
     - table: DataFrame in which the row/column will be inserted.
     - index: The index at which the row/column will be inserted.
     - index_name: The name of the new row/column.
-    - axis: 
+    - axis:
       - 0 or "index": Indicates a row operation.
       - 1 or "columns": Indicates a column operation.
     """
@@ -79,7 +64,7 @@ def drop(table, label, axis=0):
     Parameters:
     - table: DataFrame from which the row/column will be dropped.
     - label: The label of the row/column to be dropped. For rows, this is the index label; for columns, this is the column name.
-    - axis: 
+    - axis:
       - 0 or "index": Indicates a row operation.
       - 1 or "columns": Indicates a column operation.
     """
@@ -143,7 +128,7 @@ def move(origin_table, origin_index, target_table, target_index, axis=0):
     - origin_index: The index of the row/column to be moved.
     - target_table: DataFrame to which the row/column will be moved.
     - target_index: The index at which the row/column will be moved in the target DataFrame.
-    - axis: 
+    - axis:
       - 0 or "index": Indicates a row operation.
       - 1 or "columns": Indicates a column operation.
     """
@@ -194,7 +179,7 @@ def copy(
     - target_table: DataFrame to which the row/column will be copied.
     - target_index: The index at which the row/column will be copied in the target DataFrame.
     - target_label_name: The name of the new row/column in the target DataFrame.
-    - axis: 
+    - axis:
       - 0 or "index": Indicates a row operation.
       - 1 or "columns": Indicates a column operation.
     """
@@ -243,7 +228,7 @@ def swap(table_a, label_a, table_b, label_b, axis=0):
     - label_a: The label of the row/column to be swapped in the first DataFrame.
     - table_b: The second DataFrame from which the row/column will be swapped.
     - label_b: The label of the row/column to be swapped in the second DataFrame.
-    - axis: 
+    - axis:
       - 0 or "index": Indicates a row operation.
       - 1 or "columns": Indicates a column operation.
     """
@@ -290,7 +275,7 @@ def merge(table_a, table_b, on=None, how="inner", axis=0):
     - table_b: The second DataFrame.
     - on: The column or index level name to join on (ignored if axis=1).
     - how: The type of merge to perform ('inner', 'outer', 'left', 'right').
-    - axis: 
+    - axis:
       - 0 or "index": Indicates a row operation.
       - 1 or "columns": Indicates a column operation.
     """
@@ -321,7 +306,7 @@ def concatenate(table, label_a, label_b, glue, new_label, axis=0):
     - label_b: The label of the second row/column to be concatenated.
     - glue: The string to be used to concatenate the two rows/columns.
     - new_label: The label of the new row/column created by the concatenation.
-    - axis: 
+    - axis:
       - 0 or "index": Indicates a row operation.
       - 1 or "columns": Indicates a column operation.
     """
@@ -368,7 +353,7 @@ def split(table, label, delimiter, new_labels, axis=0):
     - label: The label of the row/column to be split.
     - delimiter: The delimiter used to split the row/column content.
     - new_labels: List of new labels for the resulting split rows/columns.
-    - axis: 
+    - axis:
       - 0 or "index": Indicates a row operation.
       - 1 or "columns": Indicates a column operation.
     """
@@ -429,7 +414,7 @@ def aggregate(table, functions, axis=0):
     Parameters:
     - table: DataFrame to be aggregated.
     - functions: A function or list of functions to apply to each column/row.
-    - axis: 
+    - axis:
       - 0 or "index": Indicates a row operation.
       - 1 or "columns": Indicates a column operation.
     """
@@ -453,7 +438,7 @@ def test(table, label_a, label_b, strategy, axis=0):
     - label_a: The label of the first row/column to be tested.
     - label_b: The label of the second row/column to be tested.
     - strategy: The statistical test to perform ('t-test', 'z-test', 'chi-squared').
-    - axis: 
+    - axis:
       - 0 or "index": Indicates a row operation.
       - 1 or "columns": Indicates a column operation.
     """
