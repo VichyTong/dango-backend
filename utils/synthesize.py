@@ -170,8 +170,7 @@ def transfer_to_NL(dsl):
         return "Invalid function"
 
 
-def dsl_synthesize(client_id: str) -> str:
-    history = get_history(client_id)
+def get_summarization(client_id, history):
     summarize_user_prompt = get_history_text(history)
 
     messages = append_message(summarize_system_prompt, "system", [])
@@ -180,6 +179,9 @@ def dsl_synthesize(client_id: str) -> str:
     messages = append_message(summarization, "assistant", messages)
     log_messages(client_id, "generate_summarization", messages)
 
+    return summarization
+
+def get_step_by_step_plan(client_id, history, summarization):
     plan_user_prompt = plan_user_prompt_template.replace(
         "{USER_INTENTS}", summarization
     ).replace(
@@ -193,6 +195,9 @@ def dsl_synthesize(client_id: str) -> str:
     messages = append_message(step_by_step_plan, "assistant", messages)
     log_messages(client_id, "generate_step_by_step_plan", messages)
 
+    return step_by_step_plan
+
+def get_dsls(client_id, history, step_by_step_plan):
     generate_user_prompt = generate_user_prompt_template.replace(
         "{PLAN}", step_by_step_plan
     ).replace(
@@ -206,6 +211,14 @@ def dsl_synthesize(client_id: str) -> str:
     log_messages(client_id, "generate_dsl", messages)
 
     dsls = json.loads(generated_dsl)
+    return dsls
+
+def dsl_synthesize(client_id: str) -> str:
+    history = get_history(client_id)
+    summarization = get_summarization(client_id, history)
+    step_by_step_plan = get_step_by_step_plan(client_id, history, summarization)
+    dsls = get_dsls(client_id, history, step_by_step_plan)
+
     for dsl in dsls:
         dsl["natural_language"] = transfer_to_NL(dsl)
     return dsls
