@@ -13,6 +13,8 @@ def init_prompt():
     global summarize_system_prompt
     global plan_system_prompt, plan_user_prompt_template
     global generate_system_prompt, generate_user_prompt_template
+    global verifier_system_prompt, verifier_user_prompt_template
+    global plan_with_feedback_user_prompt, generate_with_feedback_user_prompt
     with open("prompt/synthesize/summarize_system.txt", "r") as f:
         summarize_system_prompt = f.read()
     with open("prompt/synthesize/plan_system.txt", "r") as f:
@@ -23,6 +25,14 @@ def init_prompt():
         generate_system_prompt = f.read()
     with open("prompt/synthesize/generate_user.txt", "r") as f:
         generate_user_prompt_template = f.read()
+    with open("prompt/synthesize/verifier_system.txt", "r") as f:
+        verifier_system_prompt = f.read()
+    with open("prompt/synthesize/verifier_user.txt", "r") as f:
+        verifier_user_prompt_template = f.read()
+    with open("prompt/synthesize/plan_with_feedback_user.txt", "r") as f:
+        plan_with_feedback_user_prompt = f.read()
+    with open("prompt/synthesize/generate_with_feedback_user.txt", "r") as f:
+        generate_with_feedback_user_prompt = f.read()
 
 
 init_prompt()
@@ -45,7 +55,9 @@ def transfer_to_NL(dsl):
         if axis == 0 or axis == "index" or axis == "0":
             return f"Insert a row $[{index_name}] at position #[{index}] in %[{table}]."
         elif axis == 1 or axis == "columns" or axis == "1":
-            return f"Insert a column $[{index_name}] at position #[{index}] in %[{table}]."
+            return (
+                f"Insert a column $[{index_name}] at position #[{index}] in %[{table}]."
+            )
         else:
             return "Invalid function"
     elif dsl["function_name"] == "drop":
@@ -181,13 +193,24 @@ def get_summarization(client_id, history):
 
     return summarization
 
-def get_step_by_step_plan(client_id, history, summarization):
-    plan_user_prompt = plan_user_prompt_template.replace(
-        "{USER_INTENTS}", summarization
-    ).replace(
-        "{INFORMATION}",
-        format_information(history["information"], with_table_diff=False),
-    )
+
+def get_step_by_step_plan(client_id, history, summarization, feedback=None):
+    if feedback is None:
+        plan_user_prompt = plan_user_prompt_template.replace(
+            "{USER_INTENTS}", summarization
+        ).replace(
+            "{INFORMATION}",
+            format_information(history["information"], with_table_diff=False),
+        )
+    else:
+        plan_user_prompt = (
+            plan_with_feedback_user_prompt.replace("{USER_INTENTS}", summarization)
+            .replace(
+                "{INFORMATION}",
+                format_information(history["information"], with_table_diff=False),
+            )
+            .replace("{FEEDBACK}", feedback["feedback"])
+        )
 
     messages = append_message(plan_system_prompt, "system", [])
     messages = append_message(plan_user_prompt, "user", messages)
@@ -197,13 +220,25 @@ def get_step_by_step_plan(client_id, history, summarization):
 
     return step_by_step_plan
 
-def get_dsls(client_id, history, step_by_step_plan):
-    generate_user_prompt = generate_user_prompt_template.replace(
-        "{PLAN}", step_by_step_plan
-    ).replace(
-        "{INFORMATION}",
-        format_information(history["information"], with_table_diff=False),
-    )
+
+def get_dsls(client_id, history, step_by_step_plan, feedback=None):
+    if feedback is None:
+        generate_user_prompt = generate_user_prompt_template.replace(
+            "{PLAN}", step_by_step_plan
+        ).replace(
+            "{INFORMATION}",
+            format_information(history["information"], with_table_diff=False),
+        )
+    else:
+        generate_user_prompt = (
+            generate_with_feedback_user_prompt.replace("{PLAN}", step_by_step_plan)
+            .replace(
+                "{INFORMATION}",
+                format_information(history["information"], with_table_diff=False),
+            )
+            .replace("{FEEDBACK}", feedback["feedback"])
+        )
+
     messages = append_message(generate_system_prompt, "system", [])
     messages = append_message(generate_user_prompt, "user", messages)
     generated_dsl = generate_chat_completion(messages)
@@ -213,11 +248,38 @@ def get_dsls(client_id, history, step_by_step_plan):
     dsls = json.loads(generated_dsl)
     return dsls
 
+
+def get_feedback(client_id, history, summarization, dsls):
+    verifier_user_prompt = (
+        verifier_user_prompt_template.replace(
+            "{INFORMATION}",
+            format_information(history["information"], with_table_diff=False),
+        )
+        .replace("{USER_INTENTS}", summarization)
+        .replace("{GENERATED_DSLS}", json.dumps(dsls))
+    )
+    messages = append_message(verifier_system_prompt, "system", [])
+    messages = append_message(verifier_user_prompt, "user", messages)
+    feedback = generate_chat_completion(messages)
+    messages = append_message(feedback, "assistant", messages)
+    log_messages(client_id, "generate_feedback", messages)
+    feedback = json.loads(feedback)
+    return feedback
+
+
 def dsl_synthesize(client_id: str) -> str:
     history = get_history(client_id)
     summarization = get_summarization(client_id, history)
     step_by_step_plan = get_step_by_step_plan(client_id, history, summarization)
     dsls = get_dsls(client_id, history, step_by_step_plan)
+    feedback = get_feedback(client_id, history, summarization, dsls)
+
+    while feedback["correctness"] == "incorrect":
+        step_by_step_plan = get_step_by_step_plan(
+            client_id, history, summarization, feedback
+        )
+        dsls = get_dsls(client_id, history, step_by_step_plan, feedback)
+        feedback = get_feedback(client_id, history, summarization, dsls)
 
     for dsl in dsls:
         dsl["natural_language"] = transfer_to_NL(dsl)

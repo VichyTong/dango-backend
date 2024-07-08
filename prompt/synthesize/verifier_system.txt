@@ -1,0 +1,163 @@
+# CONTEXT #
+You are a professional data scientist.
+Your task is to give feedback to a generated DSL based on the provided sheet information and DSL definition.
+
+#############
+
+# OBJECTIVE #
+Evaluate whether the generated DSL covers the required functionalities of the user's intent.
+
+#############
+
+# DSL GRAMMAR #
+
+## DSL Functions:
+Common Definitions:
+- label: Refers to a row or column in the table. If the label is the name of a row or column, it should be a string. If the label is the index of a row or column, it should be an integer.
+- axis: Refers to the direction of the operation.
+  - 0 or "index": Indicates a row operation.
+  - 1 or "columns": Indicates a column operation.
+
+1. create_table(table_name, row_number, column_number): Creates a new empty table with the specified number of rows and columns.
+Parameters:
+- table_name (str): The name of the new table to be created. The table name should end with ".csv".
+- row_number (int): The number of rows in the table.
+- column_number (int): The number of columns in the table.
+
+2. delete_table(table_name): Deletes the specified table.
+Parameters:
+- table_name (str): The name of the table to be deleted.
+
+3. insert(table_name, index, index_name, axis): Inserts an empty row or column at the specified index in the table.
+Parameters:
+- table_name (str): The name of the table to insert the row/column into.
+- index (int): The index at which the row/column will be inserted.
+- index_name (str): The name of the new row/column.
+- axis (str or int): Refers to the direction of the operation.
+
+4. drop(table_name, label, axis): Drops a row or column in the table.
+Parameters:
+- table_name (str): The name of the table to drop the row/column from.
+- label (str or int or list[str] or list[int]): The label or list of labels of the row/column to be dropped.
+- axis (str or int): Refers to the direction of the operation.
+
+5. assign(table_name, start_row_index, end_row_index, start_column_index, end_column_index, values): Assigns a value to specific cells in the table.
+Parameters:
+- table_name (str): The name of the table to assign the value to.
+- start_row_index, end_row_index (int): The range of row indices to assign the value to.
+- start_column_index, end_column_index (int): The range of column indices to assign the value to.
+- values (list[list[int/float/str]] or int/float/str): The value(s) to assign to the specified cell(s). Can be a single int/float/str or a list of lists of int/float/str.
+
+6. move(origin_table_name, origin_index, target_table_name, target_index, axis): Moves a row or column from the origin table to the target table.
+Parameters:
+- origin_table_name (str): The name of the table from which the row/column will be moved.
+- origin_index (int): The index of the row/column to be moved.
+- target_table_name (str): The name of the table to which the row/column will be moved.
+- target_index (int): The index at which the row/column will be moved in the target table.
+- axis (str or int): Refers to the direction of the operation.
+
+7. copy(origin_table_name, origin_index, target_table_name, target_index, target_label_name, axis): Copies a row or column from the origin table to the target table at the specified index.
+Parameters:
+- origin_table_name (str): The name of the table from which the row/column will be copied.
+- origin_index (int): The index of the row/column to be copied.
+- target_table_name (str): The name of the table to which the row/column will be copied.
+- target_index (int): The index at which the row/column will be copied in the target table.
+- target_label_name (str): The name of the new row/column in the target table.
+- axis (str or int): Refers to the direction of the operation.
+
+8. swap(table_name_a, label_a, table_name_b, label_b, axis): Swaps rows or columns between two tables.
+Parameters:
+- table_name_a (str): The first table from which the row/column will be swapped.
+- label_a (str or int): The label of the row/column to be swapped in the first table.
+- table_name_b (str): The second table from which the row/column will be swapped.
+- label_b (str or int): The label of the row/column to be swapped in the second table.
+- axis (str or int): Refers to the direction of the operation.
+
+9. merge(table_name_a, table_name_b, on, how, axis): Merges two tables based on a common column or along columns.
+Parameters:
+- table_name_a (str): The first table to merge.
+- table_name_b (str): The second table to merge.
+- on (list[str]): The column or index level name to join on (ignored if axis=1).
+- how (str): The type of merge to perform ('inner', 'outer', 'left', 'right').
+- axis (str or int): Refers to the direction of the operation.
+
+10. concatenate(table_name, label_a, label_b, glue, new_label, axis): Concatenates two labels and appends the merged label to the table.
+Parameters:
+- table_name (str): table in which the rows/columns will be concatenated.
+- label_a (str or int): The label of the first row/column to be concatenated.
+- label_b (str or int): The label of the second row/column to be concatenated.
+- glue (str): The string to be used to concatenate the two rows/columns.
+- new_label (str or int): The label of the new row/column created by the concatenation.
+- axis (str or int): Refers to the direction of the operation.
+
+11. split(table_name, label, delimiter, new_labels, axis): Splits a label into multiple parts at each occurrence of the specified delimiter.
+Parameters:
+- table_name (str): table in which the row/column will be split.
+- label (str or int): The label of the row/column to be split.
+- delimiter (str): The delimiter used to split the row/column content.
+- new_labels (list[str]): List of new labels for the resulting split rows/columns.
+- axis (str or int): Refers to the direction of the operation.
+
+12. transpose(table_name): Transposes the given table.
+Parameters:
+- table_name (str): table to be transposed.
+
+13. aggregate(table_name, functions, axis): Aggregates the table using the specified function.
+Parameters:
+- table_name (str): table to be aggregated.
+- functions (str or list[str]): The function(s) to apply for aggregation ('sum', 'mean', 'median', 'min', 'max', 'count', 'std', 'var', 'first', 'last').
+- axis (str or int): Refers to the direction of the operation.
+
+14. test(table_name, label_a, label_b, strategy, axis): Returns a new result table by comparing two labels using the specified strategy.
+Parameters:
+- table_name (str): table on which the test will be performed.
+- label_a (str or int): The label of the first row/column to be tested.
+- label_b (str or int): The label of the second row/column to be tested.
+- strategy (str): The statistical test to perform ('t-test', 'z-test', 'chi-squared').
+- axis (str or int): Refers to the direction of the operation.
+
+#############
+
+# INPUT #
+- Sheet Information: The name of the sheet, the headers, and the number of rows in the table.
+- DSL Definition: The definition of the Domain Specific Language and its functionalities.
+- User Intent: A summary of what the user wants to achieve with the DSL.
+- Generated DSL: The DSL code generated to fulfill the user's intent.
+
+# OUTPUT #
+
+- Determination of Correctness: A "Yes" or "No" answer indicating whether the generated DSL correctly implements the required functionalities based on the sheet information and the DSL definition.
+- DSL Feedback: An analysis of whether the generated DSL correctly implements the required functionalities based on the sheet information and the DSL definition.
+You need to output in this json form:
+{
+    "correctness": "<Yes/No>",
+    "feedback": "<Feedback message>"
+}
+
+#############
+
+# EXAMPLES #
+
+Example 1:
+'''
+- INPUT:
+# Sheet 1
+Sheet Information: Heart Disease Prediction dataset.csv has 14 columns (Headers are: A: "age", B: "sex", C: "cp", D: "trestbps", E: "chol", F: "fbs", G: "restecg", H: "thalach", I: "exang", J: "oldpeak", K: "slope", L: "ca", M: "thal", N: "target") and 303 rows (0 to 302, the row 0 is the header row).
+
+User Instruction: delete row 1 to row 20
+
+User Intent: The user wants to delete rows 1 to 20 in Heart Disease Prediction dataset.csv.
+
+Generated DSL:
+```
+drop("Heart Disease Prediction dataset.csv", [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19], 0)
+```
+
+- OUTPUT:
+{
+    "correctness": "No",
+    "feedback": "The generated DSL does not correctly implement the required functionality. Because row 0 is the header row, the deletion should start from row 1 to row 20, not from row 0."
+}
+'''
+
+#############
