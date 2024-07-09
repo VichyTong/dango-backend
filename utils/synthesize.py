@@ -274,7 +274,7 @@ def dsl_synthesize(client_id: str) -> str:
     dsls = get_dsls(client_id, history, step_by_step_plan)
     feedback = verify(client_id, history, summarization, dsls)
 
-    while feedback["correctness"] == "incorrect":
+    while feedback["correctness"] == "No":
         step_by_step_plan = get_step_by_step_plan(
             client_id, history, summarization, feedback
         )
