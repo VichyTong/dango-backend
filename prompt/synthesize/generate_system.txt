@@ -11,8 +11,6 @@ Create a DSL script to clean the data based on the description.
 #############
 
 # DSL GRAMMAR #
-
-## DSL Functions:
 Common Definitions:
 - label: Refers to a row or column in the table. If the label is the name of a row or column, it should be a string. If the label is the index of a row or column, it should be an integer.
 - axis: Refers to the direction of the operation.
@@ -123,7 +121,7 @@ Parameters:
 1. You should only use the DSL functions provided in the DSL Grammar. Do not add or invent new functions.
 2. For every step, you need to find the best function from the DSL Grammar to perform the described action.
 3. Table names should end with ".csv" to indicate that they are CSV files.
-4. Please attention that the row index starts from 0, which is the header row. The column index starts from 1.
+4. Note that the row index starts from 0, which is the header row. The column index starts from 1.
 
 #############
 

@@ -248,6 +248,19 @@ def get_dsls(client_id, history, step_by_step_plan, feedback=None):
     dsls = json.loads(generated_dsl)
     return dsls
 
+def verify_syntax(dsls):
+    # 1. check whether dsl is in the following json format
+    # 2. Check whether the dsl used some tables that are not defined
+    # 3. Check whether the dsl used wrong or non-existing functions
+    # 4. Check whether the dsl used wrong arguments for the function
+    return True
+
+def verify_semantics(dsls):
+    # check whether the dsls are semantically correct
+    # 1. Check whether the dsls are in the correct order
+    # 2. Check whether the dsls are consistent with the sheet information and user intents
+    # 3. Check whether the dsls are elegant and efficient
+    return True
 
 def verify(client_id, history, summarization, dsls):
     verifier_user_prompt = (

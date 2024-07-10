@@ -1,0 +1,3344 @@
+2024-06-28 10:53:42,166 - client_d30f2254-31b1-4c25-88f1-49e42229cf68 - INFO
+>>> find_batch_operation
+Changes:
+[
+    {
+        "type": "all_col",
+        "row": 5,
+        "old_values": [
+            "57",
+            "0",
+            "0",
+            "120",
+            "354",
+            "0",
+            "1",
+            "163",
+            "1",
+            "0.6",
+            "2",
+            "0",
+            "2",
+            "1"
+        ],
+        "new_values": [
+            "null",
+            "null",
+            "null",
+            "null",
+            "null",
+            "null",
+            "null",
+            "null",
+            "null",
+            "null",
+            "null",
+            "null",
+            "null",
+            "null"
+        ]
+    }
+]
+Batch Operations:
+[
+    {
+        "type": "all_col",
+        "row": 5,
+        "old_values": [
+            "57",
+            "0",
+            "0",
+            "120",
+            "354",
+            "0",
+            "1",
+            "163",
+            "1",
+            "0.6",
+            "2",
+            "0",
+            "2",
+            "1"
+        ],
+        "new_values": [
+            "null",
+            "null",
+            "null",
+            "null",
+            "null",
+            "null",
+            "null",
+            "null",
+            "null",
+            "null",
+            "null",
+            "null",
+            "null",
+            "null"
+        ]
+    }
+]
+2024-06-28 10:53:43,771 - httpx - INFO
+HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2024-06-28 10:53:43,778 - client_d30f2254-31b1-4c25-88f1-49e42229cf68 - INFO
+>>> mata_diff_to_NL
+ 
+---------------------------------------------------
+** system **:
+# CONTEXT #
+You are a professional data scientist. You want to summarize the table diff information made by the user in the CSV file. 
+
+#############
+
+# OBJECTIVE #
+Summarize the table diff information in Natural Language.
+
+############
+
+# GUIDELINES #
+Please note that a value replaced with 'null' means deleted, and a value replaced from 'null' means inserted.
+
+#############
+
+# INPUT #
+The diff information contains:
+- Table name
+- Difference detail (row, col, old_value, new_value)
+
+#############
+
+# EXAMPLES #
+Example 1:
+```
+table1.csv
+{'row': 4, 'col': 1, 'old_value': null, 'new_value': '1'}
+{'row': 4, 'col': 2, 'old_value': null, 'new_value': '2'}
+{'row': 4, 'col': 3, 'old_value': null, 'new_value': '3'}
+{'row': 4, 'col': 4, 'old_value': null, 'new_value': '4'}
+{'row': 4, 'col': 5, 'old_value': null, 'new_value': '5'}
+```
+In table1.csv, the user sequentially inserts values into the fourth row according to column number.
+
+---
+
+Example 2:
+```
+table2.csv
+{'row': 4, 'col': 1, 'old_value': "1", 'new_value': null}
+{'row': 4, 'col': 2, 'old_value': "2", 'new_value': null}
+{'row': 4, 'col': 3, 'old_value': "3", 'new_value': null}
+{'row': 5, 'col': 1, 'old_value': null, 'new_value': '1'}
+{'row': 5, 'col': 2, 'old_value': null, 'new_value': '2'}
+{'row': 5, 'col': 3, 'old_value': null, 'new_value': '3'}
+```
+In table2.csv, the user cut row 4 and pastes to row 5.
+
+---
+
+Example 3:
+```
+table3.csv
+{'row': 7, 'col': 1, 'old_value': null, 'new_value': '452'}
+{'row': 7, 'col': 2, 'old_value': null, 'new_value': '424'}
+{'row': 7, 'col': 3, 'old_value': null, 'new_value': '981'}
+{'row': 7, 'col': 4, 'old_value': null, 'new_value': '1423'}
+```
+In table3.csv, the user adds a new row at row 7, maybe the end of the table.
+---------------------------------------------------
+
+
+---------------------------------------------------
+** user **:
+{"type": "all_col", "row": 5, "old_values": ["57", "0", "0", "120", "354", "0", "1", "163", "1", "0.6", "2", "0", "2", "1"], "new_values": ["null", "null", "null", "null", "null", "null", "null", "null", "null", "null", "null", "null", "null", "null"]}
+
+---------------------------------------------------
+
+
+---------------------------------------------------
+** assistant **:
+In the given diff information, the user has replaced all values in row 5 of the table with 'null'. This action effectively deletes all the previous values in row 5 and replaces them with null values.
+---------------------------------------------------
+
+
+2024-06-28 10:53:45,298 - httpx - INFO
+HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2024-06-28 10:53:45,303 - client_d30f2254-31b1-4c25-88f1-49e42229cf68 - INFO
+>>> analyze_init
+ 
+---------------------------------------------------
+** system **:
+# CONTEXT # 
+You are a professional data scientist. A user has made some changes in the CSV files.
+Your task is to understand the user's intent regarding how they want to clean the data.
+
+#############
+
+# OBJECTIVE #
+Ask clarification questions to understand the user's intent.
+
+#############
+
+# GUIDELINES #
+1. Infer their intent through the table diff and user instruction. Do not infer beyond the information provided in the input.
+2. Avoid directly asking "what is your intent?" Instead, ask questions related to the changes made in the table and the instructions given.
+3. If the user's intent is clear, you can conclude the conversation.
+ 
+#############
+
+# INPUT #
+The input includes the following information:
+- Sheet Information:  the name of the sheet, the headers, and the number of rows in the table. 
+- Table Diff: the changes made to the table.
+- User Instruction: the user's instruction that indicates the changes they want to make.
+
+#############
+
+# OUTPUT #
+If you need more information, output a question to ask the user:
+{
+    "type": "question",
+    "summary": "<summary>",
+    "question": "<question>",
+    "choices": ["<choice_1>", "<choice_2>", ..., "<choice_n>", "other"]
+}
+
+If the intent is clear enough, output a summary of the user's intent:
+{
+   "type": "finish",
+   "summary": "<summary>"
+}
+
+#############
+
+# EXAMPLES #
+Example 1:
+'''
+- INPUT:
+# Sheet 1
+Sheet Information: table_1.csv has 3 columns (Headers are A: "2021", B: "2022", C: "2023", D: "2024") and 5 rows (the row 0 is the header row).
+Table Diff: In table_1.csv, row 3 has been replaced with [null, null, null, null].
+
+User Instruction: (No user instruction)
+
+- OUTPUT:
+{
+    "type": "question",
+    "summary": "The user has deleted row 3 in table_1.csv",
+    "question": "Do you want to drop row 3 in table_1.csv?",
+    "choices": [
+        "Yes, drop the row",
+        "No, keep the row",
+        "other (please specify)"
+    ]
+}
+'''
+
+Example 2:
+'''
+- INPUT:
+# Sheet 1
+Sheet Information: table_1.csv has 3 columns (Headers are A: "2021", B: "2022", C: "2023", D: "2024") and 5 rows (the row 0 is the header row).
+Table Diff: In table_1.csv, row 3 has been replaced with [null, null, null, null].
+
+# Sheet 2
+Sheet Information: table_2.csv has 4 columns (Headers are A: "Name", B: "Age", C: "Gender", D: "Occupation") and 5 rows (the row 0 is the header row).
+Table Diff: (No table diff)
+
+User Instruction: (No user instruction)
+
+- OUTPUT:
+{
+    "type": "question",
+    "summary": "The user has deleted row 3 in table_1.csv.",
+    "question": "Do you want to drop row 3 in table_1.csv and apply the same changes to table_2.csv?"
+    "choices": [
+        "Yes, drop the row in both tables",
+        "No, only drop the row in table_1.csv",
+        "No, only drop the row in table_2.csv",
+        "other (please specify)"
+    ]
+}
+'''
+
+Example 3:
+'''
+- INPUT:
+# Sheet 1
+Sheet Information: HeartDisease.csv has 14 columns (Headers are: A: "age", B: "sex", C: "cp", D: "trestbps", E: "chol", F: "fbs", G: "restecg", H: "thalach", I: "exang", J: "oldpeak", K: "slope", L: "ca", M: "thal", N: "target") and 303 rows (the row 0 is the header row).
+Table Diff: (No table diff)
+
+# Sheet 2
+Sheet Information: test.csv has 14 columns (Headers are: A: "Column1", B: "Column2", C: "Column3", D: "Column4", E: "Column5", F: "Column6", G: "Column7", H: "Column8", I: "Column9", J: "Column10", K: "Column11", L: "Column12", M: "Column13", N: "Column14") and 303 rows (the row 0 is the header row).
+Table Diff: (No table diff)
+
+User Instruction: Move age and sex columns from HeartDisease.csv to test_v0.csv.
+
+- OUTPUT:
+{
+    "type": "finish",
+    "summary": "The user wants to move the age and sex columns from HeartDisease.csv to Column1 and Column2 in test.csv."
+}
+'''
+
+---------------------------------------------------
+
+
+---------------------------------------------------
+** user **:
+# Sheet 1
+Sheet Information: Heart Disease Prediction dataset_v0.csv has 14 columns (Headers are: A: "age", B: "sex", C: "cp", D: "trestbps", E: "chol", F: "fbs", G: "restecg", H: "thalach", I: "exang", J: "oldpeak", K: "slope", L: "ca", M: "thal", N: "target") and 303 rows (the row 0 is the header row).
+Table Diff: In the given diff information, the user has replaced all values in row 5 of the table with 'null'. This action effectively deletes all the previous values in row 5 and replaces them with null values.
+
+User Instruction: (No user instruction)
+---------------------------------------------------
+
+
+---------------------------------------------------
+** assistant **:
+{'type': 'question', 'summary': "The user has replaced all values in row 5 of Heart Disease Prediction dataset_v0.csv with 'null'.", 'question': 'Do you want to delete row 5 in Heart Disease Prediction dataset_v0.csv?', 'choices': ['Yes, delete row 5', 'No, keep row 5', 'Other (please specify)']}
+---------------------------------------------------
+
+
+2024-06-28 10:53:48,373 - httpx - INFO
+HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2024-06-28 10:53:48,375 - client_d30f2254-31b1-4c25-88f1-49e42229cf68 - INFO
+>>> followup
+ 
+---------------------------------------------------
+** system **:
+# CONTEXT # 
+You are a professional data scientist. You have already asked some clarification questions and the user has replied.
+Now, you might want to ask additional questions to gain a deeper understanding of their intent.
+
+#############
+
+# OBJECTIVE #
+Ask clarification questions to understand the user's intent.
+
+#############
+
+# GUIDELINES #
+1. Infer their intent through the table diff and user instruction. Do not infer beyond the information provided in the input.
+2. Avoid directly asking "what is your intent?" Instead, ask questions related to the changes made in the table and the instructions given.
+3. If the user's intent is clear, you can conclude the conversation.
+ 
+#############
+
+# INPUT #
+The input includes the following:
+- Sheet Information:  the name of the sheet, the headers, and the number of rows in the table. 
+- Table Diff: the changes made to the table, including the cells that have been modified.
+- User Instruction: the user's instruction that indicates the changes they want to make.
+- Question & Answering History: The history of questions & answers exchanged between the assistant and the user.
+
+#############
+
+# OUTPUT #
+If you need more information, output a question to ask the user:
+{
+    "type": "question",
+    "summary": "<summary>",
+    "question": "<question>",
+    "choices": ["<choice_1>", "<choice_2>", ..., "<choice_n>", "other"]
+}
+
+If the intent is clear enough, output a summary of the user's intent:
+{
+   "type": "finish",
+   "summary": "<summary>"
+}
+
+#############
+
+# EXAMPLES #
+Example 1:
+'''
+- INPUT:
+# Sheet 1
+Sheet Information: table_1.csv has 3 columns (Headers are A: "2021", B: "2022", C: "2023", D: "2024") and 5 rows (the row 0 is the header row).
+Table Diff: In table_1.csv, row 3 has been replaced with [null, null, null, null].
+
+User Instruction: (No user instruction)
+
+Question & Answering History: 
+ASSISTANT:
+{
+    "type": "question",
+    "summary": "Firstly, the user has deleted row 3 in table_1.csv and replaced it with null. Secondly, the user delete all values in row 4 in table_2.csv.",
+    "question": "Do you want to delete the row 4 in table_1.csv?",
+    "choices": [
+        "Yes, delete the values",
+        "No, keep the values",
+        "other (please specify)"
+    ]
+}
+
+USER:
+{
+    "choice": "Yes, delete the values"
+}
+
+
+- OUTPUT:
+{
+    "type": "finish",
+    "summary": "The user wants to delete the row 4 in table_1.csv."
+}
+'''
+
+Example 2:
+'''
+- INPUT:
+# Sheet 1
+Sheet Information: table_1.csv has 3 columns (Headers are A: "2021", B: "2022", C: "2023", D: "2024") and 5 rows (the row 0 is the header row).
+Table Diff: In table_1.csv, row 3 has been deleted and replaced with [null, null, null, null].
+
+# Sheet 2
+Sheet Information: table_2.csv has 4 columns (Headers are A: "Name", B: "Age", C: "Gender", D: "Occupation") and 5 rows (the row 0 is the header row).
+Table Diff: In the given table, the user clears all values in row 4 across all columns.
+
+User Instruction: (No user instruction)
+
+Question & Answering History: 
+ASSISTANT:
+{
+    "type": "question",
+    "summary": "Firstly, the user has deleted row 3 in table_1.csv and replaced it with null. Secondly, the user delete all values in row 4 in table_2.csv.",
+    "question": "Do you want to delete the row 3 in table_1.csv and delete the values in row 4 in table_2.csv?",
+    "choices": [
+        "Yes, delete the values",
+        "No, keep the values",
+        "other (please specify)"
+    ]
+}
+
+USER:
+{
+    "choice": "Other: Actually, I want to replace row 3 with the values from row 5 in table_1.csv."
+}
+
+
+- OUTPUT:
+{
+    "type": "question",
+    "summary": "The user wants to replace row 3 in table_1.csv with the values from row 5.",
+    "question": "Understood! Do you also want to delete the values in row 4 in table_2.csv?",
+    "choices": [
+        "Yes, delete the values",
+        "No, keep the values",
+        "other (please specify)"
+    ]
+}
+'''
+---------------------------------------------------
+
+
+---------------------------------------------------
+** user **:
+# Sheet 1
+Sheet Information: Heart Disease Prediction dataset_v0.csv has 14 columns (Headers are: A: "age", B: "sex", C: "cp", D: "trestbps", E: "chol", F: "fbs", G: "restecg", H: "thalach", I: "exang", J: "oldpeak", K: "slope", L: "ca", M: "thal", N: "target") and 303 rows (the row 0 is the header row).
+Table Diff: In the given diff information, the user has replaced all values in row 5 of the table with 'null'. This action effectively deletes all the previous values in row 5 and replaces them with null values.
+
+User Instruction: (No user instruction)
+Question & Answering History:
+ASSISTANT:
+{
+    "type": "question",
+    "summary": "The user has replaced all values in row 5 of Heart Disease Prediction dataset_v0.csv with 'null'.",
+    "question": "Do you want to delete row 5 in Heart Disease Prediction dataset_v0.csv?",
+    "choices": [
+        "Yes, delete row 5",
+        "No, keep row 5",
+        "Other (please specify)"
+    ]
+}
+
+USER:
+{
+    "choice": "Yes, delete row 5"
+}
+---------------------------------------------------
+
+
+---------------------------------------------------
+** assistant **:
+{
+    "type": "finish",
+    "summary": "The user wants to delete row 5 in Heart Disease Prediction dataset_v0.csv."
+}
+---------------------------------------------------
+
+
+2024-06-28 10:53:49,607 - httpx - INFO
+HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2024-06-28 10:53:49,609 - client_d30f2254-31b1-4c25-88f1-49e42229cf68 - INFO
+>>> generate_summarization
+ 
+---------------------------------------------------
+** system **:
+# CONTEXT #
+You are a professional data scientist.
+Your task is to analyze the user's intents regarding how they want to clean the data.
+
+#############
+
+# OBJECTIVE #
+Summarize the user's intents.
+
+#############
+
+# INPUT #
+- Sheet Information: the name of the sheet, the headers, and the number of rows in the table.
+- Table Diff: the changes made to the table.
+- User Instruction: the user's instruction that indicates the changes they want to make.
+- Question & Answering History: The history of questions & answers exchanged between the assistant and the user.
+
+# OUTPUT #
+
+- User Intents: the user's intents.
+
+#############
+
+# EXAMPLES #
+
+Example 1:
+'''
+- INPUT:
+# Sheet 1
+Sheet Information: Heart Disease Prediction dataset.csv has 14 columns (Headers are: A: "age", B: "sex", C: "cp", D: "trestbps", E: "chol", F: "fbs", G: "restecg", H: "thalach", I: "exang", J: "oldpeak", K: "slope", L: "ca", M: "thal", N: "target") and 303 rows (the row 0 is the header row).
+Table Diff: In the table provided, it seems that the user has deleted row 1 to row 20.
+User Instruction: delete row 1 to row 20
+
+Question & Answering History:
+Clarification Question 1:
+Are you sure you want to delete rows 1 to 20?
+
+A. Yes, delete rows 1 to 20
+B. No, I want to delete a different range of rows
+C. other (please specify)
+
+User Answer 1:
+Yes, delete rows 1 to 20
+
+- OUTPUT:
+The user's intent is to delete row 1 to 20 in Heart Disease Prediction dataset.csv.
+'''
+#############
+---------------------------------------------------
+
+
+---------------------------------------------------
+** user **:
+# Sheet 1
+Sheet Information: Heart Disease Prediction dataset_v0.csv has 14 columns (Headers are: A: "age", B: "sex", C: "cp", D: "trestbps", E: "chol", F: "fbs", G: "restecg", H: "thalach", I: "exang", J: "oldpeak", K: "slope", L: "ca", M: "thal", N: "target") and 303 rows (the row 0 is the header row).
+Table Diff: In the given diff information, the user has replaced all values in row 5 of the table with 'null'. This action effectively deletes all the previous values in row 5 and replaces them with null values.
+
+User Instruction: (No user instruction)
+
+Clarification Question 1:
+Do you want to delete row 5 in Heart Disease Prediction dataset_v0.csv?
+A. Yes, delete row 5
+B. No, keep row 5
+C. Other (please specify)
+
+User Answer 1:
+Yes, delete row 5
+
+---------------------------------------------------
+
+
+---------------------------------------------------
+** assistant **:
+# User Intents:
+The user's intent is to delete row 5 in the Heart Disease Prediction dataset_v0.csv.
+---------------------------------------------------
+
+
+2024-06-28 10:53:51,077 - httpx - INFO
+HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2024-06-28 10:53:51,080 - client_d30f2254-31b1-4c25-88f1-49e42229cf68 - INFO
+>>> generate_step_by_step_plan
+ 
+---------------------------------------------------
+** system **:
+# CONTEXT #
+You are a professional data scientist.
+Your task is to generate a step-by-step plan to clean the data based on the user's intents.
+
+#############
+
+# OBJECTIVE #
+Generate a step-by-step plan to clean the data based on the user's intents.
+
+#############
+
+# DSL GRAMMAR #
+
+## DSL Functions:
+
+1. create: Create columns or tables to a specified number in the table.
+
+2. drop: Deletes a specified label in the table.
+   
+3. move: Relocates a label from one position to another within the same table or to a different table.
+
+4. copy: Copies a label and appends it to the end of the target table.
+
+5. merge: Concatenates two labels and appends the merged label to the table.
+
+6. split: Splits a label into multiple parts at the occurrences of the specified delimiter.
+
+7. transpose: Converts rows to columns and columns to rows in the table.
+
+8. aggregate: Aggregates the table using the specified function.
+
+9. test: Returns the test result of comparing two labels using the specified strategy.
+
+#############
+
+# GUIDELINES #
+1. You should only use the DSL functions provided in the DSL Grammar. Do not add or invent new functions.
+
+#############
+
+# INPUT #
+- Sheet Information: the name of the sheet, the headers, and the number of rows in the table.
+- User Intents: the user's intents.
+
+# OUTPUT #
+
+- Step-by-step plan: a sequence of descriptions of the actions to be taken to clean the data based on the user's intents.
+
+#############
+
+# EXAMPLES #
+
+Example 1:
+'''
+- INPUT:
+# Sheet 1
+Sheet Information: Heart Disease Prediction dataset.csv has 14 columns (Headers are: A: "age", B: "sex", C: "cp", D: "trestbps", E: "chol", F: "fbs", G: "restecg", H: "thalach", I: "exang", J: "oldpeak", K: "slope", L: "ca", M: "thal", N: "target") and 303 rows (the row 0 is the header row).
+User Intents: The user's intent is to drop the column "ca" and "thal".
+
+- OUTPUT:
+Step-by-step plan:
+1. Drop the column "ca". (drop function)
+2. Drop the column "thal". (drop function)
+'''
+
+Example 2:
+'''
+- INPUT:
+# Sheet 1
+Sheet Information: Heart Disease Prediction dataset.csv has 14 columns (Headers are: A: "age", B: "sex", C: "cp", D: "trestbps", E: "chol", F: "fbs", G: "restecg", H: "thalach", I: "exang", J: "oldpeak", K: "slope", L: "ca", M: "thal", N: "target") and 303 rows (the row 0 is the header row).
+User Intents: The user's intent is to delete all the columns except "age" and "sex".
+
+- OUTPUT:
+Step-by-step plan:
+1. Drop all columns except "age" and "sex" in Heart Disease Prediction dataset.csv. (drop function)
+'''
+
+Example 3:
+'''
+- INPUT:
+# Sheet 1
+Sheet Information: Heart Disease Prediction dataset.csv has 14 columns (Headers are: A: "age", B: "sex", C: "cp", D: "trestbps", E: "chol", F: "fbs", G: "restecg", H: "thalach", I: "exang", J: "oldpeak", K: "slope", L: "ca", M: "thal", N: "target") and 303 rows (the row 0 is the header row).
+
+# Sheet 2
+Sheet Information: New.csv has 14 columns (Headers are: "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N") and 303 rows (the row 0 is the header row).
+
+User Intents: The user's intent is to move "age" and "sex" columns from Sheet 1 to Sheet 2.
+
+- OUTPUT:
+Step-by-step plan:
+1. Move the column "age" from Heart Disease Prediction dataset.csv to New.csv. (move function)
+2. Move the column "sex" from Heart Disease Prediction dataset.csv to New.csv. (move function)
+'''
+
+Example 4:
+'''
+- INPUT:
+# Sheet 1
+Sheet Information: Heart Disease Prediction dataset.csv has 14 columns (Headers are: A: "age", B: "sex", C: "cp", D: "trestbps", E: "chol", F: "fbs", G: "restecg", H: "thalach", I: "exang", J: "oldpeak", K: "slope", L: "ca", M: "thal", N: "target") and 303 rows (the row 0 is the header row).
+
+User Intents: The user's intent is to test the similarity between the columns "age" and "sex".
+
+- OUTPUT:
+Step-by-step plan:
+1. Create a new table name test_result.csv to store the test result. (create function)
+2. Test the similarity between the columns "age" and "sex" in Heart Disease Prediction dataset.csv using t-test. (test function)
+'''
+
+#############
+---------------------------------------------------
+
+
+---------------------------------------------------
+** user **:
+# Sheet 1
+Sheet Information: Heart Disease Prediction dataset_v0.csv has 14 columns (Headers are: A: "age", B: "sex", C: "cp", D: "trestbps", E: "chol", F: "fbs", G: "restecg", H: "thalach", I: "exang", J: "oldpeak", K: "slope", L: "ca", M: "thal", N: "target") and 303 rows (the row 0 is the header row).
+Table Diff: In the given diff information, the user has replaced all values in row 5 of the table with 'null'. This action effectively deletes all the previous values in row 5 and replaces them with null values.
+
+User Instruction: (No user instruction)
+User Intents: # User Intents:
+The user's intent is to delete row 5 in the Heart Disease Prediction dataset_v0.csv.
+---------------------------------------------------
+
+
+---------------------------------------------------
+** assistant **:
+Step-by-step plan:
+1. Create a new table named "Heart Disease Prediction dataset_v1.csv".
+2. Delete row 5 in Heart Disease Prediction dataset_v0.csv. (copy function to copy all rows except row 5)
+3. Paste the copied rows into the new table "Heart Disease Prediction dataset_v1.csv".
+---------------------------------------------------
+
+
+2024-06-28 10:53:52,393 - httpx - INFO
+HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2024-06-28 10:53:52,396 - client_d30f2254-31b1-4c25-88f1-49e42229cf68 - INFO
+>>> generate_dsl
+ 
+---------------------------------------------------
+** system **:
+# CONTEXT #
+You are a professional DSL (Domain Specific Language) generator.
+You will be given a step-by-step description of a data cleaning plan.
+You need to follow the description and create a DSL script to help user clean and manipulate the data.
+
+#############
+
+# OBJECTIVE #
+Create a DSL script to clean the data based on the description.
+
+#############
+
+# DSL GRAMMAR #
+
+## DSL Functions:
+
+1. create(table_name, number, axis): Create columns or tables to a specified number in the table.
+
+2. drop(table_name, label, axis): Deletes a specified label in the table.
+   
+3. move(table_name, label, target_table_name, target_position, axis): Relocates a label from one position to another within the same table or to a different table.
+
+4. copy(table_name, label, target_table_name, target_label, axis): Copies a label and appends it to the end of the target table.
+
+5. merge(table_name, label_1, label_2, glue, new_label, axis): Concatenates two labels and appends the merged label to the table.
+
+6. split(table_name, label, delimiter, new_labels): Splits a label into multiple parts at the occurrences of the specified delimiter.
+
+7. transpose(table_name): Converts rows to columns and columns to rows in the table.
+
+8. aggregate(table_name, label, operation, axis): Aggregates the table using the specified function.
+
+9. test(table_name, label_1, label_2, strategy, axis): Returns the test result of comparing two labels using the specified strategy.
+
+Definitions:
+- label: Refers to a row or column in the table.
+- axis: 
+  - 0 or "index": Indicates a row operation.
+  - 1 or "columns": Indicates a column operation.
+
+#############
+
+# GUIDELINES #
+1. You should only use the DSL functions provided in the DSL Grammar. Do not add or invent new functions.
+
+#############
+
+# INPUT #
+Step-by-step description of the data cleaning process.
+
+#############
+
+# OUTPUT #
+Your output should be in JSON form. For example:
+[
+    {
+        "function_name": "copy",
+        "arguments": ["a.csv", "1", "Table2", "4", "index"]
+    },
+    {
+        "function_name": "drop",
+        "arguments": ["a.csv", "1", "index"]
+    },
+    {
+        "function_name": "split",
+        "arguments": ["a.csv", "1", ",", ["new1", "new2"]]
+    }
+]
+Do not add any other characters to the output.
+#############
+
+# EXAMPLE #
+
+Example 1:
+'''
+- INPUT:
+Step-by-step plan:
+1. Create a new table name test_result.csv to store the test result. (create function)
+2. Test the similarity between the columns "age" and "sex" in Heart Disease Prediction dataset.csv using t-test. (test function)
+
+- OUTPUT:
+[
+    {
+        "function_name": "create",
+        "arguments": ["test_result.csv", 2, "columns"]
+    },
+    {
+        "function_name": "test",
+        "arguments": ["data.csv", "age", "t-test", "columns"]
+    },
+]
+'''
+
+Example 2:
+'''
+- INPUT:
+Step-by-step plan:
+1. Move the column "age" from Heart Disease Prediction dataset.csv to New.csv. (move function)
+2. Move the column "sex" from Heart Disease Prediction dataset.csv to New.csv. (move function)
+
+- OUTPUT:
+[
+    {
+        "function_name": "move",
+        "arguments": ["Heart Disease Prediction dataset.csv", "age", "New.csv", 0, "columns"]
+    },
+    {
+        "function_name": "move",
+        "arguments": ["Heart Disease Prediction dataset.csv", "sex", "New.csv", 1, "columns"]
+    },
+]
+'''
+---------------------------------------------------
+
+
+---------------------------------------------------
+** user **:
+Step-by-step plan:
+Step-by-step plan:
+1. Create a new table named "Heart Disease Prediction dataset_v1.csv".
+2. Delete row 5 in Heart Disease Prediction dataset_v0.csv. (copy function to copy all rows except row 5)
+3. Paste the copied rows into the new table "Heart Disease Prediction dataset_v1.csv".
+---------------------------------------------------
+
+
+---------------------------------------------------
+** assistant **:
+[
+    {
+        "function_name": "create",
+        "arguments": ["Heart Disease Prediction dataset_v1.csv", 0, "columns"]
+    },
+    {
+        "function_name": "copy",
+        "arguments": ["Heart Disease Prediction dataset_v0.csv", "5", "Heart Disease Prediction dataset_v1.csv", -1, "index"]
+    }
+]
+---------------------------------------------------
+
+
+2024-06-28 11:06:44,225 - client_f6a903b3-d683-4710-b87f-8f1697a2ae1c - INFO
+>>> find_batch_operation
+Changes:
+[
+    {
+        "type": "all_col",
+        "row": 6,
+        "old_values": [
+            "57",
+            "1",
+            "0",
+            "140",
+            "192",
+            "0",
+            "1",
+            "148",
+            "0",
+            "0.4",
+            "1",
+            "0",
+            "1",
+            "1"
+        ],
+        "new_values": [
+            "null",
+            "null",
+            "null",
+            "null",
+            "null",
+            "null",
+            "null",
+            "null",
+            "null",
+            "null",
+            "null",
+            "null",
+            "null",
+            "null"
+        ]
+    }
+]
+Batch Operations:
+[
+    {
+        "type": "all_col",
+        "row": 6,
+        "old_values": [
+            "57",
+            "1",
+            "0",
+            "140",
+            "192",
+            "0",
+            "1",
+            "148",
+            "0",
+            "0.4",
+            "1",
+            "0",
+            "1",
+            "1"
+        ],
+        "new_values": [
+            "null",
+            "null",
+            "null",
+            "null",
+            "null",
+            "null",
+            "null",
+            "null",
+            "null",
+            "null",
+            "null",
+            "null",
+            "null",
+            "null"
+        ]
+    }
+]
+2024-06-28 11:06:46,088 - httpx - INFO
+HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2024-06-28 11:06:46,092 - client_f6a903b3-d683-4710-b87f-8f1697a2ae1c - INFO
+>>> mata_diff_to_NL
+ 
+---------------------------------------------------
+** system **:
+# CONTEXT #
+You are a professional data scientist. You want to summarize the table diff information made by the user in the CSV file. 
+
+#############
+
+# OBJECTIVE #
+Summarize the table diff information in Natural Language.
+
+############
+
+# GUIDELINES #
+Please note that a value replaced with 'null' means deleted, and a value replaced from 'null' means inserted.
+
+#############
+
+# INPUT #
+The diff information contains:
+- Table name
+- Difference detail (row, col, old_value, new_value)
+
+#############
+
+# EXAMPLES #
+Example 1:
+```
+table1.csv
+{'row': 4, 'col': 1, 'old_value': null, 'new_value': '1'}
+{'row': 4, 'col': 2, 'old_value': null, 'new_value': '2'}
+{'row': 4, 'col': 3, 'old_value': null, 'new_value': '3'}
+{'row': 4, 'col': 4, 'old_value': null, 'new_value': '4'}
+{'row': 4, 'col': 5, 'old_value': null, 'new_value': '5'}
+```
+In table1.csv, the user sequentially inserts values into the fourth row according to column number.
+
+---
+
+Example 2:
+```
+table2.csv
+{'row': 4, 'col': 1, 'old_value': "1", 'new_value': null}
+{'row': 4, 'col': 2, 'old_value': "2", 'new_value': null}
+{'row': 4, 'col': 3, 'old_value': "3", 'new_value': null}
+{'row': 5, 'col': 1, 'old_value': null, 'new_value': '1'}
+{'row': 5, 'col': 2, 'old_value': null, 'new_value': '2'}
+{'row': 5, 'col': 3, 'old_value': null, 'new_value': '3'}
+```
+In table2.csv, the user cut row 4 and pastes to row 5.
+
+---
+
+Example 3:
+```
+table3.csv
+{'row': 7, 'col': 1, 'old_value': null, 'new_value': '452'}
+{'row': 7, 'col': 2, 'old_value': null, 'new_value': '424'}
+{'row': 7, 'col': 3, 'old_value': null, 'new_value': '981'}
+{'row': 7, 'col': 4, 'old_value': null, 'new_value': '1423'}
+```
+In table3.csv, the user adds a new row at row 7, maybe the end of the table.
+---------------------------------------------------
+
+
+---------------------------------------------------
+** user **:
+{"type": "all_col", "row": 6, "old_values": ["57", "1", "0", "140", "192", "0", "1", "148", "0", "0.4", "1", "0", "1", "1"], "new_values": ["null", "null", "null", "null", "null", "null", "null", "null", "null", "null", "null", "null", "null", "null"]}
+
+---------------------------------------------------
+
+
+---------------------------------------------------
+** assistant **:
+In the table, the user made simultaneous changes to all columns of row 6. The old values in row 6 were ['57', '1', '0', '140', '192', '0', '1', '148', '0', '0.4', '1', '0', '1', '1'], and all these values were replaced with 'null'.
+---------------------------------------------------
+
+
+2024-06-28 11:06:48,007 - httpx - INFO
+HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2024-06-28 11:06:48,011 - client_f6a903b3-d683-4710-b87f-8f1697a2ae1c - INFO
+>>> analyze_init
+ 
+---------------------------------------------------
+** system **:
+# CONTEXT # 
+You are a professional data scientist. A user has made some changes in the CSV files.
+Your task is to understand the user's intent regarding how they want to clean the data.
+
+#############
+
+# OBJECTIVE #
+Ask clarification questions to understand the user's intent.
+
+#############
+
+# GUIDELINES #
+1. Infer their intent through the table diff and user instruction. Do not infer beyond the information provided in the input.
+2. Avoid directly asking "what is your intent?" Instead, ask questions related to the changes made in the table and the instructions given.
+3. If the user's intent is clear, you can conclude the conversation.
+ 
+#############
+
+# INPUT #
+The input includes the following information:
+- Sheet Information:  the name of the sheet, the headers, and the number of rows in the table. 
+- Table Diff: the changes made to the table.
+- User Instruction: the user's instruction that indicates the changes they want to make.
+
+#############
+
+# OUTPUT #
+If you need more information, output a question to ask the user:
+{
+    "type": "question",
+    "summary": "<summary>",
+    "question": "<question>",
+    "choices": ["<choice_1>", "<choice_2>", ..., "<choice_n>", "other"]
+}
+
+If the intent is clear enough, output a summary of the user's intent:
+{
+   "type": "finish",
+   "summary": "<summary>"
+}
+
+#############
+
+# EXAMPLES #
+Example 1:
+'''
+- INPUT:
+# Sheet 1
+Sheet Information: table_1.csv has 3 columns (Headers are A: "2021", B: "2022", C: "2023", D: "2024") and 5 rows (the row 0 is the header row).
+Table Diff: In table_1.csv, row 3 has been replaced with [null, null, null, null].
+
+User Instruction: (No user instruction)
+
+- OUTPUT:
+{
+    "type": "question",
+    "summary": "The user has deleted row 3 in table_1.csv",
+    "question": "Do you want to drop row 3 in table_1.csv?",
+    "choices": [
+        "Yes, drop the row",
+        "No, keep the row",
+        "other (please specify)"
+    ]
+}
+'''
+
+Example 2:
+'''
+- INPUT:
+# Sheet 1
+Sheet Information: table_1.csv has 3 columns (Headers are A: "2021", B: "2022", C: "2023", D: "2024") and 5 rows (the row 0 is the header row).
+Table Diff: In table_1.csv, row 3 has been replaced with [null, null, null, null].
+
+# Sheet 2
+Sheet Information: table_2.csv has 4 columns (Headers are A: "Name", B: "Age", C: "Gender", D: "Occupation") and 5 rows (the row 0 is the header row).
+Table Diff: (No table diff)
+
+User Instruction: (No user instruction)
+
+- OUTPUT:
+{
+    "type": "question",
+    "summary": "The user has deleted row 3 in table_1.csv.",
+    "question": "Do you want to drop row 3 in table_1.csv and apply the same changes to table_2.csv?"
+    "choices": [
+        "Yes, drop the row in both tables",
+        "No, only drop the row in table_1.csv",
+        "No, only drop the row in table_2.csv",
+        "other (please specify)"
+    ]
+}
+'''
+
+Example 3:
+'''
+- INPUT:
+# Sheet 1
+Sheet Information: HeartDisease.csv has 14 columns (Headers are: A: "age", B: "sex", C: "cp", D: "trestbps", E: "chol", F: "fbs", G: "restecg", H: "thalach", I: "exang", J: "oldpeak", K: "slope", L: "ca", M: "thal", N: "target") and 303 rows (the row 0 is the header row).
+Table Diff: (No table diff)
+
+# Sheet 2
+Sheet Information: test.csv has 14 columns (Headers are: A: "Column1", B: "Column2", C: "Column3", D: "Column4", E: "Column5", F: "Column6", G: "Column7", H: "Column8", I: "Column9", J: "Column10", K: "Column11", L: "Column12", M: "Column13", N: "Column14") and 303 rows (the row 0 is the header row).
+Table Diff: (No table diff)
+
+User Instruction: Move age and sex columns from HeartDisease.csv to test_v0.csv.
+
+- OUTPUT:
+{
+    "type": "finish",
+    "summary": "The user wants to move the age and sex columns from HeartDisease.csv to Column1 and Column2 in test.csv."
+}
+'''
+
+---------------------------------------------------
+
+
+---------------------------------------------------
+** user **:
+# Sheet 1
+Sheet Information: Heart Disease Prediction dataset_v0.csv has 14 columns (Headers are: A: "age", B: "sex", C: "cp", D: "trestbps", E: "chol", F: "fbs", G: "restecg", H: "thalach", I: "exang", J: "oldpeak", K: "slope", L: "ca", M: "thal", N: "target") and 303 rows (the row 0 is the header row).
+Table Diff: In the table, the user made simultaneous changes to all columns of row 6. The old values in row 6 were ['57', '1', '0', '140', '192', '0', '1', '148', '0', '0.4', '1', '0', '1', '1'], and all these values were replaced with 'null'.
+
+User Instruction: (No user instruction)
+---------------------------------------------------
+
+
+---------------------------------------------------
+** assistant **:
+{'type': 'question', 'summary': "All values in row 6 have been replaced with 'null'. Do you want to delete row 6 in Heart Disease Prediction dataset_v0.csv?", 'question': 'Do you want to delete row 6 in Heart Disease Prediction dataset_v0.csv?', 'choices': ['Yes, delete row 6', 'No, keep row 6', 'other (please specify)']}
+---------------------------------------------------
+
+
+2024-06-28 11:06:51,689 - httpx - INFO
+HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2024-06-28 11:06:51,691 - client_f6a903b3-d683-4710-b87f-8f1697a2ae1c - INFO
+>>> followup
+ 
+---------------------------------------------------
+** system **:
+# CONTEXT # 
+You are a professional data scientist. You have already asked some clarification questions and the user has replied.
+Now, you might want to ask additional questions to gain a deeper understanding of their intent.
+
+#############
+
+# OBJECTIVE #
+Ask clarification questions to understand the user's intent.
+
+#############
+
+# GUIDELINES #
+1. Infer their intent through the table diff and user instruction. Do not infer beyond the information provided in the input.
+2. Avoid directly asking "what is your intent?" Instead, ask questions related to the changes made in the table and the instructions given.
+3. If the user's intent is clear, you can conclude the conversation.
+ 
+#############
+
+# INPUT #
+The input includes the following:
+- Sheet Information:  the name of the sheet, the headers, and the number of rows in the table. 
+- Table Diff: the changes made to the table, including the cells that have been modified.
+- User Instruction: the user's instruction that indicates the changes they want to make.
+- Question & Answering History: The history of questions & answers exchanged between the assistant and the user.
+
+#############
+
+# OUTPUT #
+If you need more information, output a question to ask the user:
+{
+    "type": "question",
+    "summary": "<summary>",
+    "question": "<question>",
+    "choices": ["<choice_1>", "<choice_2>", ..., "<choice_n>", "other"]
+}
+
+If the intent is clear enough, output a summary of the user's intent:
+{
+   "type": "finish",
+   "summary": "<summary>"
+}
+
+#############
+
+# EXAMPLES #
+Example 1:
+'''
+- INPUT:
+# Sheet 1
+Sheet Information: table_1.csv has 3 columns (Headers are A: "2021", B: "2022", C: "2023", D: "2024") and 5 rows (the row 0 is the header row).
+Table Diff: In table_1.csv, row 3 has been replaced with [null, null, null, null].
+
+User Instruction: (No user instruction)
+
+Question & Answering History: 
+ASSISTANT:
+{
+    "type": "question",
+    "summary": "Firstly, the user has deleted row 3 in table_1.csv and replaced it with null. Secondly, the user delete all values in row 4 in table_2.csv.",
+    "question": "Do you want to delete the row 4 in table_1.csv?",
+    "choices": [
+        "Yes, delete the values",
+        "No, keep the values",
+        "other (please specify)"
+    ]
+}
+
+USER:
+{
+    "choice": "Yes, delete the values"
+}
+
+
+- OUTPUT:
+{
+    "type": "finish",
+    "summary": "The user wants to delete the row 4 in table_1.csv."
+}
+'''
+
+Example 2:
+'''
+- INPUT:
+# Sheet 1
+Sheet Information: table_1.csv has 3 columns (Headers are A: "2021", B: "2022", C: "2023", D: "2024") and 5 rows (the row 0 is the header row).
+Table Diff: In table_1.csv, row 3 has been deleted and replaced with [null, null, null, null].
+
+# Sheet 2
+Sheet Information: table_2.csv has 4 columns (Headers are A: "Name", B: "Age", C: "Gender", D: "Occupation") and 5 rows (the row 0 is the header row).
+Table Diff: In the given table, the user clears all values in row 4 across all columns.
+
+User Instruction: (No user instruction)
+
+Question & Answering History: 
+ASSISTANT:
+{
+    "type": "question",
+    "summary": "Firstly, the user has deleted row 3 in table_1.csv and replaced it with null. Secondly, the user delete all values in row 4 in table_2.csv.",
+    "question": "Do you want to delete the row 3 in table_1.csv and delete the values in row 4 in table_2.csv?",
+    "choices": [
+        "Yes, delete the values",
+        "No, keep the values",
+        "other (please specify)"
+    ]
+}
+
+USER:
+{
+    "choice": "Other: Actually, I want to replace row 3 with the values from row 5 in table_1.csv."
+}
+
+
+- OUTPUT:
+{
+    "type": "question",
+    "summary": "The user wants to replace row 3 in table_1.csv with the values from row 5.",
+    "question": "Understood! Do you also want to delete the values in row 4 in table_2.csv?",
+    "choices": [
+        "Yes, delete the values",
+        "No, keep the values",
+        "other (please specify)"
+    ]
+}
+'''
+---------------------------------------------------
+
+
+---------------------------------------------------
+** user **:
+# Sheet 1
+Sheet Information: Heart Disease Prediction dataset_v0.csv has 14 columns (Headers are: A: "age", B: "sex", C: "cp", D: "trestbps", E: "chol", F: "fbs", G: "restecg", H: "thalach", I: "exang", J: "oldpeak", K: "slope", L: "ca", M: "thal", N: "target") and 303 rows (the row 0 is the header row).
+Table Diff: In the table, the user made simultaneous changes to all columns of row 6. The old values in row 6 were ['57', '1', '0', '140', '192', '0', '1', '148', '0', '0.4', '1', '0', '1', '1'], and all these values were replaced with 'null'.
+
+User Instruction: (No user instruction)
+Question & Answering History:
+ASSISTANT:
+{
+    "type": "question",
+    "summary": "All values in row 6 have been replaced with 'null'. Do you want to delete row 6 in Heart Disease Prediction dataset_v0.csv?",
+    "question": "Do you want to delete row 6 in Heart Disease Prediction dataset_v0.csv?",
+    "choices": [
+        "Yes, delete row 6",
+        "No, keep row 6",
+        "other (please specify)"
+    ]
+}
+
+USER:
+{
+    "choice": "Yes, delete row 6"
+}
+---------------------------------------------------
+
+
+---------------------------------------------------
+** assistant **:
+{
+    "type": "finish",
+    "summary": "The user wants to delete row 6 in Heart Disease Prediction dataset_v0.csv."
+}
+---------------------------------------------------
+
+
+2024-06-28 11:06:52,757 - httpx - INFO
+HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2024-06-28 11:06:52,759 - client_f6a903b3-d683-4710-b87f-8f1697a2ae1c - INFO
+>>> generate_summarization
+ 
+---------------------------------------------------
+** system **:
+# CONTEXT #
+You are a professional data scientist.
+Your task is to analyze the user's intents regarding how they want to clean the data.
+
+#############
+
+# OBJECTIVE #
+Summarize the user's intents.
+
+#############
+
+# INPUT #
+- Sheet Information: the name of the sheet, the headers, and the number of rows in the table.
+- Table Diff: the changes made to the table.
+- User Instruction: the user's instruction that indicates the changes they want to make.
+- Question & Answering History: The history of questions & answers exchanged between the assistant and the user.
+
+# OUTPUT #
+
+- User Intents: the user's intents.
+
+#############
+
+# EXAMPLES #
+
+Example 1:
+'''
+- INPUT:
+# Sheet 1
+Sheet Information: Heart Disease Prediction dataset.csv has 14 columns (Headers are: A: "age", B: "sex", C: "cp", D: "trestbps", E: "chol", F: "fbs", G: "restecg", H: "thalach", I: "exang", J: "oldpeak", K: "slope", L: "ca", M: "thal", N: "target") and 303 rows (the row 0 is the header row).
+Table Diff: In the table provided, it seems that the user has deleted row 1 to row 20.
+User Instruction: delete row 1 to row 20
+
+Question & Answering History:
+Clarification Question 1:
+Are you sure you want to delete rows 1 to 20?
+
+A. Yes, delete rows 1 to 20
+B. No, I want to delete a different range of rows
+C. other (please specify)
+
+User Answer 1:
+Yes, delete rows 1 to 20
+
+- OUTPUT:
+The user's intent is to delete row 1 to 20 in Heart Disease Prediction dataset.csv.
+'''
+#############
+---------------------------------------------------
+
+
+---------------------------------------------------
+** user **:
+# Sheet 1
+Sheet Information: Heart Disease Prediction dataset_v0.csv has 14 columns (Headers are: A: "age", B: "sex", C: "cp", D: "trestbps", E: "chol", F: "fbs", G: "restecg", H: "thalach", I: "exang", J: "oldpeak", K: "slope", L: "ca", M: "thal", N: "target") and 303 rows (the row 0 is the header row).
+Table Diff: In the table, the user made simultaneous changes to all columns of row 6. The old values in row 6 were ['57', '1', '0', '140', '192', '0', '1', '148', '0', '0.4', '1', '0', '1', '1'], and all these values were replaced with 'null'.
+
+User Instruction: (No user instruction)
+
+Clarification Question 1:
+Do you want to delete row 6 in Heart Disease Prediction dataset_v0.csv?
+A. Yes, delete row 6
+B. No, keep row 6
+C. other (please specify)
+
+User Answer 1:
+Yes, delete row 6
+
+---------------------------------------------------
+
+
+---------------------------------------------------
+** assistant **:
+# User Intents:
+The user's intent is to delete row 6 in the Heart Disease Prediction dataset_v0.csv.
+---------------------------------------------------
+
+
+2024-06-28 11:06:53,531 - httpx - INFO
+HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2024-06-28 11:06:53,534 - client_f6a903b3-d683-4710-b87f-8f1697a2ae1c - INFO
+>>> generate_step_by_step_plan
+ 
+---------------------------------------------------
+** system **:
+# CONTEXT #
+You are a professional data scientist.
+Your task is to generate a step-by-step plan to clean the data based on the user's intents.
+
+#############
+
+# OBJECTIVE #
+Generate a step-by-step plan to clean the data based on the user's intents.
+
+#############
+
+# DSL GRAMMAR #
+
+## DSL Functions:
+
+1. create: Create columns or tables to a specified number in the table.
+
+2. drop: Deletes a specified label in the table.
+   
+3. move: Relocates a label from one position to another within the same table or to a different table.
+
+4. copy: Copies a label and appends it to the end of the target table.
+
+5. merge: Concatenates two labels and appends the merged label to the table.
+
+6. split: Splits a label into multiple parts at the occurrences of the specified delimiter.
+
+7. transpose: Converts rows to columns and columns to rows in the table.
+
+8. aggregate: Aggregates the table using the specified function.
+
+9. test: Returns the test result of comparing two labels using the specified strategy.
+
+#############
+
+# GUIDELINES #
+1. You should only use the DSL functions provided in the DSL Grammar. Do not add or invent new functions.
+
+#############
+
+# INPUT #
+- Sheet Information: the name of the sheet, the headers, and the number of rows in the table.
+- User Intents: the user's intents.
+
+# OUTPUT #
+
+- Step-by-step plan: a sequence of descriptions of the actions to be taken to clean the data based on the user's intents.
+
+#############
+
+# EXAMPLES #
+
+Example 1:
+'''
+- INPUT:
+# Sheet 1
+Sheet Information: Heart Disease Prediction dataset.csv has 14 columns (Headers are: A: "age", B: "sex", C: "cp", D: "trestbps", E: "chol", F: "fbs", G: "restecg", H: "thalach", I: "exang", J: "oldpeak", K: "slope", L: "ca", M: "thal", N: "target") and 303 rows (the row 0 is the header row).
+User Intents: The user's intent is to drop the column "ca" and "thal".
+
+- OUTPUT:
+Step-by-step plan:
+1. Drop the column "ca". (drop function)
+2. Drop the column "thal". (drop function)
+'''
+
+Example 2:
+'''
+- INPUT:
+# Sheet 1
+Sheet Information: Heart Disease Prediction dataset.csv has 14 columns (Headers are: A: "age", B: "sex", C: "cp", D: "trestbps", E: "chol", F: "fbs", G: "restecg", H: "thalach", I: "exang", J: "oldpeak", K: "slope", L: "ca", M: "thal", N: "target") and 303 rows (the row 0 is the header row).
+User Intents: The user's intent is to delete all the columns except "age" and "sex".
+
+- OUTPUT:
+Step-by-step plan:
+1. Drop all columns except "age" and "sex" in Heart Disease Prediction dataset.csv. (drop function)
+'''
+
+Example 3:
+'''
+- INPUT:
+# Sheet 1
+Sheet Information: Heart Disease Prediction dataset.csv has 14 columns (Headers are: A: "age", B: "sex", C: "cp", D: "trestbps", E: "chol", F: "fbs", G: "restecg", H: "thalach", I: "exang", J: "oldpeak", K: "slope", L: "ca", M: "thal", N: "target") and 303 rows (the row 0 is the header row).
+
+# Sheet 2
+Sheet Information: New.csv has 14 columns (Headers are: "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N") and 303 rows (the row 0 is the header row).
+
+User Intents: The user's intent is to move "age" and "sex" columns from Sheet 1 to Sheet 2.
+
+- OUTPUT:
+Step-by-step plan:
+1. Move the column "age" from Heart Disease Prediction dataset.csv to New.csv. (move function)
+2. Move the column "sex" from Heart Disease Prediction dataset.csv to New.csv. (move function)
+'''
+
+Example 4:
+'''
+- INPUT:
+# Sheet 1
+Sheet Information: Heart Disease Prediction dataset.csv has 14 columns (Headers are: A: "age", B: "sex", C: "cp", D: "trestbps", E: "chol", F: "fbs", G: "restecg", H: "thalach", I: "exang", J: "oldpeak", K: "slope", L: "ca", M: "thal", N: "target") and 303 rows (the row 0 is the header row).
+
+User Intents: The user's intent is to test the similarity between the columns "age" and "sex".
+
+- OUTPUT:
+Step-by-step plan:
+1. Create a new table name test_result.csv to store the test result. (create function)
+2. Test the similarity between the columns "age" and "sex" in Heart Disease Prediction dataset.csv using t-test. (test function)
+'''
+
+#############
+---------------------------------------------------
+
+
+---------------------------------------------------
+** user **:
+# Sheet 1
+Sheet Information: Heart Disease Prediction dataset_v0.csv has 14 columns (Headers are: A: "age", B: "sex", C: "cp", D: "trestbps", E: "chol", F: "fbs", G: "restecg", H: "thalach", I: "exang", J: "oldpeak", K: "slope", L: "ca", M: "thal", N: "target") and 303 rows (the row 0 is the header row).
+Table Diff: In the table, the user made simultaneous changes to all columns of row 6. The old values in row 6 were ['57', '1', '0', '140', '192', '0', '1', '148', '0', '0.4', '1', '0', '1', '1'], and all these values were replaced with 'null'.
+
+User Instruction: (No user instruction)
+User Intents: # User Intents:
+The user's intent is to delete row 6 in the Heart Disease Prediction dataset_v0.csv.
+---------------------------------------------------
+
+
+---------------------------------------------------
+** assistant **:
+- Step-by-step plan:
+1. Drop row 6 in Heart Disease Prediction dataset_v0.csv. (drop function)
+---------------------------------------------------
+
+
+2024-06-28 11:06:54,538 - httpx - INFO
+HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2024-06-28 11:06:54,540 - client_f6a903b3-d683-4710-b87f-8f1697a2ae1c - INFO
+>>> generate_dsl
+ 
+---------------------------------------------------
+** system **:
+# CONTEXT #
+You are a professional DSL (Domain Specific Language) generator.
+You will be given a step-by-step description of a data cleaning plan.
+You need to follow the description and create a DSL script to help user clean and manipulate the data.
+
+#############
+
+# OBJECTIVE #
+Create a DSL script to clean the data based on the description.
+
+#############
+
+# DSL GRAMMAR #
+
+## DSL Functions:
+
+1. create(table_name, number, axis): Create columns or tables to a specified number in the table.
+
+2. drop(table_name, label, axis): Deletes a specified label in the table.
+   
+3. move(table_name, label, target_table_name, target_position, axis): Relocates a label from one position to another within the same table or to a different table.
+
+4. copy(table_name, label, target_table_name, target_label, axis): Copies a label and appends it to the end of the target table.
+
+5. merge(table_name, label_1, label_2, glue, new_label, axis): Concatenates two labels and appends the merged label to the table.
+
+6. split(table_name, label, delimiter, new_labels): Splits a label into multiple parts at the occurrences of the specified delimiter.
+
+7. transpose(table_name): Converts rows to columns and columns to rows in the table.
+
+8. aggregate(table_name, label, operation, axis): Aggregates the table using the specified function.
+
+9. test(table_name, label_1, label_2, strategy, axis): Returns the test result of comparing two labels using the specified strategy.
+
+Definitions:
+- label: Refers to a row or column in the table.
+- axis: 
+  - 0 or "index": Indicates a row operation.
+  - 1 or "columns": Indicates a column operation.
+
+#############
+
+# GUIDELINES #
+1. You should only use the DSL functions provided in the DSL Grammar. Do not add or invent new functions.
+
+#############
+
+# INPUT #
+Step-by-step description of the data cleaning process.
+
+#############
+
+# OUTPUT #
+Your output should be in JSON form. For example:
+[
+    {
+        "function_name": "copy",
+        "arguments": ["a.csv", "1", "Table2", "4", "index"]
+    },
+    {
+        "function_name": "drop",
+        "arguments": ["a.csv", "1", "index"]
+    },
+    {
+        "function_name": "split",
+        "arguments": ["a.csv", "1", ",", ["new1", "new2"]]
+    }
+]
+Do not add any other characters to the output.
+#############
+
+# EXAMPLE #
+
+Example 1:
+'''
+- INPUT:
+Step-by-step plan:
+1. Create a new table name test_result.csv to store the test result. (create function)
+2. Test the similarity between the columns "age" and "sex" in Heart Disease Prediction dataset.csv using t-test. (test function)
+
+- OUTPUT:
+[
+    {
+        "function_name": "create",
+        "arguments": ["test_result.csv", 2, "columns"]
+    },
+    {
+        "function_name": "test",
+        "arguments": ["data.csv", "age", "t-test", "columns"]
+    },
+]
+'''
+
+Example 2:
+'''
+- INPUT:
+Step-by-step plan:
+1. Move the column "age" from Heart Disease Prediction dataset.csv to New.csv. (move function)
+2. Move the column "sex" from Heart Disease Prediction dataset.csv to New.csv. (move function)
+
+- OUTPUT:
+[
+    {
+        "function_name": "move",
+        "arguments": ["Heart Disease Prediction dataset.csv", "age", "New.csv", 0, "columns"]
+    },
+    {
+        "function_name": "move",
+        "arguments": ["Heart Disease Prediction dataset.csv", "sex", "New.csv", 1, "columns"]
+    },
+]
+'''
+---------------------------------------------------
+
+
+---------------------------------------------------
+** user **:
+- Step-by-step plan:
+1. Drop row 6 in Heart Disease Prediction dataset_v0.csv. (drop function)
+---------------------------------------------------
+
+
+---------------------------------------------------
+** assistant **:
+[
+    {
+        "function_name": "drop",
+        "arguments": ["Heart Disease Prediction dataset_v0.csv", 6, "index"]
+    }
+]
+---------------------------------------------------
+
+
+2024-06-28 11:17:15,301 - client_879d0cab-9c42-45e8-8c7c-127e9b920ced - INFO
+>>> find_batch_operation
+Changes:
+[
+    {
+        "type": "all_col",
+        "row": 5,
+        "old_values": [
+            "57",
+            "0",
+            "0",
+            "120",
+            "354",
+            "0",
+            "1",
+            "163",
+            "1",
+            "0.6",
+            "2",
+            "0",
+            "2",
+            "1"
+        ],
+        "new_values": [
+            "null",
+            "null",
+            "null",
+            "null",
+            "null",
+            "null",
+            "null",
+            "null",
+            "null",
+            "null",
+            "null",
+            "null",
+            "null",
+            "null"
+        ]
+    }
+]
+Batch Operations:
+[
+    {
+        "type": "all_col",
+        "row": 5,
+        "old_values": [
+            "57",
+            "0",
+            "0",
+            "120",
+            "354",
+            "0",
+            "1",
+            "163",
+            "1",
+            "0.6",
+            "2",
+            "0",
+            "2",
+            "1"
+        ],
+        "new_values": [
+            "null",
+            "null",
+            "null",
+            "null",
+            "null",
+            "null",
+            "null",
+            "null",
+            "null",
+            "null",
+            "null",
+            "null",
+            "null",
+            "null"
+        ]
+    }
+]
+2024-06-28 11:17:16,324 - httpx - INFO
+HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2024-06-28 11:17:16,329 - client_879d0cab-9c42-45e8-8c7c-127e9b920ced - INFO
+>>> mata_diff_to_NL
+ 
+---------------------------------------------------
+** system **:
+# CONTEXT #
+You are a professional data scientist. You want to summarize the table diff information made by the user in the CSV file. 
+
+#############
+
+# OBJECTIVE #
+Summarize the table diff information in Natural Language.
+
+############
+
+# GUIDELINES #
+Please note that a value replaced with 'null' means deleted, and a value replaced from 'null' means inserted.
+
+#############
+
+# INPUT #
+The diff information contains:
+- Table name
+- Difference detail (row, col, old_value, new_value)
+
+#############
+
+# EXAMPLES #
+Example 1:
+```
+table1.csv
+{'row': 4, 'col': 1, 'old_value': null, 'new_value': '1'}
+{'row': 4, 'col': 2, 'old_value': null, 'new_value': '2'}
+{'row': 4, 'col': 3, 'old_value': null, 'new_value': '3'}
+{'row': 4, 'col': 4, 'old_value': null, 'new_value': '4'}
+{'row': 4, 'col': 5, 'old_value': null, 'new_value': '5'}
+```
+In table1.csv, the user sequentially inserts values into the fourth row according to column number.
+
+---
+
+Example 2:
+```
+table2.csv
+{'row': 4, 'col': 1, 'old_value': "1", 'new_value': null}
+{'row': 4, 'col': 2, 'old_value': "2", 'new_value': null}
+{'row': 4, 'col': 3, 'old_value': "3", 'new_value': null}
+{'row': 5, 'col': 1, 'old_value': null, 'new_value': '1'}
+{'row': 5, 'col': 2, 'old_value': null, 'new_value': '2'}
+{'row': 5, 'col': 3, 'old_value': null, 'new_value': '3'}
+```
+In table2.csv, the user cut row 4 and pastes to row 5.
+
+---
+
+Example 3:
+```
+table3.csv
+{'row': 7, 'col': 1, 'old_value': null, 'new_value': '452'}
+{'row': 7, 'col': 2, 'old_value': null, 'new_value': '424'}
+{'row': 7, 'col': 3, 'old_value': null, 'new_value': '981'}
+{'row': 7, 'col': 4, 'old_value': null, 'new_value': '1423'}
+```
+In table3.csv, the user adds a new row at row 7, maybe the end of the table.
+---------------------------------------------------
+
+
+---------------------------------------------------
+** user **:
+{"type": "all_col", "row": 5, "old_values": ["57", "0", "0", "120", "354", "0", "1", "163", "1", "0.6", "2", "0", "2", "1"], "new_values": ["null", "null", "null", "null", "null", "null", "null", "null", "null", "null", "null", "null", "null", "null"]}
+
+---------------------------------------------------
+
+
+---------------------------------------------------
+** assistant **:
+In the given diff information, the user has replaced all the values in row 5 of the table. Each old value has been replaced with 'null', indicating that the entire row has been deleted.
+---------------------------------------------------
+
+
+2024-06-28 11:17:18,204 - httpx - INFO
+HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2024-06-28 11:17:18,209 - client_879d0cab-9c42-45e8-8c7c-127e9b920ced - INFO
+>>> analyze_init
+ 
+---------------------------------------------------
+** system **:
+# CONTEXT # 
+You are a professional data scientist. A user has made some changes in the CSV files.
+Your task is to understand the user's intent regarding how they want to clean the data.
+
+#############
+
+# OBJECTIVE #
+Ask clarification questions to understand the user's intent.
+
+#############
+
+# GUIDELINES #
+1. Infer their intent through the table diff and user instruction. Do not infer beyond the information provided in the input.
+2. Avoid directly asking "what is your intent?" Instead, ask questions related to the changes made in the table and the instructions given.
+3. If the user's intent is clear, you can conclude the conversation.
+ 
+#############
+
+# INPUT #
+The input includes the following information:
+- Sheet Information:  the name of the sheet, the headers, and the number of rows in the table. 
+- Table Diff: the changes made to the table.
+- User Instruction: the user's instruction that indicates the changes they want to make.
+
+#############
+
+# OUTPUT #
+If you need more information, output a question to ask the user:
+{
+    "type": "question",
+    "summary": "<summary>",
+    "question": "<question>",
+    "choices": ["<choice_1>", "<choice_2>", ..., "<choice_n>", "other"]
+}
+
+If the intent is clear enough, output a summary of the user's intent:
+{
+   "type": "finish",
+   "summary": "<summary>"
+}
+
+#############
+
+# EXAMPLES #
+Example 1:
+'''
+- INPUT:
+# Sheet 1
+Sheet Information: table_1.csv has 3 columns (Headers are A: "2021", B: "2022", C: "2023", D: "2024") and 5 rows (the row 0 is the header row).
+Table Diff: In table_1.csv, row 3 has been replaced with [null, null, null, null].
+
+User Instruction: (No user instruction)
+
+- OUTPUT:
+{
+    "type": "question",
+    "summary": "The user has deleted row 3 in table_1.csv",
+    "question": "Do you want to drop row 3 in table_1.csv?",
+    "choices": [
+        "Yes, drop the row",
+        "No, keep the row",
+        "other (please specify)"
+    ]
+}
+'''
+
+Example 2:
+'''
+- INPUT:
+# Sheet 1
+Sheet Information: table_1.csv has 3 columns (Headers are A: "2021", B: "2022", C: "2023", D: "2024") and 5 rows (the row 0 is the header row).
+Table Diff: In table_1.csv, row 3 has been replaced with [null, null, null, null].
+
+# Sheet 2
+Sheet Information: table_2.csv has 4 columns (Headers are A: "Name", B: "Age", C: "Gender", D: "Occupation") and 5 rows (the row 0 is the header row).
+Table Diff: (No table diff)
+
+User Instruction: (No user instruction)
+
+- OUTPUT:
+{
+    "type": "question",
+    "summary": "The user has deleted row 3 in table_1.csv.",
+    "question": "Do you want to drop row 3 in table_1.csv and apply the same changes to table_2.csv?"
+    "choices": [
+        "Yes, drop the row in both tables",
+        "No, only drop the row in table_1.csv",
+        "No, only drop the row in table_2.csv",
+        "other (please specify)"
+    ]
+}
+'''
+
+Example 3:
+'''
+- INPUT:
+# Sheet 1
+Sheet Information: HeartDisease.csv has 14 columns (Headers are: A: "age", B: "sex", C: "cp", D: "trestbps", E: "chol", F: "fbs", G: "restecg", H: "thalach", I: "exang", J: "oldpeak", K: "slope", L: "ca", M: "thal", N: "target") and 303 rows (the row 0 is the header row).
+Table Diff: (No table diff)
+
+# Sheet 2
+Sheet Information: test.csv has 14 columns (Headers are: A: "Column1", B: "Column2", C: "Column3", D: "Column4", E: "Column5", F: "Column6", G: "Column7", H: "Column8", I: "Column9", J: "Column10", K: "Column11", L: "Column12", M: "Column13", N: "Column14") and 303 rows (the row 0 is the header row).
+Table Diff: (No table diff)
+
+User Instruction: Move age and sex columns from HeartDisease.csv to test_v0.csv.
+
+- OUTPUT:
+{
+    "type": "finish",
+    "summary": "The user wants to move the age and sex columns from HeartDisease.csv to Column1 and Column2 in test.csv."
+}
+'''
+
+---------------------------------------------------
+
+
+---------------------------------------------------
+** user **:
+# Sheet 1
+Sheet Information: Heart Disease Prediction dataset_v0.csv has 14 columns (Headers are: A: "age", B: "sex", C: "cp", D: "trestbps", E: "chol", F: "fbs", G: "restecg", H: "thalach", I: "exang", J: "oldpeak", K: "slope", L: "ca", M: "thal", N: "target") and 303 rows (the row 0 is the header row).
+Table Diff: In the given diff information, the user has replaced all the values in row 5 of the table. Each old value has been replaced with 'null', indicating that the entire row has been deleted.
+
+User Instruction: (No user instruction)
+---------------------------------------------------
+
+
+---------------------------------------------------
+** assistant **:
+{'type': 'question', 'summary': "The user has replaced all values in row 5 of Heart Disease Prediction dataset_v0.csv with 'null', effectively deleting the entire row.", 'question': 'Do you want to drop row 5 in Heart Disease Prediction dataset_v0.csv?', 'choices': ['Yes, drop the row', 'No, keep the row', 'other (please specify)']}
+---------------------------------------------------
+
+
+2024-06-28 11:17:21,523 - httpx - INFO
+HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2024-06-28 11:17:21,525 - client_879d0cab-9c42-45e8-8c7c-127e9b920ced - INFO
+>>> followup
+ 
+---------------------------------------------------
+** system **:
+# CONTEXT # 
+You are a professional data scientist. You have already asked some clarification questions and the user has replied.
+Now, you might want to ask additional questions to gain a deeper understanding of their intent.
+
+#############
+
+# OBJECTIVE #
+Ask clarification questions to understand the user's intent.
+
+#############
+
+# GUIDELINES #
+1. Infer their intent through the table diff and user instruction. Do not infer beyond the information provided in the input.
+2. Avoid directly asking "what is your intent?" Instead, ask questions related to the changes made in the table and the instructions given.
+3. If the user's intent is clear, you can conclude the conversation.
+ 
+#############
+
+# INPUT #
+The input includes the following:
+- Sheet Information:  the name of the sheet, the headers, and the number of rows in the table. 
+- Table Diff: the changes made to the table, including the cells that have been modified.
+- User Instruction: the user's instruction that indicates the changes they want to make.
+- Question & Answering History: The history of questions & answers exchanged between the assistant and the user.
+
+#############
+
+# OUTPUT #
+If you need more information, output a question to ask the user:
+{
+    "type": "question",
+    "summary": "<summary>",
+    "question": "<question>",
+    "choices": ["<choice_1>", "<choice_2>", ..., "<choice_n>", "other"]
+}
+
+If the intent is clear enough, output a summary of the user's intent:
+{
+   "type": "finish",
+   "summary": "<summary>"
+}
+
+#############
+
+# EXAMPLES #
+Example 1:
+'''
+- INPUT:
+# Sheet 1
+Sheet Information: table_1.csv has 3 columns (Headers are A: "2021", B: "2022", C: "2023", D: "2024") and 5 rows (the row 0 is the header row).
+Table Diff: In table_1.csv, row 3 has been replaced with [null, null, null, null].
+
+User Instruction: (No user instruction)
+
+Question & Answering History: 
+ASSISTANT:
+{
+    "type": "question",
+    "summary": "Firstly, the user has deleted row 3 in table_1.csv and replaced it with null. Secondly, the user delete all values in row 4 in table_2.csv.",
+    "question": "Do you want to delete the row 4 in table_1.csv?",
+    "choices": [
+        "Yes, delete the values",
+        "No, keep the values",
+        "other (please specify)"
+    ]
+}
+
+USER:
+{
+    "choice": "Yes, delete the values"
+}
+
+
+- OUTPUT:
+{
+    "type": "finish",
+    "summary": "The user wants to delete the row 4 in table_1.csv."
+}
+'''
+
+Example 2:
+'''
+- INPUT:
+# Sheet 1
+Sheet Information: table_1.csv has 3 columns (Headers are A: "2021", B: "2022", C: "2023", D: "2024") and 5 rows (the row 0 is the header row).
+Table Diff: In table_1.csv, row 3 has been deleted and replaced with [null, null, null, null].
+
+# Sheet 2
+Sheet Information: table_2.csv has 4 columns (Headers are A: "Name", B: "Age", C: "Gender", D: "Occupation") and 5 rows (the row 0 is the header row).
+Table Diff: In the given table, the user clears all values in row 4 across all columns.
+
+User Instruction: (No user instruction)
+
+Question & Answering History: 
+ASSISTANT:
+{
+    "type": "question",
+    "summary": "Firstly, the user has deleted row 3 in table_1.csv and replaced it with null. Secondly, the user delete all values in row 4 in table_2.csv.",
+    "question": "Do you want to delete the row 3 in table_1.csv and delete the values in row 4 in table_2.csv?",
+    "choices": [
+        "Yes, delete the values",
+        "No, keep the values",
+        "other (please specify)"
+    ]
+}
+
+USER:
+{
+    "choice": "Other: Actually, I want to replace row 3 with the values from row 5 in table_1.csv."
+}
+
+
+- OUTPUT:
+{
+    "type": "question",
+    "summary": "The user wants to replace row 3 in table_1.csv with the values from row 5.",
+    "question": "Understood! Do you also want to delete the values in row 4 in table_2.csv?",
+    "choices": [
+        "Yes, delete the values",
+        "No, keep the values",
+        "other (please specify)"
+    ]
+}
+'''
+---------------------------------------------------
+
+
+---------------------------------------------------
+** user **:
+# Sheet 1
+Sheet Information: Heart Disease Prediction dataset_v0.csv has 14 columns (Headers are: A: "age", B: "sex", C: "cp", D: "trestbps", E: "chol", F: "fbs", G: "restecg", H: "thalach", I: "exang", J: "oldpeak", K: "slope", L: "ca", M: "thal", N: "target") and 303 rows (the row 0 is the header row).
+Table Diff: In the given diff information, the user has replaced all the values in row 5 of the table. Each old value has been replaced with 'null', indicating that the entire row has been deleted.
+
+User Instruction: (No user instruction)
+Question & Answering History:
+ASSISTANT:
+{
+    "type": "question",
+    "summary": "The user has replaced all values in row 5 of Heart Disease Prediction dataset_v0.csv with 'null', effectively deleting the entire row.",
+    "question": "Do you want to drop row 5 in Heart Disease Prediction dataset_v0.csv?",
+    "choices": [
+        "Yes, drop the row",
+        "No, keep the row",
+        "other (please specify)"
+    ]
+}
+
+USER:
+{
+    "choice": "Yes, drop the row"
+}
+---------------------------------------------------
+
+
+---------------------------------------------------
+** assistant **:
+{
+    "type": "finish",
+    "summary": "The user wants to drop row 5 in the Heart Disease Prediction dataset_v0.csv."
+}
+---------------------------------------------------
+
+
+2024-06-28 11:17:22,453 - httpx - INFO
+HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2024-06-28 11:17:22,456 - client_879d0cab-9c42-45e8-8c7c-127e9b920ced - INFO
+>>> generate_summarization
+ 
+---------------------------------------------------
+** system **:
+# CONTEXT #
+You are a professional data scientist.
+Your task is to analyze the user's intents regarding how they want to clean the data.
+
+#############
+
+# OBJECTIVE #
+Summarize the user's intents.
+
+#############
+
+# INPUT #
+- Sheet Information: the name of the sheet, the headers, and the number of rows in the table.
+- Table Diff: the changes made to the table.
+- User Instruction: the user's instruction that indicates the changes they want to make.
+- Question & Answering History: The history of questions & answers exchanged between the assistant and the user.
+
+# OUTPUT #
+
+- User Intents: the user's intents.
+
+#############
+
+# EXAMPLES #
+
+Example 1:
+'''
+- INPUT:
+# Sheet 1
+Sheet Information: Heart Disease Prediction dataset.csv has 14 columns (Headers are: A: "age", B: "sex", C: "cp", D: "trestbps", E: "chol", F: "fbs", G: "restecg", H: "thalach", I: "exang", J: "oldpeak", K: "slope", L: "ca", M: "thal", N: "target") and 303 rows (the row 0 is the header row).
+Table Diff: In the table provided, it seems that the user has deleted row 1 to row 20.
+User Instruction: delete row 1 to row 20
+
+Question & Answering History:
+Clarification Question 1:
+Are you sure you want to delete rows 1 to 20?
+
+A. Yes, delete rows 1 to 20
+B. No, I want to delete a different range of rows
+C. other (please specify)
+
+User Answer 1:
+Yes, delete rows 1 to 20
+
+- OUTPUT:
+The user's intent is to delete row 1 to 20 in Heart Disease Prediction dataset.csv.
+'''
+#############
+---------------------------------------------------
+
+
+---------------------------------------------------
+** user **:
+# Sheet 1
+Sheet Information: Heart Disease Prediction dataset_v0.csv has 14 columns (Headers are: A: "age", B: "sex", C: "cp", D: "trestbps", E: "chol", F: "fbs", G: "restecg", H: "thalach", I: "exang", J: "oldpeak", K: "slope", L: "ca", M: "thal", N: "target") and 303 rows (the row 0 is the header row).
+Table Diff: In the given diff information, the user has replaced all the values in row 5 of the table. Each old value has been replaced with 'null', indicating that the entire row has been deleted.
+
+User Instruction: (No user instruction)
+
+Clarification Question 1:
+Do you want to drop row 5 in Heart Disease Prediction dataset_v0.csv?
+A. Yes, drop the row
+B. No, keep the row
+C. other (please specify)
+
+User Answer 1:
+Yes, drop the row
+
+---------------------------------------------------
+
+
+---------------------------------------------------
+** assistant **:
+## User Intents ##
+The user's intent is to drop row 5 in the Heart Disease Prediction dataset_v0.csv.
+---------------------------------------------------
+
+
+2024-06-28 11:17:23,166 - httpx - INFO
+HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2024-06-28 11:17:23,169 - client_879d0cab-9c42-45e8-8c7c-127e9b920ced - INFO
+>>> generate_step_by_step_plan
+ 
+---------------------------------------------------
+** system **:
+# CONTEXT #
+You are a professional data scientist.
+Your task is to generate a step-by-step plan to clean the data based on the user's intents.
+
+#############
+
+# OBJECTIVE #
+Generate a step-by-step plan to clean the data based on the user's intents.
+
+#############
+
+# DSL GRAMMAR #
+
+## DSL Functions:
+
+1. create: Create columns or tables to a specified number in the table.
+
+2. drop: Deletes a specified label in the table.
+   
+3. move: Relocates a label from one position to another within the same table or to a different table.
+
+4. copy: Copies a label and appends it to the end of the target table.
+
+5. merge: Concatenates two labels and appends the merged label to the table.
+
+6. split: Splits a label into multiple parts at the occurrences of the specified delimiter.
+
+7. transpose: Converts rows to columns and columns to rows in the table.
+
+8. aggregate: Aggregates the table using the specified function.
+
+9. test: Returns the test result of comparing two labels using the specified strategy.
+
+#############
+
+# GUIDELINES #
+1. You should only use the DSL functions provided in the DSL Grammar. Do not add or invent new functions.
+
+#############
+
+# INPUT #
+- Sheet Information: the name of the sheet, the headers, and the number of rows in the table.
+- User Intents: the user's intents.
+
+# OUTPUT #
+
+- Step-by-step plan: a sequence of descriptions of the actions to be taken to clean the data based on the user's intents.
+
+#############
+
+# EXAMPLES #
+
+Example 1:
+'''
+- INPUT:
+# Sheet 1
+Sheet Information: Heart Disease Prediction dataset.csv has 14 columns (Headers are: A: "age", B: "sex", C: "cp", D: "trestbps", E: "chol", F: "fbs", G: "restecg", H: "thalach", I: "exang", J: "oldpeak", K: "slope", L: "ca", M: "thal", N: "target") and 303 rows (the row 0 is the header row).
+User Intents: The user's intent is to drop the column "ca" and "thal".
+
+- OUTPUT:
+Step-by-step plan:
+1. Drop the column "ca". (drop function)
+2. Drop the column "thal". (drop function)
+'''
+
+Example 2:
+'''
+- INPUT:
+# Sheet 1
+Sheet Information: Heart Disease Prediction dataset.csv has 14 columns (Headers are: A: "age", B: "sex", C: "cp", D: "trestbps", E: "chol", F: "fbs", G: "restecg", H: "thalach", I: "exang", J: "oldpeak", K: "slope", L: "ca", M: "thal", N: "target") and 303 rows (the row 0 is the header row).
+User Intents: The user's intent is to delete all the columns except "age" and "sex".
+
+- OUTPUT:
+Step-by-step plan:
+1. Drop all columns except "age" and "sex" in Heart Disease Prediction dataset.csv. (drop function)
+'''
+
+Example 3:
+'''
+- INPUT:
+# Sheet 1
+Sheet Information: Heart Disease Prediction dataset.csv has 14 columns (Headers are: A: "age", B: "sex", C: "cp", D: "trestbps", E: "chol", F: "fbs", G: "restecg", H: "thalach", I: "exang", J: "oldpeak", K: "slope", L: "ca", M: "thal", N: "target") and 303 rows (the row 0 is the header row).
+
+# Sheet 2
+Sheet Information: New.csv has 14 columns (Headers are: "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N") and 303 rows (the row 0 is the header row).
+
+User Intents: The user's intent is to move "age" and "sex" columns from Sheet 1 to Sheet 2.
+
+- OUTPUT:
+Step-by-step plan:
+1. Move the column "age" from Heart Disease Prediction dataset.csv to New.csv. (move function)
+2. Move the column "sex" from Heart Disease Prediction dataset.csv to New.csv. (move function)
+'''
+
+Example 4:
+'''
+- INPUT:
+# Sheet 1
+Sheet Information: Heart Disease Prediction dataset.csv has 14 columns (Headers are: A: "age", B: "sex", C: "cp", D: "trestbps", E: "chol", F: "fbs", G: "restecg", H: "thalach", I: "exang", J: "oldpeak", K: "slope", L: "ca", M: "thal", N: "target") and 303 rows (the row 0 is the header row).
+
+User Intents: The user's intent is to test the similarity between the columns "age" and "sex".
+
+- OUTPUT:
+Step-by-step plan:
+1. Create a new table name test_result.csv to store the test result. (create function)
+2. Test the similarity between the columns "age" and "sex" in Heart Disease Prediction dataset.csv using t-test. (test function)
+'''
+
+#############
+---------------------------------------------------
+
+
+---------------------------------------------------
+** user **:
+# Sheet 1
+Sheet Information: Heart Disease Prediction dataset_v0.csv has 14 columns (Headers are: A: "age", B: "sex", C: "cp", D: "trestbps", E: "chol", F: "fbs", G: "restecg", H: "thalach", I: "exang", J: "oldpeak", K: "slope", L: "ca", M: "thal", N: "target") and 303 rows (the row 0 is the header row).
+
+User Intents: ## User Intents ##
+The user's intent is to drop row 5 in the Heart Disease Prediction dataset_v0.csv.
+---------------------------------------------------
+
+
+---------------------------------------------------
+** assistant **:
+## Step-by-step plan:
+
+1. Drop row 5 in the Heart Disease Prediction dataset_v0.csv. (drop function)
+---------------------------------------------------
+
+
+2024-06-28 11:17:24,013 - httpx - INFO
+HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2024-06-28 11:17:24,017 - client_879d0cab-9c42-45e8-8c7c-127e9b920ced - INFO
+>>> generate_dsl
+ 
+---------------------------------------------------
+** system **:
+# CONTEXT #
+You are a professional DSL (Domain Specific Language) generator.
+You will be given a step-by-step description of a data cleaning plan.
+You need to follow the description and create a DSL script to help user clean and manipulate the data.
+
+#############
+
+# OBJECTIVE #
+Create a DSL script to clean the data based on the description.
+
+#############
+
+# DSL GRAMMAR #
+
+## DSL Functions:
+
+1. create(table_name, number, axis): Create columns or tables to a specified number in the table.
+
+2. drop(table_name, label, axis): Deletes a specified label in the table.
+   
+3. move(table_name, label, target_table_name, target_position, axis): Relocates a label from one position to another within the same table or to a different table.
+
+4. copy(table_name, label, target_table_name, target_label, axis): Copies a label and appends it to the end of the target table.
+
+5. merge(table_name, label_1, label_2, glue, new_label, axis): Concatenates two labels and appends the merged label to the table.
+
+6. split(table_name, label, delimiter, new_labels): Splits a label into multiple parts at the occurrences of the specified delimiter.
+
+7. transpose(table_name): Converts rows to columns and columns to rows in the table.
+
+8. aggregate(table_name, label, operation, axis): Aggregates the table using the specified function.
+
+9. test(table_name, label_1, label_2, strategy, axis): Returns the test result of comparing two labels using the specified strategy.
+
+Definitions:
+- label: Refers to a row or column in the table.
+- axis: 
+  - 0 or "index": Indicates a row operation.
+  - 1 or "columns": Indicates a column operation.
+
+#############
+
+# GUIDELINES #
+1. You should only use the DSL functions provided in the DSL Grammar. Do not add or invent new functions.
+
+#############
+
+# INPUT #
+Step-by-step description of the data cleaning process.
+
+#############
+
+# OUTPUT #
+Your output should be in JSON form. For example:
+[
+    {
+        "function_name": "copy",
+        "arguments": ["a.csv", "1", "Table2", "4", "index"]
+    },
+    {
+        "function_name": "drop",
+        "arguments": ["a.csv", "1", "index"]
+    },
+    {
+        "function_name": "split",
+        "arguments": ["a.csv", "1", ",", ["new1", "new2"]]
+    }
+]
+Do not add any other characters to the output.
+#############
+
+# EXAMPLE #
+
+Example 1:
+'''
+- INPUT:
+Step-by-step plan:
+1. Create a new table name test_result.csv to store the test result. (create function)
+2. Test the similarity between the columns "age" and "sex" in Heart Disease Prediction dataset.csv using t-test. (test function)
+
+- OUTPUT:
+[
+    {
+        "function_name": "create",
+        "arguments": ["test_result.csv", 2, "columns"]
+    },
+    {
+        "function_name": "test",
+        "arguments": ["data.csv", "age", "t-test", "columns"]
+    },
+]
+'''
+
+Example 2:
+'''
+- INPUT:
+Step-by-step plan:
+1. Move the column "age" from Heart Disease Prediction dataset.csv to New.csv. (move function)
+2. Move the column "sex" from Heart Disease Prediction dataset.csv to New.csv. (move function)
+
+- OUTPUT:
+[
+    {
+        "function_name": "move",
+        "arguments": ["Heart Disease Prediction dataset.csv", "age", "New.csv", 0, "columns"]
+    },
+    {
+        "function_name": "move",
+        "arguments": ["Heart Disease Prediction dataset.csv", "sex", "New.csv", 1, "columns"]
+    },
+]
+'''
+---------------------------------------------------
+
+
+---------------------------------------------------
+** user **:
+## Step-by-step plan:
+
+1. Drop row 5 in the Heart Disease Prediction dataset_v0.csv. (drop function)
+---------------------------------------------------
+
+
+---------------------------------------------------
+** assistant **:
+[
+    {
+        "function_name": "drop",
+        "arguments": ["Heart Disease Prediction dataset_v0.csv", 5, "index"]
+    }
+]
+---------------------------------------------------
+
+
+2024-06-28 11:20:14,563 - client_5ece06d6-fc2c-4250-8d57-5b6b27a76587 - INFO
+>>> find_batch_operation
+Changes:
+[
+    {
+        "type": "all_col",
+        "row": 9,
+        "old_values": [
+            "52",
+            "1",
+            "2",
+            "172",
+            "199",
+            "1",
+            "1",
+            "162",
+            "0",
+            "0.5",
+            "2",
+            "0",
+            "3",
+            "1"
+        ],
+        "new_values": [
+            "null",
+            "null",
+            "null",
+            "null",
+            "null",
+            "null",
+            "null",
+            "null",
+            "null",
+            "null",
+            "null",
+            "null",
+            "null",
+            "null"
+        ]
+    }
+]
+Batch Operations:
+[
+    {
+        "type": "all_col",
+        "row": 9,
+        "old_values": [
+            "52",
+            "1",
+            "2",
+            "172",
+            "199",
+            "1",
+            "1",
+            "162",
+            "0",
+            "0.5",
+            "2",
+            "0",
+            "3",
+            "1"
+        ],
+        "new_values": [
+            "null",
+            "null",
+            "null",
+            "null",
+            "null",
+            "null",
+            "null",
+            "null",
+            "null",
+            "null",
+            "null",
+            "null",
+            "null",
+            "null"
+        ]
+    }
+]
+2024-06-28 11:20:15,743 - httpx - INFO
+HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2024-06-28 11:20:15,753 - client_5ece06d6-fc2c-4250-8d57-5b6b27a76587 - INFO
+>>> mata_diff_to_NL
+ 
+---------------------------------------------------
+** system **:
+# CONTEXT #
+You are a professional data scientist. You want to summarize the table diff information made by the user in the CSV file. 
+
+#############
+
+# OBJECTIVE #
+Summarize the table diff information in Natural Language.
+
+############
+
+# GUIDELINES #
+Please note that a value replaced with 'null' means deleted, and a value replaced from 'null' means inserted.
+
+#############
+
+# INPUT #
+The diff information contains:
+- Table name
+- Difference detail (row, col, old_value, new_value)
+
+#############
+
+# EXAMPLES #
+Example 1:
+```
+table1.csv
+{'row': 4, 'col': 1, 'old_value': null, 'new_value': '1'}
+{'row': 4, 'col': 2, 'old_value': null, 'new_value': '2'}
+{'row': 4, 'col': 3, 'old_value': null, 'new_value': '3'}
+{'row': 4, 'col': 4, 'old_value': null, 'new_value': '4'}
+{'row': 4, 'col': 5, 'old_value': null, 'new_value': '5'}
+```
+In table1.csv, the user sequentially inserts values into the fourth row according to column number.
+
+---
+
+Example 2:
+```
+table2.csv
+{'row': 4, 'col': 1, 'old_value': "1", 'new_value': null}
+{'row': 4, 'col': 2, 'old_value': "2", 'new_value': null}
+{'row': 4, 'col': 3, 'old_value': "3", 'new_value': null}
+{'row': 5, 'col': 1, 'old_value': null, 'new_value': '1'}
+{'row': 5, 'col': 2, 'old_value': null, 'new_value': '2'}
+{'row': 5, 'col': 3, 'old_value': null, 'new_value': '3'}
+```
+In table2.csv, the user cut row 4 and pastes to row 5.
+
+---
+
+Example 3:
+```
+table3.csv
+{'row': 7, 'col': 1, 'old_value': null, 'new_value': '452'}
+{'row': 7, 'col': 2, 'old_value': null, 'new_value': '424'}
+{'row': 7, 'col': 3, 'old_value': null, 'new_value': '981'}
+{'row': 7, 'col': 4, 'old_value': null, 'new_value': '1423'}
+```
+In table3.csv, the user adds a new row at row 7, maybe the end of the table.
+---------------------------------------------------
+
+
+---------------------------------------------------
+** user **:
+{"type": "all_col", "row": 9, "old_values": ["52", "1", "2", "172", "199", "1", "1", "162", "0", "0.5", "2", "0", "3", "1"], "new_values": ["null", "null", "null", "null", "null", "null", "null", "null", "null", "null", "null", "null", "null", "null"]}
+
+---------------------------------------------------
+
+
+---------------------------------------------------
+** assistant **:
+In the provided diff information, it appears that in row 9 of the table, all columns were replaced with 'null'. This implies that the entire row was deleted by the user.
+---------------------------------------------------
+
+
+2024-06-28 11:20:17,351 - httpx - INFO
+HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2024-06-28 11:20:17,357 - client_5ece06d6-fc2c-4250-8d57-5b6b27a76587 - INFO
+>>> analyze_init
+ 
+---------------------------------------------------
+** system **:
+# CONTEXT # 
+You are a professional data scientist. A user has made some changes in the CSV files.
+Your task is to understand the user's intent regarding how they want to clean the data.
+
+#############
+
+# OBJECTIVE #
+Ask clarification questions to understand the user's intent.
+
+#############
+
+# GUIDELINES #
+1. Infer their intent through the table diff and user instruction. Do not infer beyond the information provided in the input.
+2. Avoid directly asking "what is your intent?" Instead, ask questions related to the changes made in the table and the instructions given.
+3. If the user's intent is clear, you can conclude the conversation.
+ 
+#############
+
+# INPUT #
+The input includes the following information:
+- Sheet Information:  the name of the sheet, the headers, and the number of rows in the table. 
+- Table Diff: the changes made to the table.
+- User Instruction: the user's instruction that indicates the changes they want to make.
+
+#############
+
+# OUTPUT #
+If you need more information, output a question to ask the user:
+{
+    "type": "question",
+    "summary": "<summary>",
+    "question": "<question>",
+    "choices": ["<choice_1>", "<choice_2>", ..., "<choice_n>", "other"]
+}
+
+If the intent is clear enough, output a summary of the user's intent:
+{
+   "type": "finish",
+   "summary": "<summary>"
+}
+
+#############
+
+# EXAMPLES #
+Example 1:
+'''
+- INPUT:
+# Sheet 1
+Sheet Information: table_1.csv has 3 columns (Headers are A: "2021", B: "2022", C: "2023", D: "2024") and 5 rows (the row 0 is the header row).
+Table Diff: In table_1.csv, row 3 has been replaced with [null, null, null, null].
+
+User Instruction: (No user instruction)
+
+- OUTPUT:
+{
+    "type": "question",
+    "summary": "The user has deleted row 3 in table_1.csv",
+    "question": "Do you want to drop row 3 in table_1.csv?",
+    "choices": [
+        "Yes, drop the row",
+        "No, keep the row",
+        "other (please specify)"
+    ]
+}
+'''
+
+Example 2:
+'''
+- INPUT:
+# Sheet 1
+Sheet Information: table_1.csv has 3 columns (Headers are A: "2021", B: "2022", C: "2023", D: "2024") and 5 rows (the row 0 is the header row).
+Table Diff: In table_1.csv, row 3 has been replaced with [null, null, null, null].
+
+# Sheet 2
+Sheet Information: table_2.csv has 4 columns (Headers are A: "Name", B: "Age", C: "Gender", D: "Occupation") and 5 rows (the row 0 is the header row).
+Table Diff: (No table diff)
+
+User Instruction: (No user instruction)
+
+- OUTPUT:
+{
+    "type": "question",
+    "summary": "The user has deleted row 3 in table_1.csv.",
+    "question": "Do you want to drop row 3 in table_1.csv and apply the same changes to table_2.csv?"
+    "choices": [
+        "Yes, drop the row in both tables",
+        "No, only drop the row in table_1.csv",
+        "No, only drop the row in table_2.csv",
+        "other (please specify)"
+    ]
+}
+'''
+
+Example 3:
+'''
+- INPUT:
+# Sheet 1
+Sheet Information: HeartDisease.csv has 14 columns (Headers are: A: "age", B: "sex", C: "cp", D: "trestbps", E: "chol", F: "fbs", G: "restecg", H: "thalach", I: "exang", J: "oldpeak", K: "slope", L: "ca", M: "thal", N: "target") and 303 rows (the row 0 is the header row).
+Table Diff: (No table diff)
+
+# Sheet 2
+Sheet Information: test.csv has 14 columns (Headers are: A: "Column1", B: "Column2", C: "Column3", D: "Column4", E: "Column5", F: "Column6", G: "Column7", H: "Column8", I: "Column9", J: "Column10", K: "Column11", L: "Column12", M: "Column13", N: "Column14") and 303 rows (the row 0 is the header row).
+Table Diff: (No table diff)
+
+User Instruction: Move age and sex columns from HeartDisease.csv to test_v0.csv.
+
+- OUTPUT:
+{
+    "type": "finish",
+    "summary": "The user wants to move the age and sex columns from HeartDisease.csv to Column1 and Column2 in test.csv."
+}
+'''
+
+---------------------------------------------------
+
+
+---------------------------------------------------
+** user **:
+# Sheet 1
+Sheet Information: Heart Disease Prediction dataset_v0.csv has 14 columns (Headers are: A: "age", B: "sex", C: "cp", D: "trestbps", E: "chol", F: "fbs", G: "restecg", H: "thalach", I: "exang", J: "oldpeak", K: "slope", L: "ca", M: "thal", N: "target") and 303 rows (the row 0 is the header row).
+Table Diff: In the provided diff information, it appears that in row 9 of the table, all columns were replaced with 'null'. This implies that the entire row was deleted by the user.
+
+User Instruction: (No user instruction)
+---------------------------------------------------
+
+
+---------------------------------------------------
+** assistant **:
+{'type': 'question', 'summary': 'The user has deleted row 9 in the Heart Disease Prediction dataset_v0.csv.', 'question': 'Do you want to drop row 9 in the Heart Disease Prediction dataset_v0.csv?', 'choices': ['Yes, drop the row', 'No, keep the row', 'other (please specify)']}
+---------------------------------------------------
+
+
+2024-06-28 11:20:25,365 - httpx - INFO
+HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2024-06-28 11:20:25,370 - client_5ece06d6-fc2c-4250-8d57-5b6b27a76587 - INFO
+>>> followup
+ 
+---------------------------------------------------
+** system **:
+# CONTEXT # 
+You are a professional data scientist. You have already asked some clarification questions and the user has replied.
+Now, you might want to ask additional questions to gain a deeper understanding of their intent.
+
+#############
+
+# OBJECTIVE #
+Ask clarification questions to understand the user's intent.
+
+#############
+
+# GUIDELINES #
+1. Infer their intent through the table diff and user instruction. Do not infer beyond the information provided in the input.
+2. Avoid directly asking "what is your intent?" Instead, ask questions related to the changes made in the table and the instructions given.
+3. If the user's intent is clear, you can conclude the conversation.
+ 
+#############
+
+# INPUT #
+The input includes the following:
+- Sheet Information:  the name of the sheet, the headers, and the number of rows in the table. 
+- Table Diff: the changes made to the table, including the cells that have been modified.
+- User Instruction: the user's instruction that indicates the changes they want to make.
+- Question & Answering History: The history of questions & answers exchanged between the assistant and the user.
+
+#############
+
+# OUTPUT #
+If you need more information, output a question to ask the user:
+{
+    "type": "question",
+    "summary": "<summary>",
+    "question": "<question>",
+    "choices": ["<choice_1>", "<choice_2>", ..., "<choice_n>", "other"]
+}
+
+If the intent is clear enough, output a summary of the user's intent:
+{
+   "type": "finish",
+   "summary": "<summary>"
+}
+
+#############
+
+# EXAMPLES #
+Example 1:
+'''
+- INPUT:
+# Sheet 1
+Sheet Information: table_1.csv has 3 columns (Headers are A: "2021", B: "2022", C: "2023", D: "2024") and 5 rows (the row 0 is the header row).
+Table Diff: In table_1.csv, row 3 has been replaced with [null, null, null, null].
+
+User Instruction: (No user instruction)
+
+Question & Answering History: 
+ASSISTANT:
+{
+    "type": "question",
+    "summary": "Firstly, the user has deleted row 3 in table_1.csv and replaced it with null. Secondly, the user delete all values in row 4 in table_2.csv.",
+    "question": "Do you want to delete the row 4 in table_1.csv?",
+    "choices": [
+        "Yes, delete the values",
+        "No, keep the values",
+        "other (please specify)"
+    ]
+}
+
+USER:
+{
+    "choice": "Yes, delete the values"
+}
+
+
+- OUTPUT:
+{
+    "type": "finish",
+    "summary": "The user wants to delete the row 4 in table_1.csv."
+}
+'''
+
+Example 2:
+'''
+- INPUT:
+# Sheet 1
+Sheet Information: table_1.csv has 3 columns (Headers are A: "2021", B: "2022", C: "2023", D: "2024") and 5 rows (the row 0 is the header row).
+Table Diff: In table_1.csv, row 3 has been deleted and replaced with [null, null, null, null].
+
+# Sheet 2
+Sheet Information: table_2.csv has 4 columns (Headers are A: "Name", B: "Age", C: "Gender", D: "Occupation") and 5 rows (the row 0 is the header row).
+Table Diff: In the given table, the user clears all values in row 4 across all columns.
+
+User Instruction: (No user instruction)
+
+Question & Answering History: 
+ASSISTANT:
+{
+    "type": "question",
+    "summary": "Firstly, the user has deleted row 3 in table_1.csv and replaced it with null. Secondly, the user delete all values in row 4 in table_2.csv.",
+    "question": "Do you want to delete the row 3 in table_1.csv and delete the values in row 4 in table_2.csv?",
+    "choices": [
+        "Yes, delete the values",
+        "No, keep the values",
+        "other (please specify)"
+    ]
+}
+
+USER:
+{
+    "choice": "Other: Actually, I want to replace row 3 with the values from row 5 in table_1.csv."
+}
+
+
+- OUTPUT:
+{
+    "type": "question",
+    "summary": "The user wants to replace row 3 in table_1.csv with the values from row 5.",
+    "question": "Understood! Do you also want to delete the values in row 4 in table_2.csv?",
+    "choices": [
+        "Yes, delete the values",
+        "No, keep the values",
+        "other (please specify)"
+    ]
+}
+'''
+---------------------------------------------------
+
+
+---------------------------------------------------
+** user **:
+# Sheet 1
+Sheet Information: Heart Disease Prediction dataset_v0.csv has 14 columns (Headers are: A: "age", B: "sex", C: "cp", D: "trestbps", E: "chol", F: "fbs", G: "restecg", H: "thalach", I: "exang", J: "oldpeak", K: "slope", L: "ca", M: "thal", N: "target") and 303 rows (the row 0 is the header row).
+Table Diff: In the provided diff information, it appears that in row 9 of the table, all columns were replaced with 'null'. This implies that the entire row was deleted by the user.
+
+User Instruction: (No user instruction)
+Question & Answering History:
+ASSISTANT:
+{
+    "type": "question",
+    "summary": "The user has deleted row 9 in the Heart Disease Prediction dataset_v0.csv.",
+    "question": "Do you want to drop row 9 in the Heart Disease Prediction dataset_v0.csv?",
+    "choices": [
+        "Yes, drop the row",
+        "No, keep the row",
+        "other (please specify)"
+    ]
+}
+
+USER:
+{
+    "choice": "Yes, drop the row"
+}
+---------------------------------------------------
+
+
+---------------------------------------------------
+** assistant **:
+{
+    "type": "finish",
+    "summary": "The user wants to drop row 9 in the Heart Disease Prediction dataset_v0.csv."
+}
+---------------------------------------------------
+
+
+2024-06-28 11:20:26,359 - httpx - INFO
+HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2024-06-28 11:20:26,362 - client_5ece06d6-fc2c-4250-8d57-5b6b27a76587 - INFO
+>>> generate_summarization
+ 
+---------------------------------------------------
+** system **:
+# CONTEXT #
+You are a professional data scientist.
+Your task is to analyze the user's intents regarding how they want to clean the data.
+
+#############
+
+# OBJECTIVE #
+Summarize the user's intents.
+
+#############
+
+# INPUT #
+- Sheet Information: the name of the sheet, the headers, and the number of rows in the table.
+- Table Diff: the changes made to the table.
+- User Instruction: the user's instruction that indicates the changes they want to make.
+- Question & Answering History: The history of questions & answers exchanged between the assistant and the user.
+
+# OUTPUT #
+
+- User Intents: the user's intents.
+
+#############
+
+# EXAMPLES #
+
+Example 1:
+'''
+- INPUT:
+# Sheet 1
+Sheet Information: Heart Disease Prediction dataset.csv has 14 columns (Headers are: A: "age", B: "sex", C: "cp", D: "trestbps", E: "chol", F: "fbs", G: "restecg", H: "thalach", I: "exang", J: "oldpeak", K: "slope", L: "ca", M: "thal", N: "target") and 303 rows (the row 0 is the header row).
+Table Diff: In the table provided, it seems that the user has deleted row 1 to row 20.
+User Instruction: delete row 1 to row 20
+
+Question & Answering History:
+Clarification Question 1:
+Are you sure you want to delete rows 1 to 20?
+
+A. Yes, delete rows 1 to 20
+B. No, I want to delete a different range of rows
+C. other (please specify)
+
+User Answer 1:
+Yes, delete rows 1 to 20
+
+- OUTPUT:
+The user's intent is to delete row 1 to 20 in Heart Disease Prediction dataset.csv.
+'''
+#############
+---------------------------------------------------
+
+
+---------------------------------------------------
+** user **:
+# Sheet 1
+Sheet Information: Heart Disease Prediction dataset_v0.csv has 14 columns (Headers are: A: "age", B: "sex", C: "cp", D: "trestbps", E: "chol", F: "fbs", G: "restecg", H: "thalach", I: "exang", J: "oldpeak", K: "slope", L: "ca", M: "thal", N: "target") and 303 rows (the row 0 is the header row).
+Table Diff: In the provided diff information, it appears that in row 9 of the table, all columns were replaced with 'null'. This implies that the entire row was deleted by the user.
+
+User Instruction: (No user instruction)
+
+Clarification Question 1:
+Do you want to drop row 9 in the Heart Disease Prediction dataset_v0.csv?
+A. Yes, drop the row
+B. No, keep the row
+C. other (please specify)
+
+User Answer 1:
+Yes, drop the row
+
+---------------------------------------------------
+
+
+---------------------------------------------------
+** assistant **:
+# User Intents:
+The user's intent is to drop row 9 in the Heart Disease Prediction dataset_v0.csv.
+---------------------------------------------------
+
+
+2024-06-28 11:20:27,507 - httpx - INFO
+HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2024-06-28 11:20:27,509 - client_5ece06d6-fc2c-4250-8d57-5b6b27a76587 - INFO
+>>> generate_step_by_step_plan
+ 
+---------------------------------------------------
+** system **:
+# CONTEXT #
+You are a professional data scientist.
+Your task is to generate a step-by-step plan to clean the data based on the user's intents.
+
+#############
+
+# OBJECTIVE #
+Generate a step-by-step plan to clean the data based on the user's intents.
+
+#############
+
+# DSL GRAMMAR #
+
+## DSL Functions:
+
+1. create: Create columns or tables to a specified number in the table.
+
+2. drop: Deletes a specified label in the table.
+   
+3. move: Relocates a label from one position to another within the same table or to a different table.
+
+4. copy: Copies a label and appends it to the end of the target table.
+
+5. merge: Concatenates two labels and appends the merged label to the table.
+
+6. split: Splits a label into multiple parts at the occurrences of the specified delimiter.
+
+7. transpose: Converts rows to columns and columns to rows in the table.
+
+8. aggregate: Aggregates the table using the specified function.
+
+9. test: Returns the test result of comparing two labels using the specified strategy.
+
+#############
+
+# GUIDELINES #
+1. You should only use the DSL functions provided in the DSL Grammar. Do not add or invent new functions.
+
+#############
+
+# INPUT #
+- Sheet Information: the name of the sheet, the headers, and the number of rows in the table.
+- User Intents: the user's intents.
+
+# OUTPUT #
+
+- Step-by-step plan: a sequence of descriptions of the actions to be taken to clean the data based on the user's intents.
+
+#############
+
+# EXAMPLES #
+
+Example 1:
+'''
+- INPUT:
+# Sheet 1
+Sheet Information: Heart Disease Prediction dataset.csv has 14 columns (Headers are: A: "age", B: "sex", C: "cp", D: "trestbps", E: "chol", F: "fbs", G: "restecg", H: "thalach", I: "exang", J: "oldpeak", K: "slope", L: "ca", M: "thal", N: "target") and 303 rows (the row 0 is the header row).
+User Intents: The user's intent is to drop the column "ca" and "thal".
+
+- OUTPUT:
+Step-by-step plan:
+1. Drop the column "ca". (drop function)
+2. Drop the column "thal". (drop function)
+'''
+
+Example 2:
+'''
+- INPUT:
+# Sheet 1
+Sheet Information: Heart Disease Prediction dataset.csv has 14 columns (Headers are: A: "age", B: "sex", C: "cp", D: "trestbps", E: "chol", F: "fbs", G: "restecg", H: "thalach", I: "exang", J: "oldpeak", K: "slope", L: "ca", M: "thal", N: "target") and 303 rows (the row 0 is the header row).
+User Intents: The user's intent is to delete all the columns except "age" and "sex".
+
+- OUTPUT:
+Step-by-step plan:
+1. Drop all columns except "age" and "sex" in Heart Disease Prediction dataset.csv. (drop function)
+'''
+
+Example 3:
+'''
+- INPUT:
+# Sheet 1
+Sheet Information: Heart Disease Prediction dataset.csv has 14 columns (Headers are: A: "age", B: "sex", C: "cp", D: "trestbps", E: "chol", F: "fbs", G: "restecg", H: "thalach", I: "exang", J: "oldpeak", K: "slope", L: "ca", M: "thal", N: "target") and 303 rows (the row 0 is the header row).
+
+# Sheet 2
+Sheet Information: New.csv has 14 columns (Headers are: "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N") and 303 rows (the row 0 is the header row).
+
+User Intents: The user's intent is to move "age" and "sex" columns from Sheet 1 to Sheet 2.
+
+- OUTPUT:
+Step-by-step plan:
+1. Move the column "age" from Heart Disease Prediction dataset.csv to New.csv. (move function)
+2. Move the column "sex" from Heart Disease Prediction dataset.csv to New.csv. (move function)
+'''
+
+Example 4:
+'''
+- INPUT:
+# Sheet 1
+Sheet Information: Heart Disease Prediction dataset.csv has 14 columns (Headers are: A: "age", B: "sex", C: "cp", D: "trestbps", E: "chol", F: "fbs", G: "restecg", H: "thalach", I: "exang", J: "oldpeak", K: "slope", L: "ca", M: "thal", N: "target") and 303 rows (the row 0 is the header row).
+
+User Intents: The user's intent is to test the similarity between the columns "age" and "sex".
+
+- OUTPUT:
+Step-by-step plan:
+1. Create a new table name test_result.csv to store the test result. (create function)
+2. Test the similarity between the columns "age" and "sex" in Heart Disease Prediction dataset.csv using t-test. (test function)
+'''
+
+#############
+---------------------------------------------------
+
+
+---------------------------------------------------
+** user **:
+# Sheet 1
+Sheet Information: Heart Disease Prediction dataset_v0.csv has 14 columns (Headers are: A: "age", B: "sex", C: "cp", D: "trestbps", E: "chol", F: "fbs", G: "restecg", H: "thalach", I: "exang", J: "oldpeak", K: "slope", L: "ca", M: "thal", N: "target") and 303 rows (the row 0 is the header row).
+
+User Intents: # User Intents:
+The user's intent is to drop row 9 in the Heart Disease Prediction dataset_v0.csv.
+---------------------------------------------------
+
+
+---------------------------------------------------
+** assistant **:
+- Step-by-step plan:
+1. Drop row 9 in Heart Disease Prediction dataset_v0.csv. (drop function)
+---------------------------------------------------
+
+
+2024-06-28 11:20:28,435 - httpx - INFO
+HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2024-06-28 11:20:28,438 - client_5ece06d6-fc2c-4250-8d57-5b6b27a76587 - INFO
+>>> generate_dsl
+ 
+---------------------------------------------------
+** system **:
+# CONTEXT #
+You are a professional DSL (Domain Specific Language) generator.
+You will be given a step-by-step description of a data cleaning plan.
+You need to follow the description and create a DSL script to help user clean and manipulate the data.
+
+#############
+
+# OBJECTIVE #
+Create a DSL script to clean the data based on the description.
+
+#############
+
+# DSL GRAMMAR #
+
+## DSL Functions:
+
+1. create(table_name, number, axis): Create columns or tables to a specified number in the table.
+
+2. drop(table_name, label, axis): Deletes a specified label in the table.
+   
+3. move(table_name, label, target_table_name, target_position, axis): Relocates a label from one position to another within the same table or to a different table.
+
+4. copy(table_name, label, target_table_name, target_label, axis): Copies a label and appends it to the end of the target table.
+
+5. merge(table_name, label_1, label_2, glue, new_label, axis): Concatenates two labels and appends the merged label to the table.
+
+6. split(table_name, label, delimiter, new_labels): Splits a label into multiple parts at the occurrences of the specified delimiter.
+
+7. transpose(table_name): Converts rows to columns and columns to rows in the table.
+
+8. aggregate(table_name, label, operation, axis): Aggregates the table using the specified function.
+
+9. test(table_name, label_1, label_2, strategy, axis): Returns the test result of comparing two labels using the specified strategy.
+
+Definitions:
+- label: Refers to a row or column in the table.
+- axis: 
+  - 0 or "index": Indicates a row operation.
+  - 1 or "columns": Indicates a column operation.
+
+#############
+
+# GUIDELINES #
+1. You should only use the DSL functions provided in the DSL Grammar. Do not add or invent new functions.
+
+#############
+
+# INPUT #
+Step-by-step description of the data cleaning process.
+
+#############
+
+# OUTPUT #
+Your output should be in JSON form. For example:
+[
+    {
+        "function_name": "copy",
+        "arguments": ["a.csv", "1", "Table2", "4", "index"]
+    },
+    {
+        "function_name": "drop",
+        "arguments": ["a.csv", "1", "index"]
+    },
+    {
+        "function_name": "split",
+        "arguments": ["a.csv", "1", ",", ["new1", "new2"]]
+    }
+]
+Do not add any other characters to the output.
+#############
+
+# EXAMPLE #
+
+Example 1:
+'''
+- INPUT:
+Step-by-step plan:
+1. Create a new table name test_result.csv to store the test result. (create function)
+2. Test the similarity between the columns "age" and "sex" in Heart Disease Prediction dataset.csv using t-test. (test function)
+
+- OUTPUT:
+[
+    {
+        "function_name": "create",
+        "arguments": ["test_result.csv", 2, "columns"]
+    },
+    {
+        "function_name": "test",
+        "arguments": ["data.csv", "age", "t-test", "columns"]
+    },
+]
+'''
+
+Example 2:
+'''
+- INPUT:
+Step-by-step plan:
+1. Move the column "age" from Heart Disease Prediction dataset.csv to New.csv. (move function)
+2. Move the column "sex" from Heart Disease Prediction dataset.csv to New.csv. (move function)
+
+- OUTPUT:
+[
+    {
+        "function_name": "move",
+        "arguments": ["Heart Disease Prediction dataset.csv", "age", "New.csv", 0, "columns"]
+    },
+    {
+        "function_name": "move",
+        "arguments": ["Heart Disease Prediction dataset.csv", "sex", "New.csv", 1, "columns"]
+    },
+]
+'''
+---------------------------------------------------
+
+
+---------------------------------------------------
+** user **:
+Step-by-step plan:
+- Step-by-step plan:
+1. Drop row 9 in Heart Disease Prediction dataset_v0.csv. (drop function)
+---------------------------------------------------
+
+
+---------------------------------------------------
+** assistant **:
+[
+    {
+        "function_name": "drop",
+        "arguments": ["Heart Disease Prediction dataset_v0.csv", 9, "index"]
+    }
+]
+---------------------------------------------------
+
+

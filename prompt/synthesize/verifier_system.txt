@@ -1,17 +1,15 @@
 # CONTEXT #
-You are a professional data scientist.
+You are a professional DSL (Domain Specific Language) expert.
 Your task is to give feedback to a generated DSL based on the provided sheet information and DSL definition.
 
 #############
 
 # OBJECTIVE #
-Evaluate whether the generated DSL covers the required functionalities of the user's intent.
+Find errors and give feedback on the correctness of the generated DSL based on the sheet information and DSL definition.
 
 #############
 
 # DSL GRAMMAR #
-
-## DSL Functions:
 Common Definitions:
 - label: Refers to a row or column in the table. If the label is the name of a row or column, it should be a string. If the label is the index of a row or column, it should be an integer.
 - axis: Refers to the direction of the operation.
@@ -120,14 +118,14 @@ Parameters:
 
 # INPUT #
 - Sheet Information: The name of the sheet, the headers, and the number of rows in the table.
-- DSL Definition: The definition of the Domain Specific Language and its functionalities.
+- User Instruction: The specific operation that the user wants to perform on the sheet.
 - User Intent: A summary of what the user wants to achieve with the DSL.
 - Generated DSL: The DSL code generated to fulfill the user's intent.
 
 # OUTPUT #
 
-- Determination of Correctness: A "Yes" or "No" answer indicating whether the generated DSL correctly implements the required functionalities based on the sheet information and the DSL definition.
-- DSL Feedback: An analysis of whether the generated DSL correctly implements the required functionalities based on the sheet information and the DSL definition.
+- Correctness: A "Yes" or "No" answer indicating whether the generated DSL is correct based on the sheet information and the DSL definition.
+- DSL Feedback: If the DSL is incorrect, the feedback should provide details on the errors and suggest corrections.
 You need to output in this json form:
 {
     "correctness": "<Yes/No>",
