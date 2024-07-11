@@ -4,7 +4,7 @@ from utils.llm import (
     append_message,
     generate_chat_completion,
 )
-from utils.db import get_history
+from utils.db import get_history, get_all_sheets
 from utils.log import log_messages
 from utils.format_text import get_history_text, format_information
 
@@ -248,12 +248,16 @@ def get_dsls(client_id, history, step_by_step_plan, feedback=None):
     dsls = json.loads(generated_dsl)
     return dsls
 
-def verify_syntax(dsls):
+
+def verify_syntax(client_id, dsls):
     # 1. check whether dsl is in the following json format
     # 2. Check whether the dsl used some tables that are not defined
     # 3. Check whether the dsl used wrong or non-existing functions
-    # 4. Check whether the dsl used wrong arguments for the function
+    # 4. Check whether the dsl used wrong type arguments for the function
+    all_sheets = get_all_sheets(client_id)
+
     return True
+
 
 def verify_semantics(dsls):
     # check whether the dsls are semantically correct
@@ -261,6 +265,7 @@ def verify_semantics(dsls):
     # 2. Check whether the dsls are consistent with the sheet information and user intents
     # 3. Check whether the dsls are elegant and efficient
     return True
+
 
 def verify(client_id, history, summarization, dsls):
     verifier_user_prompt = (
@@ -285,9 +290,12 @@ def dsl_synthesize(client_id: str) -> str:
     summarization = get_summarization(client_id, history)
     step_by_step_plan = get_step_by_step_plan(client_id, history, summarization)
     dsls = get_dsls(client_id, history, step_by_step_plan)
-    feedback = verify(client_id, history, summarization, dsls)
 
-    while feedback["correctness"] == "No":
+    while (
+        verify_syntax(client_id, dsls)
+        and verify_semantics(dsls)
+        and verify(client_id, history, summarization, dsls)["correctness"] == "No"
+    ):
         step_by_step_plan = get_step_by_step_plan(
             client_id, history, summarization, feedback
         )
