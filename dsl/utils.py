@@ -253,14 +253,17 @@ def swap(table_a, label_a, table_b, label_b, axis=0):
             )
 
         # Use temporary column names to avoid duplicates
-        temp_label_a = '__temp__' + label_a
-        temp_label_b = '__temp__' + label_b
+        temp_label_a = "__temp__" + label_a
+        temp_label_b = "__temp__" + label_b
 
         table_a.rename(columns={label_a: temp_label_a}, inplace=True)
         table_b.rename(columns={label_b: temp_label_b}, inplace=True)
 
         # Swap the columns
-        table_a[temp_label_a], table_b[temp_label_b] = table_b[temp_label_b], table_a[temp_label_a]
+        table_a[temp_label_a], table_b[temp_label_b] = (
+            table_b[temp_label_b],
+            table_a[temp_label_a],
+        )
 
         table_a.rename(columns={temp_label_a: label_b}, inplace=True)
         table_b.rename(columns={temp_label_b: label_a}, inplace=True)
@@ -519,3 +522,21 @@ def test(table, label_a, label_b, strategy, axis=0):
     result_table = assign(result_table, 1, 1, 1, 1, test_stat)
     result_table = assign(result_table, 1, 1, 2, 2, p_value)
     return result_table
+
+
+def rearrange(table, by, axis=0):
+    """
+    Rearranges the rows or columns of the table based on the specified order.
+
+    Parameters:
+    - table: DataFrame to be rearranged.
+    - by: The column or index level to sort by.
+    - axis:
+      - 0 or "index": Indicates a row operation.
+      - 1 or "columns": Indicates a column operation.
+    """
+
+    axis = classify_axis(axis)
+    table = table.sort_values(by=by, axis=axis)
+
+    return table
