@@ -7,3 +7,4 @@ __pycache__/
 files/*
 clean.db
 /logs/*
+app.log

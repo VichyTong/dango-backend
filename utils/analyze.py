@@ -36,7 +36,7 @@ def extract_changes(client_id, data):
     changes = []
 
     # change pattern
-    pattern_1 = r"Row: (\d+|\d+\.\d+), Col: (\d+|\d+\.\d+), Old: ([a-zA-Z]*|\d+|\d+\.\d+| )\r?, New: ([a-zA-Z]*|\d+|\d+\.\d+| )\r?"
+    pattern_1 = r"Row: (\d+|\d+\.\d+), Col: (\d+|\d+\.\d+), Old: ([a-zA-Z ]*|\d+|\d+\.\d+| )\r?, New: ([a-zA-Z]*|\d+|\d+\.\d+| )\r?"
     # create row pattern
     pattern_2 = r"Inserted row at index (\d+)"
     # create column pattern
