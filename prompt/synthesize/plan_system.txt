@@ -105,7 +105,7 @@ Parameters:
 13. aggregate(table_name, functions, axis): Aggregates the table using the specified function.
 Parameters:
 - table_name (str): table to be aggregated.
-- functions (str or list[str]): The function(s) to apply for aggregation ('sum', 'mean', 'median', 'min', 'max', 'count', 'std', 'var', 'first', 'last').
+- functions (dict): Keys are names of rows or columns, and values are lists of function names. Example: {'A': ['sum', 'mean'], 'B': ['min', 'max']}.
 - axis (str or int): Refers to the direction of the operation.
 
 14. test(table_name, label_a, label_b, strategy, axis): Returns a new result table by comparing two labels using the specified strategy.
