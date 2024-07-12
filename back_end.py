@@ -355,6 +355,7 @@ async def handle_execute_dsl_list(request_body: ExecuteDSLList):
 
     tmp_sheet_data_map = {}
     tmp_sheet_version_map = {}
+    delete_table_list = []
 
     def load_sheet(sheet_name):
         sheet_id, sheet_version = split_sheet_name(sheet_name)
@@ -374,9 +375,9 @@ async def handle_execute_dsl_list(request_body: ExecuteDSLList):
         arguments = dsl.arguments
         DependenciesManager.update_dependency(function, arguments)
         if function in table_function_list:
-            sheet_id = arguments[0]
             if function == "create_table":
                 # create a dataframe have row_number and column_number
+                sheet_id = arguments[0]
                 row_number = arguments[1]
                 column_number = arguments[2]
                 data = pd.DataFrame(
@@ -386,16 +387,18 @@ async def handle_execute_dsl_list(request_body: ExecuteDSLList):
                 tmp_sheet_data_map[sheet_id] = data
                 tmp_sheet_version_map = 0
             elif function == "delete_table":
-                version = find_next_version(client_id, sheet_id) - 1
-                if version < 0:
-                    print("Error: Invalid Table")
+                sheet_id, version = split_sheet_name(arguments[0])
                 delete_sheet(
                     client_id,
                     sheet_id=sheet_id,
                     version=version,
                 )
-                print(sheet_id, version)
-                print(get_all_sheets(client_id))
+                delete_table_list.append(
+                    {
+                        "sheet_id": sheet_id,
+                        "version": version,
+                    }
+                )
         elif function in type_a_function_list:
             load_sheet(arguments[0])
             sheet_id, _ = split_sheet_name(arguments[0])
@@ -469,13 +472,28 @@ async def handle_execute_dsl_list(request_body: ExecuteDSLList):
                     "sheet_id": sheet_id,
                     "version": same_sheet_version,
                     "data": sheet_data,
+                    "is_delete": False,
                 }
             )
             continue
         sheet_version = find_next_version(client_id, sheet_id)
         upload_sheet(client_id, sheet_id, sheet_version, sheet_data)
         output.append(
-            {"sheet_id": sheet_id, "version": sheet_version, "data": sheet_data}
+            {
+                "sheet_id": sheet_id,
+                "version": sheet_version,
+                "data": sheet_data,
+                "is_delete": False,
+            }
+        )
+    for table in delete_table_list:
+        output.append(
+            {
+                "sheet_id": table["sheet_id"],
+                "version": table["version"],
+                "data": [],
+                "is_delete": True,
+            }
         )
     return output
 

@@ -524,19 +524,16 @@ def test(table, label_a, label_b, strategy, axis=0):
     return result_table
 
 
-def rearrange(table, by, axis=0):
+def rearrange(table, by_values=None, by_array=None, axis=0):
     """
     Rearranges the rows or columns of the table based on the specified order.
 
     Parameters:
     - table: DataFrame to be rearranged.
-    - by: The column or index level to sort by.
-    - axis:
-      - 0 or "index": Indicates a row operation.
-      - 1 or "columns": Indicates a column operation.
+    - by_values: The values to sort by.
     """
 
     axis = classify_axis(axis)
     table = table.sort_values(by=by, axis=axis)
-
+    table.sort_values()
     return table

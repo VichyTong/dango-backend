@@ -282,6 +282,7 @@ def verify(client_id, history, summarization, dsls):
     messages = append_message(feedback, "assistant", messages)
     log_messages(client_id, "generate_feedback", messages)
     feedback = json.loads(feedback)
+    print(feedback)
     return feedback
 
 
@@ -290,12 +291,9 @@ def dsl_synthesize(client_id: str) -> str:
     summarization = get_summarization(client_id, history)
     step_by_step_plan = get_step_by_step_plan(client_id, history, summarization)
     dsls = get_dsls(client_id, history, step_by_step_plan)
+    feedback = verify(client_id, history, summarization, dsls)
 
-    while (
-        verify_syntax(client_id, dsls)
-        and verify_semantics(dsls)
-        and verify(client_id, history, summarization, dsls)["correctness"] == "No"
-    ):
+    while feedback["correctness"] == "No":
         step_by_step_plan = get_step_by_step_plan(
             client_id, history, summarization, feedback
         )
