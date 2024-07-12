@@ -1,3 +1,4 @@
+import re
 import pandas as pd
 import scipy.stats as stats
 import statsmodels.api as sm
@@ -536,4 +537,38 @@ def rearrange(table, by_values=None, by_array=None, axis=0):
     axis = classify_axis(axis)
     table = table.sort_values(by=by, axis=axis)
     table.sort_values()
+    return table
+
+
+def format(table, label, pattern, axis=0):
+    """
+    Formats the values in a row or column based on the specified pattern.
+
+    Parameters:
+    - table: DataFrame in which the row/column will be formatted.
+    - label: The label of the row/column to be formatted.
+    - pattern: The format regex pattern to apply to the values.
+    - axis:
+      - 0 or "index": Indicates a row operation.
+      - 1 or "columns": Indicates a column operation.
+    """
+
+    axis = classify_axis(axis)
+
+    # Format the values in a column
+    if axis == 1:
+        if label not in table.columns:
+            raise ValueError(f"Column {label} does not exist in the DataFrame.")
+
+        # Apply the format pattern to the column values
+        table[label] = table[label].apply(lambda x: re.sub(pattern, "", str(x)))
+
+    # Format the values in a row
+    else:
+        if label not in table.index:
+            raise ValueError(f"Row {label} does not exist in the DataFrame.")
+
+        # Apply the format pattern to the row values
+        table.loc[label] = table.loc[label].apply(lambda x: re.sub(pattern, "", str(x)))
+
     return table
