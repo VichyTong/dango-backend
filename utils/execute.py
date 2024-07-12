@@ -11,6 +11,8 @@ from dsl.utils import (
     transpose,
     aggregate,
     test,
+    rearrange,
+    format,
 )
 
 
@@ -39,5 +41,9 @@ def execute_dsl(sheet, function, arguments, target_sheet=None):
         return aggregate(sheet, *arguments)
     elif function == "test":
         return test(sheet, *arguments)
+    elif function == "rearrange":
+        return rearrange(sheet, *arguments)
+    elif function == "format":
+        return format(sheet, *arguments)
     else:
         return "Invalid function"

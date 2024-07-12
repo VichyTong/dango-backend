@@ -531,7 +531,11 @@ def rearrange(table, by_values=None, by_array=None, axis=0):
 
     Parameters:
     - table: DataFrame to be rearranged.
-    - by_values: The values to sort by.
+    - by_values: If this parameter is set, the rows/columns will be rearranged based on the values in the specified row/column.
+    - by_array: If this parameter is set, the rows/columns will be rearranged based on the order of the values in the array.
+    - axis:
+        - 0 or "index": Indicates a row operation.
+        - 1 or "columns": Indicates a column operation.
     """
 
     axis = classify_axis(axis)

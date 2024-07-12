@@ -115,6 +115,24 @@ Parameters:
 - strategy (str): The statistical test to perform ('t-test', 'z-test', 'chi-squared').
 - axis (str or int): Refers to the direction of the operation.
 
+15. rearrange(table, by_values=None, by_array=None, axis): Rearranges the rows or columns of the table based on the specified order.
+Parameters:
+- table: DataFrame to be rearranged.
+- by_values: If this parameter is set, the rows/columns will be rearranged based on the values in the specified row/column.
+- by_array: If this parameter is set, the rows/columns will be rearranged based on the order of the values in the array.
+- axis:
+    - 0 or "index": Indicates a row operation.
+    - 1 or "columns": Indicates a column operation.
+
+16. format(table, label, pattern, axis): Formats the values in a row or column based on the specified pattern.
+Parameters:
+- table: DataFrame in which the row/column will be formatted.
+- label: The label of the row/column to be formatted.
+- pattern: The format regex pattern to apply to the values.
+- axis:
+    - 0 or "index": Indicates a row operation.
+    - 1 or "columns": Indicates a column operation.
+
 #############
 
 # GUIDELINES #
