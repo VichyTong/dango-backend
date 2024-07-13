@@ -5,7 +5,7 @@ Your task is to give feedback to a generated DSL based on the provided sheet inf
 #############
 
 # OBJECTIVE #
-Find errors and give feedback on the correctness of the generated DSL based on the sheet information and DSL definition.
+Find semantic errors and give feedback on generated DSL.
 
 #############
 
@@ -124,12 +124,18 @@ Parameters:
 
 # OUTPUT #
 
-- Correctness: A "Yes" or "No" answer indicating whether the generated DSL is correct based on the sheet information and the DSL definition.
+- Correctness: A "Yes" or "No" answer indicating whether the generated DSL is correct based on the user's intent.
 - DSL Feedback: If the DSL is incorrect, the feedback should provide details on the errors and suggest corrections.
 You need to output in this json form:
 {
     "correctness": "<Yes/No>",
-    "feedback": "<Feedback message>"
+    "feedback": {
+        "error": {
+            "error_type": "<Error Type>",
+            "function_name": "<Function Name>", # Optional
+            "error_message": "<Error Message>"
+        }
+    }
 }
 
 #############
@@ -154,7 +160,13 @@ drop("Heart Disease Prediction dataset.csv", [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 
 - OUTPUT:
 {
     "correctness": "No",
-    "feedback": "The generated DSL does not correctly implement the required functionality. Because row 0 is the header row, the deletion should start from row 1 to row 20, not from row 0."
+    "feedback": {
+        "error": {
+            "error_type": "Semantic Error",
+            "function_name": "drop",
+            "error_message": "The row indices should start from 1. Please correct the row indices."
+        }
+    }
 }
 '''
 

@@ -11,13 +11,13 @@ def create_error_message(error, error_message, function_name=None):
 
     if function_name:
         return {
-            "error": error,
+            "error type": error,
             "function_name": function_name,
             "error_message": error_message
         }
     else:
         return {
-            "error": error,
+            "error type": error,
             "error_message": error_message
         }
 

@@ -14,7 +14,7 @@ def init_prompt():
     global summarize_system_prompt
     global plan_system_prompt, plan_user_prompt_template
     global generate_system_prompt, generate_user_prompt_template
-    global verifier_system_prompt, verifier_user_prompt_template
+    global verifier_semantic_system_prompt, verifier_semantic_user_prompt_template
     global plan_with_feedback_user_prompt, generate_with_feedback_user_prompt
     with open("prompt/synthesize/summarize_system.txt", "r") as f:
         summarize_system_prompt = f.read()
@@ -27,9 +27,9 @@ def init_prompt():
     with open("prompt/synthesize/generate_user.txt", "r") as f:
         generate_user_prompt_template = f.read()
     with open("prompt/synthesize/verifier_system.txt", "r") as f:
-        verifier_system_prompt = f.read()
+        verifier_semantic_system_prompt = f.read()
     with open("prompt/synthesize/verifier_user.txt", "r") as f:
-        verifier_user_prompt_template = f.read()
+        verifier_semantic_user_prompt_template = f.read()
     with open("prompt/synthesize/plan_with_feedback_user.txt", "r") as f:
         plan_with_feedback_user_prompt = f.read()
     with open("prompt/synthesize/generate_with_feedback_user.txt", "r") as f:
@@ -251,27 +251,23 @@ def get_dsls(client_id, history, step_by_step_plan, feedback=None):
 
 
 def verify_syntax(client_id, dsls, error_list):
-    # 1. check whether dsl is in the correct json format
     all_sheets = get_all_sheets(client_id)
     validate_dsls_format(dsls, error_list)
     validate_dsls_functions(dsls, error_list, all_sheets)
-    # 3. Check whether the dsl used wrong or non-existing functions
-    # 4. Check whether the dsl used wrong type arguments for the function
-    # 2. Check whether the dsl used some tables that are not defined
     return True
 
 
 def verify_semantics(client_id, history, summarization, dsls, error_list):
-    verifier_user_prompt = (
-        verifier_user_prompt_template.replace(
+    verifier_semantic_user_prompt = (
+        verifier_semantic_user_prompt_template.replace(
             "{INFORMATION}",
             format_information(history["information"], with_table_diff=False),
         )
         .replace("{USER_INTENTS}", summarization)
         .replace("{GENERATED_DSLS}", json.dumps(dsls))
     )
-    messages = append_message(verifier_system_prompt, "system", [])
-    messages = append_message(verifier_user_prompt, "user", messages)
+    messages = append_message(verifier_semantic_system_prompt, "system", [])
+    messages = append_message(verifier_semantic_user_prompt, "user", messages)
     feedback = generate_chat_completion(messages)
     messages = append_message(feedback, "assistant", messages)
     log_messages(client_id, "generate_feedback", messages)
