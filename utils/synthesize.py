@@ -195,7 +195,7 @@ def get_summarization(client_id, history):
     return summarization
 
 
-def get_step_by_step_plan(client_id, history, summarization, feedback=None):
+def get_step_by_step_plan(client_id, history, summarization, feedback=None, error_list=[]):
     if feedback is None:
         plan_user_prompt = plan_user_prompt_template.replace(
             "{USER_INTENTS}", summarization
@@ -204,6 +204,8 @@ def get_step_by_step_plan(client_id, history, summarization, feedback=None):
             format_information(history["information"], with_table_diff=False),
         )
     else:
+        if "error" in feedback["feedback"]:
+            error_list.append(feedback["feedback"]["error"])
         plan_user_prompt = (
             plan_with_feedback_user_prompt.replace("{USER_INTENTS}", summarization)
             .replace(
@@ -288,14 +290,15 @@ def dsl_synthesize(client_id: str) -> str:
     step_by_step_plan = get_step_by_step_plan(client_id, history, summarization)
     dsls = get_dsls(client_id, history, step_by_step_plan)
     feedback = verify(client_id, history, summarization, dsls, error_list)
-
-    while feedback["correctness"] == "No":
+    count = 0
+    while feedback["correctness"] == "No" and count < 10:
+        count += 1
         step_by_step_plan = get_step_by_step_plan(
-            client_id, history, summarization, feedback
+            client_id, history, summarization, feedback, error_list
         )
         dsls = get_dsls(client_id, history, step_by_step_plan, feedback)
         feedback = verify(client_id, history, summarization, dsls, error_list)
-
+    print(count)
     for dsl in dsls:
         dsl["natural_language"] = transfer_to_NL(dsl)
     return dsls
