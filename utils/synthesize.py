@@ -7,6 +7,7 @@ from utils.llm import (
 from utils.db import get_history, get_all_sheets
 from utils.log import log_messages
 from utils.format_text import get_history_text, format_information
+from utils.verify_syntax import validate_dsls_format, validate_dsls_functions
 
 
 def init_prompt():
@@ -249,25 +250,18 @@ def get_dsls(client_id, history, step_by_step_plan, feedback=None):
     return dsls
 
 
-def verify_syntax(client_id, dsls):
-    # 1. check whether dsl is in the following json format
-    # 2. Check whether the dsl used some tables that are not defined
+def verify_syntax(client_id, dsls, error_list):
+    # 1. check whether dsl is in the correct json format
+    all_sheets = get_all_sheets(client_id)
+    validate_dsls_format(dsls, error_list)
+    validate_dsls_functions(dsls, error_list, all_sheets)
     # 3. Check whether the dsl used wrong or non-existing functions
     # 4. Check whether the dsl used wrong type arguments for the function
-    all_sheets = get_all_sheets(client_id)
-
+    # 2. Check whether the dsl used some tables that are not defined
     return True
 
 
-def verify_semantics(dsls):
-    # check whether the dsls are semantically correct
-    # 1. Check whether the dsls are in the correct order
-    # 2. Check whether the dsls are consistent with the sheet information and user intents
-    # 3. Check whether the dsls are elegant and efficient
-    return True
-
-
-def verify(client_id, history, summarization, dsls):
+def verify_semantics(client_id, history, summarization, dsls, error_list):
     verifier_user_prompt = (
         verifier_user_prompt_template.replace(
             "{INFORMATION}",
@@ -282,23 +276,29 @@ def verify(client_id, history, summarization, dsls):
     messages = append_message(feedback, "assistant", messages)
     log_messages(client_id, "generate_feedback", messages)
     feedback = json.loads(feedback)
-    print(feedback)
+    return feedback
+
+
+def verify(client_id, history, summarization, dsls, error_list):
+    verify_syntax(client_id, dsls, error_list)
+    feedback = verify_semantics(client_id, history, summarization, dsls, error_list)
     return feedback
 
 
 def dsl_synthesize(client_id: str) -> str:
+    error_list = []
     history = get_history(client_id)
     summarization = get_summarization(client_id, history)
     step_by_step_plan = get_step_by_step_plan(client_id, history, summarization)
     dsls = get_dsls(client_id, history, step_by_step_plan)
-    feedback = verify(client_id, history, summarization, dsls)
+    feedback = verify(client_id, history, summarization, dsls, error_list)
 
     while feedback["correctness"] == "No":
         step_by_step_plan = get_step_by_step_plan(
             client_id, history, summarization, feedback
         )
         dsls = get_dsls(client_id, history, step_by_step_plan, feedback)
-        feedback = verify(client_id, history, summarization, dsls)
+        feedback = verify(client_id, history, summarization, dsls, error_list)
 
     for dsl in dsls:
         dsl["natural_language"] = transfer_to_NL(dsl)
