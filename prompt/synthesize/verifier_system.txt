@@ -10,11 +10,15 @@ Find semantic errors and give feedback on generated DSL.
 #############
 
 # DSL GRAMMAR #
+
+## DSL Functions:
 Common Definitions:
 - label: Refers to a row or column in the table. If the label is the name of a row or column, it should be a string. If the label is the index of a row or column, it should be an integer.
 - axis: Refers to the direction of the operation.
   - 0 or "index": Indicates a row operation.
   - 1 or "columns": Indicates a column operation.
+
+### Table-level Functions
 
 1. create_table(table_name, row_number, column_number): Creates a new empty table with the specified number of rows and columns.
 Parameters:
@@ -26,27 +30,29 @@ Parameters:
 Parameters:
 - table_name (str): The name of the table to be deleted.
 
-3. insert(table_name, index, index_name, axis): Inserts an empty row or column at the specified index in the table.
+### Label-level Functions
+
+1. insert(table_name, index, index_name, axis): Inserts an empty row or column at the specified index in the table.
 Parameters:
 - table_name (str): The name of the table to insert the row/column into.
 - index (int): The index at which the row/column will be inserted.
 - index_name (str): The name of the new row/column.
 - axis (str or int): Refers to the direction of the operation.
 
-4. drop(table_name, label, axis): Drops a row or column in the table.
+2. drop(table_name, label, axis): Drops a row or column in the table.
 Parameters:
 - table_name (str): The name of the table to drop the row/column from.
 - label (str or int or list[str] or list[int]): The label or list of labels of the row/column to be dropped.
 - axis (str or int): Refers to the direction of the operation.
 
-5. assign(table_name, start_row_index, end_row_index, start_column_index, end_column_index, values): Assigns a value to specific cells in the table.
+3. assign(table_name, start_row_index, end_row_index, start_column_index, end_column_index, values): Assigns a value to specific cells in the table.
 Parameters:
 - table_name (str): The name of the table to assign the value to.
 - start_row_index, end_row_index (int): The range of row indices to assign the value to.
 - start_column_index, end_column_index (int): The range of column indices to assign the value to.
 - values (list[list[int/float/str]] or int/float/str): The value(s) to assign to the specified cell(s). Can be a single int/float/str or a list of lists of int/float/str.
 
-6. move(origin_table_name, origin_index, target_table_name, target_index, axis): Moves a row or column from the origin table to the target table.
+4. move(origin_table_name, origin_index, target_table_name, target_index, axis): Moves a row or column from the origin table to the target table.
 Parameters:
 - origin_table_name (str): The name of the table from which the row/column will be moved.
 - origin_index (int): The index of the row/column to be moved.
@@ -54,7 +60,7 @@ Parameters:
 - target_index (int): The index at which the row/column will be moved in the target table.
 - axis (str or int): Refers to the direction of the operation.
 
-7. copy(origin_table_name, origin_index, target_table_name, target_index, target_label_name, axis): Copies a row or column from the origin table to the target table at the specified index.
+5. copy(origin_table_name, origin_index, target_table_name, target_index, target_label_name, axis): Copies a row or column from the origin table to the target table at the specified index.
 Parameters:
 - origin_table_name (str): The name of the table from which the row/column will be copied.
 - origin_index (int): The index of the row/column to be copied.
@@ -63,7 +69,7 @@ Parameters:
 - target_label_name (str): The name of the new row/column in the target table.
 - axis (str or int): Refers to the direction of the operation.
 
-8. swap(table_name_a, label_a, table_name_b, label_b, axis): Swaps rows or columns between two tables.
+6. swap(table_name_a, label_a, table_name_b, label_b, axis): Swaps rows or columns between two tables.
 Parameters:
 - table_name_a (str): The first table from which the row/column will be swapped.
 - label_a (str or int): The label of the row/column to be swapped in the first table.
@@ -71,7 +77,7 @@ Parameters:
 - label_b (str or int): The label of the row/column to be swapped in the second table.
 - axis (str or int): Refers to the direction of the operation.
 
-9. merge(table_name_a, table_name_b, on, how, axis): Merges two tables based on a common column or along columns.
+7. merge(table_name_a, table_name_b, on, how, axis): Merges two tables based on a common column or along columns.
 Parameters:
 - table_name_a (str): The first table to merge.
 - table_name_b (str): The second table to merge.
@@ -79,7 +85,46 @@ Parameters:
 - how (str): The type of merge to perform ('inner', 'outer', 'left', 'right').
 - axis (str or int): Refers to the direction of the operation.
 
-10. concatenate(table_name, label_a, label_b, glue, new_label, axis): Concatenates two labels and appends the merged label to the table.
+8. transpose(table_name): Transposes the given table.
+Parameters:
+- table_name (str): table to be transposed.
+
+9. rearrange(table_name, by_values=None, by_array=None, axis): Rearranges the rows or columns of the table based on the specified order.
+Parameters:
+- table_name: table to be rearranged.
+- by_values: If this parameter is set, the rows/columns will be rearranged based on the values in the specified row/column.
+- by_array: If this parameter is set, the rows/columns will be rearranged based on the order of the values in the array.
+- axis:
+    - 0 or "index": Indicates a row operation.
+    - 1 or "columns": Indicates a column operation.
+
+10. divide(table, by, axis): Divides the table by values of a row or column and saves each group to a separate table.
+Parameters:
+- table: DataFrame to be divided.
+- by: Column/Row name to group the table by.
+- axis:
+    - 0 or "index": Indicates a row operation.
+    - 1 or "columns": Indicates a column operation.
+
+### Calculator Functions
+
+1. aggregate(table_name, functions, axis): Aggregates the table using the specified function.
+Parameters:
+- table_name (str): table to be aggregated.
+- functions (dict): Keys are names of rows or columns, and values are lists of function names. Example: {'A': ['sum', 'mean'], 'B': ['min', 'max']}.
+- axis (str or int): Refers to the direction of the operation.
+
+2. test(table_name, label_a, label_b, strategy, axis): Returns a new result table by comparing two labels using the specified strategy.
+Parameters:
+- table_name (str): table on which the test will be performed.
+- label_a (str or int): The label of the first row/column to be tested.
+- label_b (str or int): The label of the second row/column to be tested.
+- strategy (str): The statistical test to perform ('t-test', 'z-test', 'chi-squared').
+- axis (str or int): Refers to the direction of the operation.
+
+### String Functions
+
+1. concatenate(table_name, label_a, label_b, glue, new_label, axis): Concatenates two labels and appends the merged label to the table.
 Parameters:
 - table_name (str): table in which the rows/columns will be concatenated.
 - label_a (str or int): The label of the first row/column to be concatenated.
@@ -88,7 +133,7 @@ Parameters:
 - new_label (str or int): The label of the new row/column created by the concatenation.
 - axis (str or int): Refers to the direction of the operation.
 
-11. split(table_name, label, delimiter, new_labels, axis): Splits a label into multiple parts at each occurrence of the specified delimiter.
+2. split(table_name, label, delimiter, new_labels, axis): Splits a label into multiple parts at each occurrence of the specified delimiter.
 Parameters:
 - table_name (str): table in which the row/column will be split.
 - label (str or int): The label of the row/column to be split.
@@ -96,23 +141,15 @@ Parameters:
 - new_labels (list[str]): List of new labels for the resulting split rows/columns.
 - axis (str or int): Refers to the direction of the operation.
 
-12. transpose(table_name): Transposes the given table.
+3. format(table_name, label, pattern, axis): Formats the values in a row or column based on the specified pattern.
 Parameters:
-- table_name (str): table to be transposed.
+- table_name: table in which the row/column will be formatted.
+- label: The label of the row/column to be formatted.
+- pattern: The format regex pattern to apply to the values.
+- axis:
+    - 0 or "index": Indicates a row operation.
+    - 1 or "columns": Indicates a column operation.
 
-13. aggregate(table_name, functions, axis): Aggregates the table using the specified function.
-Parameters:
-- table_name (str): table to be aggregated.
-- functions (str or list[str]): The function(s) to apply for aggregation ('sum', 'mean', 'median', 'min', 'max', 'count', 'std', 'var', 'first', 'last').
-- axis (str or int): Refers to the direction of the operation.
-
-14. test(table_name, label_a, label_b, strategy, axis): Returns a new result table by comparing two labels using the specified strategy.
-Parameters:
-- table_name (str): table on which the test will be performed.
-- label_a (str or int): The label of the first row/column to be tested.
-- label_b (str or int): The label of the second row/column to be tested.
-- strategy (str): The statistical test to perform ('t-test', 'z-test', 'chi-squared').
-- axis (str or int): Refers to the direction of the operation.
 
 #############
 

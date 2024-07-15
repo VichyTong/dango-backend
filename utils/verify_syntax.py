@@ -284,6 +284,59 @@ def test(params: TEST_PARAMS):
     return
 
 
+# format(table_name, label, pattern, axis): Formats the values in a row or column based on the specified pattern.
+# Parameters:
+# - table_name: table in which the row/column will be formatted.
+# - label: The label of the row/column to be formatted.
+# - pattern: The format regex pattern to apply to the values.
+# - axis:
+#     - 0 or "index": Indicates a row operation.
+#     - 1 or "columns": Indicates a column operation.
+
+class FORMAT_PARAMS(BaseModel):
+    table_name: str
+    label: Union[str, int]
+    pattern: str
+    axis: Union[str, int]
+
+def format(params: FORMAT_PARAMS):
+    return
+
+# rearrange(table_name, by_values=None, by_array=None, axis): Rearranges the rows or columns of the table based on the specified order.
+# Parameters:
+# - table_name: table to be rearranged.
+# - by_values: If this parameter is set, the rows/columns will be rearranged based on the values in the specified row/column.
+# - by_array: If this parameter is set, the rows/columns will be rearranged based on the order of the values in the array.
+# - axis:
+#     - 0 or "index": Indicates a row operation.
+#     - 1 or "columns": Indicates a column operation.
+
+class REARRANGE(BaseModel):
+    table_name: str
+    by_values: Optional[str]
+    by_array: Optional[List[str]]
+    axis: Union[str, int]
+
+def rearrange(params: REARRANGE):
+    pass
+
+# divide(table, by, axis): Divide the table by values of a row or column and saves each group to a separate table.
+# Parameters:
+# - table: DataFrame to be divided.
+# - by: Column/Row name to group the table by.
+# - axis:
+#     - 0 or "index": Indicates a row operation.
+#     - 1 or "columns": Indicates a column operation.
+
+class DIVIDE(BaseModel):
+    table_name: str
+    by: str
+    axis: Union[str, int]
+
+def divide(params: DIVIDE):
+    pass
+
+
 def get_sheet_names(all_sheets):
     sheets_names = [sheet[0] for sheet in all_sheets]
     sheets_names = [sheet.split(".")[0] for sheet in sheets_names]
@@ -293,7 +346,7 @@ def get_sheet_names(all_sheets):
 
 
 def validate_dsls_functions(function_calls: List[dict], error_list, all_sheets):
-    valid_functions = ["create_table", "delete_table", "insert", "drop", "assign", "move", "copy", "swap", "merge", "concatenate", "split", "transpose", "aggregate", "test"]
+    valid_functions = ["create_table", "delete_table", "insert", "drop", "assign", "move", "copy", "swap", "merge", "concatenate", "split", "transpose", "aggregate", "test", "format", "rearrange", "divide"]
     sheets_names = get_sheet_names(all_sheets)
     for call in function_calls:
         if call["function_name"] not in valid_functions:
@@ -328,7 +381,12 @@ def validate_dsls_functions(function_calls: List[dict], error_list, all_sheets):
                 validate_aggregate(call["arguments"], error_list, sheets_names)
             elif call["function_name"] == "test":
                 validate_test(call["arguments"], error_list, sheets_names)
-
+            elif call["function_name"] == "format":
+                validate_format(call["arguments"], error_list, sheets_names)
+            elif call["function_name"] == "rearrange":
+                validate_rearrange(call["arguments"], error_list, sheets_names)
+            elif call["function_name"] == "divide":
+                validate_divide(call["arguments"], error_list, sheets_names)
     return "Success"
 
 
@@ -576,6 +634,53 @@ def validate_test(arguments, error_list, sheets_names):
         error_list.append(error)
     return "Success"
 
+def validate_format(arguments, error_list, sheets_names):
+    if len(arguments) != 4:
+        error = create_error_message("Invalid number of arguments", f"The function 'format' requires 4 arguments: 'table_name', 'label', 'pattern', 'axis'.", "format")
+        error_list.append(error)
+    try:
+        params = FORMAT_PARAMS(table_name=arguments[0], label=arguments[1], pattern=arguments[2], axis=arguments[3])
+        format(params)
+    except ValidationError as e:
+        error = create_error_message("Invalid argument format", f"The arguments for 'format' are not in the correct format. Please check the argument types and values.", "format")
+        error_list.append(error)
+
+    if arguments[0] not in sheets_names:
+        error = create_error_message("Table does not exist", f"The table '{arguments[0]}' does not exist. Please create the table before performing operations on it.", "format")
+        error_list.append(error)
+    return "Success"
+
+def validate_rearrange(arguments, error_list, sheets_names):
+    if len(arguments) != 3:
+        error = create_error_message("Invalid number of arguments", f"The function 'rearrange' requires 3 arguments: 'table_name', 'by_values', 'axis'.", "rearrange")
+        error_list.append(error)
+    try:
+        params = REARRANGE(table_name=arguments[0], by_values=arguments[1], by_array=arguments[2], axis=arguments[3])
+        rearrange(params)
+    except ValidationError as e:
+        error = create_error_message("Invalid argument format", f"The arguments for 'rearrange' are not in the correct format. Please check the argument types and values.", "rearrange")
+        error_list.append(error)
+
+    if arguments[0] not in sheets_names:
+        error = create_error_message("Table does not exist", f"The table '{arguments[0]}' does not exist. Please create the table before performing operations on it.", "rearrange")
+        error_list.append(error)
+    return "Success"
+
+def validate_divide(arguments, error_list, sheets_names):
+    if len(arguments) != 3:
+        error = create_error_message("Invalid number of arguments", f"The function 'divide' requires 3 arguments: 'table_name', 'by', 'axis'.", "divide")
+        error_list.append(error)
+    try:
+        params = DIVIDE(table_name=arguments[0], by=arguments[1], axis=arguments[2])
+        divide(params)
+    except ValidationError as e:
+        error = create_error_message("Invalid argument format", f"The arguments for 'divide' are not in the correct format. Please check the argument types and values.", "divide")
+        error_list.append(error)
+
+    if arguments[0] not in sheets_names:
+        error = create_error_message("Table does not exist", f"The table '{arguments[0]}' does not exist. Please create the table before performing operations on it.", "divide")
+        error_list.append(error)
+    return "Success"
 
 # # Example usage:
 

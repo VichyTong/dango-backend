@@ -580,7 +580,7 @@ def format(table, label, pattern, axis=0):
 
 def groupby(table, by, axis):
     """
-    Groups the table by values of a row or column and saves each group to a separate CSV file.
+    Groups the table by values of a row or column and saves each group to a separate table.
 
     Parameters:
     - table: DataFrame to be divided.
@@ -602,6 +602,11 @@ def groupby(table, by, axis):
     for group in groups:
         group = group[1]
         group = group.reset_index(drop=True)
-        result.append(group)
+        result.append(
+            {
+                "unique_value": group[0],
+                "data": group,
+            }
+        )
 
     return result

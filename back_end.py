@@ -316,6 +316,9 @@ async def handle_execute_dsl_list(request_body: ExecuteDSLList):
         "transpose",
         "aggregate",
         "test",
+        "format",
+        "rearrange",
+        "divide",
     ]
     # table_name_a in arguments[0], table_name_b in arguments[2]
     type_b_function_list = [
@@ -358,6 +361,8 @@ async def handle_execute_dsl_list(request_body: ExecuteDSLList):
 
     def load_sheet(sheet_name):
         sheet_id, sheet_version = split_sheet_name(sheet_name)
+        print(f"Loading {sheet_name}...")
+        print(f"Sheet ID: {sheet_id}, Sheet Version: {sheet_version}")
         if sheet_id not in tmp_sheet_data_map:
             tmp_sheet_data_map[sheet_id] = get_sheet_info(sheet_name)
             tmp_sheet_version_map[sheet_id] = sheet_version
@@ -405,9 +410,13 @@ async def handle_execute_dsl_list(request_body: ExecuteDSLList):
             new_sheet = execute_dsl(sheet, function, arguments[1:])
             if function == "test":
                 tmp_sheet_data_map["Test_Result.csv"] = new_sheet
-                upload_sheet(
-                    client_id, "Test_Result.csv", 0, new_sheet.to_dict()
-                )
+                upload_sheet(client_id, "Test_Result.csv", 0, new_sheet.to_dict())
+            elif function == "groupby":
+                for group_sheet in new_sheet:
+                    unique_value = group_sheet["unique_value"]
+                    data = group_sheet["data"]
+                    tmp_sheet_data_map[unique_value] = data
+                    upload_sheet(client_id, unique_value, 0, data.to_dict())
             else:
                 tmp_sheet_data_map[sheet_id] = new_sheet
         elif function in type_b_function_list:
@@ -440,9 +449,7 @@ async def handle_execute_dsl_list(request_body: ExecuteDSLList):
                     target_sheet=target_sheet,
                 )
                 tmp_sheet_data_map["merged.csv"] = merged_table
-                upload_sheet(
-                    client_id, "merged.csv", 0, merged_table.to_dict()
-                )
+                upload_sheet(client_id, "merged.csv", 0, merged_table.to_dict())
                 continue
             new_sheet, new_target_sheet = execute_dsl(
                 sheet,

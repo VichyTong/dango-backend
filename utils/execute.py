@@ -13,6 +13,7 @@ from dsl.utils import (
     test,
     rearrange,
     format,
+    groupby,
 )
 
 
@@ -45,5 +46,7 @@ def execute_dsl(sheet, function, arguments, target_sheet=None):
         return rearrange(sheet, *arguments)
     elif function == "format":
         return format(sheet, *arguments)
+    elif function == "groupby":
+        return groupby(sheet, *arguments)
     else:
         return "Invalid function"
