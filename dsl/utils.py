@@ -576,3 +576,32 @@ def format(table, label, pattern, axis=0):
         table.loc[label] = table.loc[label].apply(lambda x: re.sub(pattern, "", str(x)))
 
     return table
+
+
+def groupby(table, by, axis):
+    """
+    Groups the table by values of a row or column and saves each group to a separate CSV file.
+
+    Parameters:
+    - table: DataFrame to be divided.
+    - by: Column/Row name to group the table by.
+    - axis:
+        - 0 or "index": Indicates a row operation.
+        - 1 or "columns": Indicates a column operation.
+    """
+
+    axis = classify_axis(axis)
+    if axis == 0:
+        # Group by the specified column
+        groups = table.groupby(by)
+    elif axis == 1:
+        # Group by the specified row
+        groups = table.T.groupby(by).T
+
+    result = []
+    for group in groups:
+        group = group[1]
+        group = group.reset_index(drop=True)
+        result.append(group)
+
+    return result
