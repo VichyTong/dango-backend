@@ -69,8 +69,7 @@ async def upload_file(client_id: str = Form(...), file: UploadFile = File(...)):
     data = data.decode("utf-8")
     csv_data = StringIO(data)
     data = pd.read_csv(csv_data)
-    data = data.to_json(orient="records")
-    data = json.loads(data)
+    data = data.to_dict()
     upload_sheet(client_id, sheet_id, 0, data)
 
     return JSONResponse(
@@ -383,7 +382,7 @@ async def handle_execute_dsl_list(request_body: ExecuteDSLList):
                 data = pd.DataFrame(
                     index=range(row_number), columns=range(column_number)
                 )
-                upload_sheet(client_id, sheet_id, 0, data.to_dict(orient="records"))
+                upload_sheet(client_id, sheet_id, 0, data.to_dict())
                 tmp_sheet_data_map[sheet_id] = data
                 tmp_sheet_version_map = 0
             elif function == "delete_table":
@@ -404,11 +403,10 @@ async def handle_execute_dsl_list(request_body: ExecuteDSLList):
             sheet_id, _ = split_sheet_name(arguments[0])
             sheet = tmp_sheet_data_map[sheet_id]
             new_sheet = execute_dsl(sheet, function, arguments[1:])
-            new_data = new_sheet.fillna("").to_json(orient="records")
             if function == "test":
                 tmp_sheet_data_map["Test_Result.csv"] = new_sheet
                 upload_sheet(
-                    client_id, "Test_Result.csv", 0, new_sheet.to_dict(orient="records")
+                    client_id, "Test_Result.csv", 0, new_sheet.to_dict()
                 )
             else:
                 tmp_sheet_data_map[sheet_id] = new_sheet
@@ -425,8 +423,6 @@ async def handle_execute_dsl_list(request_body: ExecuteDSLList):
                 [arguments[1]] + arguments[3:],
                 target_sheet=target_sheet,
             )
-            new_data = new_sheet.fillna("").to_json(orient="records")
-            new_target_data = new_target_sheet.fillna("").to_json(orient="records")
             tmp_sheet_data_map[sheet_id] = new_sheet
             tmp_sheet_data_map[target_sheet_id] = new_target_sheet
         elif function in type_c_function_list:
@@ -445,7 +441,7 @@ async def handle_execute_dsl_list(request_body: ExecuteDSLList):
                 )
                 tmp_sheet_data_map["merged.csv"] = merged_table
                 upload_sheet(
-                    client_id, "merged.csv", 0, merged_table.to_dict(orient="records")
+                    client_id, "merged.csv", 0, merged_table.to_dict()
                 )
                 continue
             new_sheet, new_target_sheet = execute_dsl(
@@ -454,8 +450,6 @@ async def handle_execute_dsl_list(request_body: ExecuteDSLList):
                 arguments[2:],
                 target_sheet=target_sheet,
             )
-            new_data = new_sheet.fillna("").to_json(orient="records")
-            new_target_data = new_target_sheet.fillna("").to_json(orient="records")
             tmp_sheet_data_map[sheet_id] = new_sheet
             tmp_sheet_data_map[target_sheet_id] = new_target_sheet
         else:
@@ -463,7 +457,8 @@ async def handle_execute_dsl_list(request_body: ExecuteDSLList):
 
     output = []
     for sheet_id, sheet in tmp_sheet_data_map.items():
-        sheet_data = sheet.fillna("").to_dict(orient="records")
+        print(sheet)
+        sheet_data = sheet.fillna("").to_dict()
         same_sheet_version = get_same_sheet_version(client_id, sheet_id, sheet_data)
         if same_sheet_version is not None:
             print(f"Sheet {sheet_id} already exists in version {same_sheet_version}")
@@ -495,6 +490,7 @@ async def handle_execute_dsl_list(request_body: ExecuteDSLList):
                 "is_delete": True,
             }
         )
+    print(json.dumps(output, indent=4))
     return output
 
 

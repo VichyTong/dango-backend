@@ -195,7 +195,9 @@ def get_summarization(client_id, history):
     return summarization
 
 
-def get_step_by_step_plan(client_id, history, summarization, feedback=None, error_list=[]):
+def get_step_by_step_plan(
+    client_id, history, summarization, feedback=None, error_list=[]
+):
     if feedback is None:
         plan_user_prompt = plan_user_prompt_template.replace(
             "{USER_INTENTS}", summarization
@@ -212,7 +214,7 @@ def get_step_by_step_plan(client_id, history, summarization, feedback=None, erro
                 "{INFORMATION}",
                 format_information(history["information"], with_table_diff=False),
             )
-            .replace("{FEEDBACK}", feedback["feedback"])
+            .replace("{FEEDBACK}", json.dumps(error_list))
         )
 
     messages = append_message(plan_system_prompt, "system", [])
@@ -224,7 +226,7 @@ def get_step_by_step_plan(client_id, history, summarization, feedback=None, erro
     return step_by_step_plan
 
 
-def get_dsls(client_id, history, step_by_step_plan, feedback=None):
+def get_dsls(client_id, history, step_by_step_plan, feedback=None, error_list=[]):
     if feedback is None:
         generate_user_prompt = generate_user_prompt_template.replace(
             "{PLAN}", step_by_step_plan
@@ -239,7 +241,7 @@ def get_dsls(client_id, history, step_by_step_plan, feedback=None):
                 "{INFORMATION}",
                 format_information(history["information"], with_table_diff=False),
             )
-            .replace("{FEEDBACK}", feedback["feedback"])
+            .replace("{FEEDBACK}", json.dumps(error_list))
         )
 
     messages = append_message(generate_system_prompt, "system", [])
@@ -296,7 +298,7 @@ def dsl_synthesize(client_id: str) -> str:
         step_by_step_plan = get_step_by_step_plan(
             client_id, history, summarization, feedback, error_list
         )
-        dsls = get_dsls(client_id, history, step_by_step_plan, feedback)
+        dsls = get_dsls(client_id, history, step_by_step_plan, feedback, error_list)
         feedback = verify(client_id, history, summarization, dsls, error_list)
     print(count)
     for dsl in dsls:
