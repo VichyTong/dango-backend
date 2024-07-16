@@ -294,7 +294,9 @@ def dsl_synthesize(client_id: str) -> str:
     feedback = verify(client_id, history, summarization, dsls, error_list)
     count = 0
     while feedback["correctness"] == "No" and count < 10:
+        error_list = []
         count += 1
+        print(f"Try the {count} time")
         step_by_step_plan = get_step_by_step_plan(
             client_id, history, summarization, feedback, error_list
         )

@@ -106,7 +106,7 @@ class ASSIGN_PARAMS(BaseModel):
     end_row_index: int
     start_column_index: int
     end_column_index: int
-    values: List[List[int]]
+    values: Union[List[List[int]], int]
 
 
 def assign(params: ASSIGN_PARAMS):

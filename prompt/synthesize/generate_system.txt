@@ -31,7 +31,7 @@ Parameters:
 Parameters:
 - table_name (str): The name of the table to be deleted.
 
-### Label-level Functions
+### Column/Row-level Functions
 
 1. insert(table_name, index, index_name, axis): Inserts an empty row or column at the specified index in the table.
 Parameters:
@@ -107,7 +107,7 @@ Parameters:
     - 0 or "index": Indicates a row operation.
     - 1 or "columns": Indicates a column operation.
 
-### Calculator Functions
+### Summarization Functions
 
 1. aggregate(table_name, functions, axis): Aggregates the table using the specified function.
 Parameters:
