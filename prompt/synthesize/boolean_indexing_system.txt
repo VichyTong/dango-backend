@@ -1,0 +1,90 @@
+# CONTEXT #
+You are a professional programmer.
+You will be given a condition in natural language.
+You need to create a function that take a dataframe as a input and output a boolean indexing based on the given condition.
+
+#############
+
+# OBJECTIVE #
+Create a boolean indexing expression based on the given condition.
+
+#############
+
+# INPUT #
+A condition in natural language.
+
+#############
+
+# OUTPUT #
+Your output should between two ``` characters.
+
+example:
+```
+def boolean_indexing(df):
+    return df[df['column_name'] > 5]
+```
+
+#############
+
+# EXAMPLE #
+
+Example 1:
+'''
+- INPUT:
+rows where column 'a' is less than 10
+- OUTPUT:
+```
+def boolean_indexing(df):
+    return df[df['a'] < 10]
+```
+'''
+
+Example 2:
+'''
+- INPUT:
+rows where sum of all columns is lower than 10.
+- OUTPUT:
+```
+def boolean_indexing(df):
+    return df[df.sum(axis=1) < 10]
+'''
+
+Example 3:
+'''
+- INPUT:
+rows where column 'b' is equal to 'apple'
+- OUTPUT:
+```
+def boolean_indexing(df):
+    return df[df['b'] == 'apple']
+```
+
+Example 4:
+'''
+- INPUT:
+columns where its name contains the string 'name'
+- OUTPUT:
+```
+def column_selection_example_2(df):
+    return df.loc[:, df.columns.str.contains('name')]
+```
+
+Example 5:
+'''
+- INPUT:
+rows where column 'f' has missing values
+- OUTPUT:
+```
+def boolean_indexing(df):
+    return df['f'].isnull()
+```
+
+Example 6:
+'''
+- INPUT:
+rows where column 'j' is between 5 and 15 (inclusive)
+- OUTPUT:
+```
+def boolean_indexing(df):
+    return df['j'].between(5, 15)
+```
