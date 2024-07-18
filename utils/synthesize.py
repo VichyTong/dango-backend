@@ -40,24 +40,32 @@ init_prompt()
 
 
 def transfer_to_NL(dsl):
+    # notations:
+    # %[given table(s)] -> table
+    # $[{index}] -> row or column
+    # &[{glue}] -> glue
+    # *[{how}] -> how
+    # $[{label}] -> label
+    # $[{index_name}] -> index/
+
     if dsl["function_name"] == "create_table":
         table = dsl["arguments"][0]
         row_number = dsl["arguments"][1]
         column_number = dsl["arguments"][2]
-        return f"Create a table %[{table}] with {row_number} rows and {column_number} columns."
+        return f"Create a table %[given table(s)] with {row_number} rows and {column_number} columns."
     elif dsl["function_name"] == "delete_table":
         table = dsl["arguments"][0]
-        return f"Delete the table %[{table}]."
+        return f"Delete the table %[given table(s)]."
     elif dsl["function_name"] == "insert":
         table = dsl["arguments"][0]
         index = dsl["arguments"][1]
         index_name = dsl["arguments"][2]
         axis = dsl["arguments"][3]
         if axis == 0 or axis == "index" or axis == "0":
-            return f"Insert a row $[{index_name}] at position #[{index}] in %[{table}]."
+            return f"Insert a row $[{index_name}] at position #[{index}] in the %[given table(s)]."
         elif axis == 1 or axis == "columns" or axis == "1":
             return (
-                f"Insert a column $[{index_name}] at position #[{index}] in %[{table}]."
+                f"Insert a column $[{index_name}] at position #[{index}] in the %[given table(s)]."
             )
         else:
             return "Invalid function"
@@ -66,9 +74,9 @@ def transfer_to_NL(dsl):
         label = dsl["arguments"][1]
         axis = dsl["arguments"][2]
         if axis == 0 or axis == "index" or axis == "0":
-            return f"Drop the row $[{label}] in %[{table}]."
+            return f"Drop the row $[{label}] in %[given table(s)]."
         elif axis == 1 or axis == "columns" or axis == "1":
-            return f"Drop the column $[{label}] in %[{table}]."
+            return f"Drop the column $[{label}] in %[given table(s)]."
         else:
             return "Invalid function"
     elif dsl["function_name"] == "assign":
@@ -79,7 +87,7 @@ def transfer_to_NL(dsl):
         end_column_index = dsl["arguments"][4]
         values = dsl["arguments"][5]
         string_values = json.dumps(values)
-        return f"Assign the values {string_values} to the rows $[{start_row_index}] to $[{end_row_index}] and the columns $[{start_column_index}] to $[{end_column_index}] in %[{table}]."
+        return f"Assign the values {string_values} to the rows $[{start_row_index}] to $[{end_row_index}] and the columns $[{start_column_index}] to $[{end_column_index}] in %[given table(s)]."
     elif dsl["function_name"] == "move":
         origin_table = dsl["arguments"][0]
         origin_index = dsl["arguments"][1]
@@ -87,9 +95,9 @@ def transfer_to_NL(dsl):
         target_index = dsl["arguments"][3]
         axis = dsl["arguments"][4]
         if axis == 0 or axis == "index" or axis == "0":
-            return f"Move the row $[{origin_index}] in %[{origin_table}] to %[{target_table}] at position #[{target_index}]."
+            return f"Move the row $[{origin_index}] to row #[{target_index}] in the %[given table(s)]."
         elif axis == 1 or axis == "columns" or axis == "1":
-            return f"Move the column $[{origin_index}] in %[{origin_table}] to %[{target_table}] at position #[{target_index}]."
+            return f"Move the column $[{origin_index}] to column #[{target_index}] in the %[given table(s)]."
         else:
             return "Invalid function"
     elif dsl["function_name"] == "copy":
@@ -100,9 +108,9 @@ def transfer_to_NL(dsl):
         target_label_name = dsl["arguments"][4]
         axis = dsl["arguments"][5]
         if axis == 0 or axis == "index" or axis == "0":
-            return f"Copy the row $[{origin_index}] in %[{origin_table}] to %[{target_table}] at position #[{target_index}] with the name $[{target_label_name}]."
+            return f"Copy the row $[{origin_index}] to row #[{target_index}] in the %[given table(s)]."
         elif axis == 1 or axis == "columns" or axis == "1":
-            return f"Copy the column $[{origin_index}] in %[{origin_table}] to %[{target_table}] at position #[{target_index}] with the name $[{target_label_name}]."
+            return f"Copy the column $[{origin_index}] to column #[{target_index}] in the %[given table(s)]."
         else:
             return "Invalid function"
     elif dsl["function_name"] == "swap":
@@ -112,9 +120,9 @@ def transfer_to_NL(dsl):
         label_b = dsl["arguments"][3]
         axis = dsl["arguments"][4]
         if axis == 0 or axis == "index" or axis == "0":
-            return f"Swap the row $[{label_a}] in %[{table_a}] with the row $[{label_b}] in %[{table_b}]."
+            return f"Swap the row $[{label_a}] and the row $[{label_b}] in the %[given table(s)]."
         elif axis == 1 or axis == "columns" or axis == "1":
-            return f"Swap the column $[{label_a}] in %[{table_a}] with the column $[{label_b}] in %[{table_b}]."
+            return f"Swap the column $[{label_a}] and the column $[{label_b}] in the %[given table(s)]."
         else:
             return "Invalid function"
     elif dsl["function_name"] == "merge":
@@ -137,9 +145,9 @@ def transfer_to_NL(dsl):
         new_label = dsl["arguments"][4]
         axis = dsl["arguments"][5]
         if axis == 0 or axis == "index" or axis == "0":
-            return f"Concatenate the rows $[{label_a}] and $[{label_b}] in %[{table}] with the glue &[{glue}] as $[{new_label}]."
+            return f"Concatenate the rows $[{label_a}] and $[{label_b}] in %[given table(s)] with the glue &[{glue}] as $[{new_label}]."
         elif axis == 1 or axis == "columns" or axis == "1":
-            return f"Concatenate the columns $[{label_a}] and $[{label_b}] in %[{table}] with the glue &[{glue}] as $[{new_label}]."
+            return f"Concatenate the columns $[{label_a}] and $[{label_b}] in %[given table(s)] with the glue &[{glue}] as $[{new_label}]."
         else:
             return "Invalid function"
     elif dsl["function_name"] == "split":
@@ -149,22 +157,22 @@ def transfer_to_NL(dsl):
         new_labels = dsl["arguments"][3]
         axis = dsl["arguments"][4]
         if axis == 0 or axis == "index" or axis == "0":
-            return f"Split the row $[{label}] in %[{table}] by &[{delimiter}] as $[{new_labels}]."
+            return f"Split the row $[{label}] in %[given table(s)] by &[{delimiter}] as $[{new_labels}]."
         elif axis == 1 or axis == "columns" or axis == "1":
-            return f"Split the column $[{label}] in %[{table}] by &[{delimiter}] as $[{new_labels}]."
+            return f"Split the column $[{label}] in %[given table(s)] by &[{delimiter}] as $[{new_labels}]."
         else:
             return "Invalid function"
     elif dsl["function_name"] == "transpose":
         table = dsl["arguments"][0]
-        return f"Transpose %[{table}]."
+        return f"Transpose %[given table(s)]."
     elif dsl["function_name"] == "aggregate":
         table = dsl["arguments"][0]
         functions = dsl["arguments"][1]
         axis = dsl["arguments"][2]
         if axis == 0 or axis == "index" or axis == "0":
-            return f"Aggregate %[{table}] with the functions $[{functions}] along the rows."
+            return f"Aggregate %[given table(s)] with the functions $[{functions}] along the rows."
         elif axis == 1 or axis == "columns" or axis == "1":
-            return f"Aggregate %[{table}] with the functions $[{functions}] along the columns."
+            return f"Aggregate %[given table(s)] with the functions $[{functions}] along the columns."
         else:
             return "Invalid function"
     elif dsl["function_name"] == "test":
@@ -174,11 +182,51 @@ def transfer_to_NL(dsl):
         strategy = dsl["arguments"][3]
         axis = dsl["arguments"][4]
         if axis == 0 or axis == "index" or axis == "0":
-            return f"Test the rows $[{label_a}] and $[{label_b}] in %[{table}] with the strategy *[{strategy}]."
+            return f"Test the rows $[{label_a}] and $[{label_b}] in %[given table(s)] with the strategy *[{strategy}]."
         elif axis == 1 or axis == "columns" or axis == "1":
-            return f"Test the columns $[{label_a}] and $[{label_b}] in %[{table}] with the strategy *[{strategy}]."
+            return f"Test the columns $[{label_a}] and $[{label_b}] in %[given table(s)] with the strategy *[{strategy}]."
         else:
             return "Invalid function"
+    elif dsl["function_name"] == "rearrange":
+        table = dsl["arguments"][0]
+        by_values = dsl["arguments"][1]
+        by_array = dsl["arguments"][2]
+        axis = dsl["arguments"][3]
+        if by_values is not None:
+            if axis == 0 or axis == "index" or axis == "0":
+                return f"Rearrange the rows in %[given table(s)] based on the values in the row $[{by_values}]."
+            elif axis == 1 or axis == "columns" or axis == "1":
+                return f"Rearrange the columns in %[given table(s)] based on the values in the column $[{by_values}]."
+            else:
+                return "Invalid function"
+        elif by_array is not None:
+            if axis == 0 or axis == "index" or axis == "0":
+                return f"Rearrange the rows in %[given table(s)] based on the order of the rows $[{by_array}]."
+            elif axis == 1 or axis == "columns" or axis == "1":
+                return f"Rearrange the columns in %[given table(s)] based on the order of the columns $[{by_array}]."
+            else:
+                return "Invalid function"
+        else:
+            return "Either by_values or by_array must be provided"
+    elif dsl["function_name"] == "format":
+        table = dsl["arguments"][0]
+        label = dsl["arguments"][1]
+        pattern = dsl["arguments"][2]
+        axis = dsl["arguments"][3]
+        if axis == 0 or axis == "index" or axis == "0":
+            return f"Format the values in the row $[{label}] in %[given table(s)] based on the *[given pattern]."
+        elif axis == 1 or axis == "columns" or axis == "1":
+            return f"Format the values in the column $[{label}] in %[given table(s)] based on the *[given pattern]."
+        else:
+            return "Invalid function"
+    elif dsl["function_name"] == "Divide":
+        table = dsl["arguments"][0]
+        by = dsl["arguments"][1]
+        axis = dsl["arguments"][2]
+        if axis == 0 or axis == "index" or axis == "0":
+            return f"Divide the %[given table(s)] by the values in the row $[{by}]."
+        elif axis == 1 or axis == "columns" or axis == "1":
+            return f"Divide the %[given table(s)] by the values in the column $[{by}]."
     else:
         return "Invalid function"
 
