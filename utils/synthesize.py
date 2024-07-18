@@ -246,7 +246,7 @@ def get_dsls(client_id, history, step_by_step_plan, feedback=None, error_list=[]
 
     messages = append_message(generate_system_prompt, "system", [])
     messages = append_message(generate_user_prompt, "user", messages)
-    generated_dsl = generate_chat_completion(messages)
+    generated_dsl = generate_chat_completion(messages, json=True)
     messages = append_message(generated_dsl, "assistant", messages)
     log_messages(client_id, "generate_dsl", messages)
 
@@ -272,7 +272,7 @@ def verify_semantics(client_id, history, summarization, dsls, error_list):
     )
     messages = append_message(verifier_semantic_system_prompt, "system", [])
     messages = append_message(verifier_semantic_user_prompt, "user", messages)
-    feedback = generate_chat_completion(messages)
+    feedback = generate_chat_completion(messages, json=True)
     messages = append_message(feedback, "assistant", messages)
     log_messages(client_id, "generate_feedback", messages)
     feedback = json.loads(feedback)

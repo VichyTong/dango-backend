@@ -288,7 +288,7 @@ async def handle_generate_dsl(request_body: GenerateDSL):
 
 class DSL(BaseModel):
     function_name: str
-    arguments: List[Union[str, int, list, dict]]
+    arguments: List[Union[str, int, float, None, list, dict]]
 
 
 class ExecuteDSLList(BaseModel):
@@ -361,8 +361,6 @@ async def handle_execute_dsl_list(request_body: ExecuteDSLList):
 
     def load_sheet(sheet_name):
         sheet_id, sheet_version = split_sheet_name(sheet_name)
-        print(f"Loading {sheet_name}...")
-        print(f"Sheet ID: {sheet_id}, Sheet Version: {sheet_version}")
         if sheet_id not in tmp_sheet_data_map:
             tmp_sheet_data_map[sheet_id] = get_sheet_info(sheet_name)
             tmp_sheet_version_map[sheet_id] = sheet_version
@@ -464,8 +462,7 @@ async def handle_execute_dsl_list(request_body: ExecuteDSLList):
 
     output = []
     for sheet_id, sheet in tmp_sheet_data_map.items():
-        print(sheet)
-        sheet_data = sheet.fillna("").to_dict()
+        sheet_data = sheet.fillna("").to_dict(orient="list")
         same_sheet_version = get_same_sheet_version(client_id, sheet_id, sheet_data)
         if same_sheet_version is not None:
             print(f"Sheet {sheet_id} already exists in version {same_sheet_version}")

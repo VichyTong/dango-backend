@@ -89,6 +89,7 @@ def drop(table, label, axis=0):
     else:
         label = [str(int(l) - 1) for l in label]
         missing_rows = [l for l in label if l not in table.index]
+        print(table.index)
         if missing_rows:
             raise ValueError(
                 f"Row index(es) {missing_rows} do not exist in the DataFrame."
@@ -539,8 +540,28 @@ def rearrange(table, by_values=None, by_array=None, axis=0):
     """
 
     axis = classify_axis(axis)
-    table = table.sort_values(by=by, axis=axis)
-    table.sort_values()
+    print(by_values)
+    print(axis)
+    if by_values is not None:
+        if axis == 0:
+            sorted_indices = table[by_values].argsort()
+            return table.iloc[sorted_indices]
+        elif axis == 1:
+            
+            sorted_indices = table.loc[by_values].argsort()
+            return table.iloc[:, sorted_indices]
+        else:
+            raise ValueError("axis should be 0 or 'index' for row operation, 1 or 'columns' for column operation")
+    elif by_array is not None:
+        if axis == 0:
+            return table.iloc[by_array]
+        elif axis == 1:
+            return table.iloc[:, by_array]
+        else:
+            raise ValueError("axis should be 0 or 'index' for row operation, 1 or 'columns' for column operation")
+    else:
+        raise ValueError("Either by_values or by_array must be provided")
+
     return table
 
 
