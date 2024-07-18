@@ -64,9 +64,7 @@ def transfer_to_NL(dsl):
         if axis == 0 or axis == "index" or axis == "0":
             return f"Insert a row $[{index_name}] at position #[{index}] in the %[given table(s)]."
         elif axis == 1 or axis == "columns" or axis == "1":
-            return (
-                f"Insert a column $[{index_name}] at position #[{index}] in the %[given table(s)]."
-            )
+            return f"Insert a column $[{index_name}] at position #[{index}] in the %[given table(s)]."
         else:
             return "Invalid function"
     elif dsl["function_name"] == "drop":
