@@ -42,27 +42,28 @@ init_prompt()
 def transfer_to_NL(dsl):
     # notations:
     # %[given table(s)] -> table
-    # $[{index}] -> row or column
+    # $[{index}] -> row or column name
     # &[{glue}] -> glue
     # *[{how}] -> how
+    # #[{index}] -> index
 
     if dsl["function_name"] == "create_table":
         table = dsl["arguments"][0]
         row_number = dsl["arguments"][1]
         column_number = dsl["arguments"][2]
-        return f"Create a table %[given table(s)] with {row_number} rows and {column_number} columns."
+        return f"Create a table %[given table(s)] with #[{row_number}] rows and #[{column_number}] columns."
     elif dsl["function_name"] == "delete_table":
         table = dsl["arguments"][0]
-        return f"Delete the table %[given table(s)]."
+        return f"Delete the table %[{table}]."
     elif dsl["function_name"] == "insert":
         table = dsl["arguments"][0]
         index = dsl["arguments"][1]
         index_name = dsl["arguments"][2]
         axis = dsl["arguments"][3]
         if axis == 0 or axis == "index" or axis == "0":
-            return f"Insert a row $[{index_name}] at position #[{index}] in the %[given table(s)]."
+            return f"Insert a row at position #[{index}] in the %[given table(s)]."
         elif axis == 1 or axis == "columns" or axis == "1":
-            return f"Insert a column $[{index_name}] at position #[{index}] in the %[given table(s)]."
+            return f"Insert a column at position #[{index}] in the %[given table(s)]."
         else:
             return "Invalid function"
     elif dsl["function_name"] == "drop":
@@ -70,9 +71,9 @@ def transfer_to_NL(dsl):
         label = dsl["arguments"][1]
         axis = dsl["arguments"][2]
         if axis == 0 or axis == "index" or axis == "0":
-            return f"Drop the row $[{label}] in %[given table(s)]."
+            return f"Drop the row #[{label}] in %[given table(s)]."
         elif axis == 1 or axis == "columns" or axis == "1":
-            return f"Drop the column $[{label}] in %[given table(s)]."
+            return f"Drop the column #[{label}] in %[given table(s)]."
         else:
             return "Invalid function"
     elif dsl["function_name"] == "assign":
@@ -83,7 +84,7 @@ def transfer_to_NL(dsl):
         end_column_index = dsl["arguments"][4]
         values = dsl["arguments"][5]
         string_values = json.dumps(values)
-        return f"Assign the values {string_values} to the rows $[{start_row_index}] to $[{end_row_index}] and the columns $[{start_column_index}] to $[{end_column_index}] in %[given table(s)]."
+        return f"Assign the values @[{string_values}] in %[given table(s)]."
     elif dsl["function_name"] == "move":
         origin_table = dsl["arguments"][0]
         origin_index = dsl["arguments"][1]
@@ -91,9 +92,9 @@ def transfer_to_NL(dsl):
         target_index = dsl["arguments"][3]
         axis = dsl["arguments"][4]
         if axis == 0 or axis == "index" or axis == "0":
-            return f"Move the row $[{origin_index}] to row #[{target_index}] in the %[given table(s)]."
+            return f"Move the row #[{origin_index}] to row #[{target_index}] in the %[given table(s)]."
         elif axis == 1 or axis == "columns" or axis == "1":
-            return f"Move the column $[{origin_index}] to column #[{target_index}] in the %[given table(s)]."
+            return f"Move the column #[{origin_index}] to column #[{target_index}] in the %[given table(s)]."
         else:
             return "Invalid function"
     elif dsl["function_name"] == "copy":
@@ -104,9 +105,9 @@ def transfer_to_NL(dsl):
         target_label_name = dsl["arguments"][4]
         axis = dsl["arguments"][5]
         if axis == 0 or axis == "index" or axis == "0":
-            return f"Copy the row $[{origin_index}] to row #[{target_index}] in the %[given table(s)]."
+            return f"Copy the row #[{origin_index}] to row #[{target_index}] in the %[given table(s)]."
         elif axis == 1 or axis == "columns" or axis == "1":
-            return f"Copy the column $[{origin_index}] to column #[{target_index}] in the %[given table(s)]."
+            return f"Copy the column #[{origin_index}] to column #[{target_index}] in the %[given table(s)]."
         else:
             return "Invalid function"
     elif dsl["function_name"] == "swap":
@@ -141,9 +142,9 @@ def transfer_to_NL(dsl):
         new_label = dsl["arguments"][4]
         axis = dsl["arguments"][5]
         if axis == 0 or axis == "index" or axis == "0":
-            return f"Concatenate the rows $[{label_a}] and $[{label_b}] in %[given table(s)] with the glue &[{glue}] as $[{new_label}]."
+            return f"Concatenate the rows $[{label_a}] and $[{label_b}] in %[given table(s)] with the glue &[{glue}]."
         elif axis == 1 or axis == "columns" or axis == "1":
-            return f"Concatenate the columns $[{label_a}] and $[{label_b}] in %[given table(s)] with the glue &[{glue}] as $[{new_label}]."
+            return f"Concatenate the columns $[{label_a}] and $[{label_b}] in %[given table(s)] with the glue &[{glue}]."
         else:
             return "Invalid function"
     elif dsl["function_name"] == "split":
@@ -153,9 +154,9 @@ def transfer_to_NL(dsl):
         new_labels = dsl["arguments"][3]
         axis = dsl["arguments"][4]
         if axis == 0 or axis == "index" or axis == "0":
-            return f"Split the row $[{label}] in %[given table(s)] by &[{delimiter}] as $[{new_labels}]."
+            return f"Split the row $[{label}] in %[given table(s)] by &[{delimiter}]."
         elif axis == 1 or axis == "columns" or axis == "1":
-            return f"Split the column $[{label}] in %[given table(s)] by &[{delimiter}] as $[{new_labels}]."
+            return f"Split the column $[{label}] in %[given table(s)] by &[{delimiter}]."
         else:
             return "Invalid function"
     elif dsl["function_name"] == "transpose":
@@ -166,9 +167,9 @@ def transfer_to_NL(dsl):
         functions = dsl["arguments"][1]
         axis = dsl["arguments"][2]
         if axis == 0 or axis == "index" or axis == "0":
-            return f"Aggregate %[given table(s)] with the functions $[{functions}] along the rows."
+            return f"Aggregate %[given table(s)] with the functions $[{functions}]."
         elif axis == 1 or axis == "columns" or axis == "1":
-            return f"Aggregate %[given table(s)] with the functions $[{functions}] along the columns."
+            return f"Aggregate %[given table(s)] with the functions $[{functions}]."
         else:
             return "Invalid function"
     elif dsl["function_name"] == "test":
