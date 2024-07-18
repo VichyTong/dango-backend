@@ -45,8 +45,6 @@ def transfer_to_NL(dsl):
     # $[{index}] -> row or column
     # &[{glue}] -> glue
     # *[{how}] -> how
-    # $[{label}] -> label
-    # $[{index_name}] -> index/
 
     if dsl["function_name"] == "create_table":
         table = dsl["arguments"][0]
@@ -217,7 +215,16 @@ def transfer_to_NL(dsl):
             return f"Format the values in the column $[{label}] in %[given table(s)] based on the *[given pattern]."
         else:
             return "Invalid function"
-    elif dsl["function_name"] == "Divide":
+    elif dsl["function_name"] == "divide":
+        table = dsl["arguments"][0]
+        by = dsl["arguments"][1]
+        axis = dsl["arguments"][2]
+        if axis == 0 or axis == "index" or axis == "0":
+            return f"Divide the %[given table(s)] by the values in the row $[{by}]."
+        elif axis == 1 or axis == "columns" or axis == "1":
+            return f"Divide the %[given table(s)] by the values in the column $[{by}]."
+
+    elif dsl["function_name"] == "groupby":
         table = dsl["arguments"][0]
         by = dsl["arguments"][1]
         axis = dsl["arguments"][2]
