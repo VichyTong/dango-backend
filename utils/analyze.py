@@ -390,6 +390,8 @@ def followup(client_id, response):
         raise e
     if response["type"] == "question":
         history = get_history(client_id)
+        if "choices" not in response:
+            response["choices"] = ["other (please specify)"]
         history["question_answer_pairs"] = [
             {
                 "summary": response["summary"],
