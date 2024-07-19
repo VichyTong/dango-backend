@@ -74,11 +74,13 @@ def get_all_sheets(client_id):
 
 
 def get_same_sheet_version(client_id, sheet_id, data):
+    print(data)
     cur.execute(
         "SELECT version, data FROM sheets WHERE client_id = ? AND sheet_id = ?",
         (client_id, sheet_id),
     )
     versions = cur.fetchall()
+    print(versions)
     for version, sheet_data in versions:
         if sheet_data == json.dumps(data):
             return version

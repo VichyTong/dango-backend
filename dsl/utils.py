@@ -609,24 +609,20 @@ def divide(table, by, axis):
         - 0 or "index": Indicates a row operation.
         - 1 or "columns": Indicates a column operation.
     """
-
     axis = classify_axis(axis)
-    if axis == 0:
+    if axis == 1:
         # Group by the specified column
         groups = table.groupby(by)
-    elif axis == 1:
+    elif axis == 0:
         # Group by the specified row
         groups = table.T.groupby(by).T
 
     result = []
     for group in groups:
-        group = group[1]
-        group = group.reset_index(drop=True)
         result.append(
             {
                 "unique_value": group[0],
-                "data": group,
+                "data": group[1].reset_index(drop=True),
             }
         )
-
     return result

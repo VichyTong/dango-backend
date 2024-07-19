@@ -409,7 +409,7 @@ async def handle_execute_dsl_list(request_body: ExecuteDSLList):
             if function == "test":
                 tmp_sheet_data_map["Test_Result.csv"] = new_sheet
                 upload_sheet(client_id, "Test_Result.csv", 0, new_sheet.to_dict())
-            elif function == "groupby":
+            elif function == "divide":
                 for group_sheet in new_sheet:
                     unique_value = group_sheet["unique_value"]
                     data = group_sheet["data"]
@@ -462,7 +462,7 @@ async def handle_execute_dsl_list(request_body: ExecuteDSLList):
 
     output = []
     for sheet_id, sheet in tmp_sheet_data_map.items():
-        sheet_data = sheet.fillna("").to_dict(orient="list")
+        sheet_data = sheet.fillna("").to_dict()
         same_sheet_version = get_same_sheet_version(client_id, sheet_id, sheet_data)
         if same_sheet_version is not None:
             print(f"Sheet {sheet_id} already exists in version {same_sheet_version}")
@@ -470,7 +470,7 @@ async def handle_execute_dsl_list(request_body: ExecuteDSLList):
                 {
                     "sheet_id": sheet_id,
                     "version": same_sheet_version,
-                    "data": sheet_data,
+                    "data": sheet.fillna("").to_dict(orient="list"),
                     "is_delete": False,
                 }
             )
@@ -481,7 +481,7 @@ async def handle_execute_dsl_list(request_body: ExecuteDSLList):
             {
                 "sheet_id": sheet_id,
                 "version": sheet_version,
-                "data": sheet_data,
+                "data": sheet.fillna("").to_dict(orient="list"),
                 "is_delete": False,
             }
         )
