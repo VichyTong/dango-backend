@@ -1,39 +1,48 @@
 import json
+import re
 
 from utils.llm import (
     append_message,
     generate_chat_completion,
 )
-from utils.db import get_history, get_all_sheets
+from utils.db import get_history, get_all_sheets, get_sheet
 from utils.log import log_messages
 from utils.format_text import get_history_text, format_information
 from utils.verify_syntax import validate_dsls_format, validate_dsls_functions
 
 
 def init_prompt():
+    global dsl_grammar
     global summarize_system_prompt
     global plan_system_prompt, plan_user_prompt_template
     global generate_system_prompt, generate_user_prompt_template
     global verifier_semantic_system_prompt, verifier_semantic_user_prompt_template
     global plan_with_feedback_user_prompt, generate_with_feedback_user_prompt
+    global add_information_system_prompt, add_information_user_prompt_template
+    with open("prompt/synthesize/dsl_grammar.txt", "r") as f:
+        dsl_grammar = f.read()
     with open("prompt/synthesize/summarize_system.txt", "r") as f:
         summarize_system_prompt = f.read()
     with open("prompt/synthesize/plan_system.txt", "r") as f:
-        plan_system_prompt = f.read()
+        plan_system_prompt = f.read().replace("{DSL_GRAMMAR}", dsl_grammar)
     with open("prompt/synthesize/plan_user.txt", "r") as f:
         plan_user_prompt_template = f.read()
     with open("prompt/synthesize/generate_system.txt", "r") as f:
-        generate_system_prompt = f.read()
+        generate_system_prompt = f.read().replace("{DSL_GRAMMAR}", dsl_grammar)
     with open("prompt/synthesize/generate_user.txt", "r") as f:
         generate_user_prompt_template = f.read()
     with open("prompt/synthesize/verifier_system.txt", "r") as f:
-        verifier_semantic_system_prompt = f.read()
+        verifier_semantic_system_prompt = f.read().replace("{DSL_GRAMMAR}", dsl_grammar)
     with open("prompt/synthesize/verifier_user.txt", "r") as f:
         verifier_semantic_user_prompt_template = f.read()
     with open("prompt/synthesize/plan_with_feedback_user.txt", "r") as f:
         plan_with_feedback_user_prompt = f.read()
     with open("prompt/synthesize/generate_with_feedback_user.txt", "r") as f:
         generate_with_feedback_user_prompt = f.read()
+    with open("prompt/synthesize/add_information_system.txt", "r") as f:
+        add_information_system_prompt = f.read()
+    with open("prompt/synthesize/add_information_user.txt", "r") as f:
+        add_information_user_prompt_template = f.read()
 
 
 init_prompt()
@@ -248,6 +257,47 @@ def get_summarization(client_id, history):
 
     return summarization
 
+def add_more_information(client_id, plan, information):
+    def split_sheet_name(sheet_name):
+        # Regular expression to find "v{int}" suffix
+        match = re.search(r"_v(\d+)\.csv$", sheet_name)
+        if match:
+            # Extract base name and version number
+            base_name = sheet_name[: match.start()] + ".csv"
+            version = int(match.group(1))
+        else:
+            # No version number present
+            base_name = sheet_name
+            version = 0
+
+        return base_name, version
+
+    messages = append_message(add_information_system_prompt, "system", [])
+    messages = append_message(
+        add_information_user_prompt_template.replace(
+            "{INFORMATION}", information
+        ).replace("{PLAN}", plan),
+        "user",
+        messages,
+    )
+
+    response = json.loads(generate_chat_completion(messages, json=True))
+    messages = append_message(response, "assistant", messages)
+    log_messages(client_id, "add_information", messages)
+
+    result = ""
+    table_name = response["table_name"]
+    label_name = response["label_name"]
+    name, version = split_sheet_name(table_name)
+    data = get_sheet(client_id, name, version)
+    result += f"\nExamples of {label_name} of {table_name}:\n"
+    for index, keys in enumerate(data[label_name]):
+        if index == 2:
+            plan += f"{data[label_name][keys]}\n\n"
+            break
+        result += f"{data[label_name][keys]}, "
+    return result
+
 
 def get_step_by_step_plan(
     client_id, history, summarization, feedback=None, error_list=[]
@@ -273,11 +323,27 @@ def get_step_by_step_plan(
 
     messages = append_message(plan_system_prompt, "system", [])
     messages = append_message(plan_user_prompt, "user", messages)
-    step_by_step_plan = generate_chat_completion(messages)
+    step_by_step_plan = generate_chat_completion(messages, json=True)
+    step_by_step_plan = json.loads(step_by_step_plan)
     messages = append_message(step_by_step_plan, "assistant", messages)
-    log_messages(client_id, "generate_step_by_step_plan", messages)
 
-    return step_by_step_plan
+    step_by_step_plan_string = "Step-by-step Plan:\n"
+    for index, item in enumerate(step_by_step_plan, start=1):
+        step_by_step_plan_string += f"{index}: {item['description']} ({item['function']} function)\n"
+
+    function_list = [
+        "format",
+        "concatenate",
+        "split",
+    ]
+    for item in step_by_step_plan:
+        if item["function"] in function_list:
+            step_by_step_plan_string += add_more_information(
+                client_id, item["description"], format_information(history["information"], with_table_diff=False)
+            )
+    
+    log_messages(client_id, "generate_step_by_step_plan", messages)
+    return step_by_step_plan_string
 
 
 def get_dsls(client_id, history, step_by_step_plan, feedback=None, error_list=[]):
@@ -346,17 +412,18 @@ def dsl_synthesize(client_id: str) -> str:
     step_by_step_plan = get_step_by_step_plan(client_id, history, summarization)
     dsls = get_dsls(client_id, history, step_by_step_plan)
     feedback = verify(client_id, history, summarization, dsls, error_list)
-    count = 0
+    print("1 run")
+    count = 1
     while feedback["correctness"] == "No" and count < 10:
         error_list = []
         count += 1
-        print(f"Try the {count} time")
+        print(f"{count} run")
         step_by_step_plan = get_step_by_step_plan(
             client_id, history, summarization, feedback, error_list
         )
         dsls = get_dsls(client_id, history, step_by_step_plan, feedback, error_list)
         feedback = verify(client_id, history, summarization, dsls, error_list)
-    print(count)
+    print(f"Total count: {count}")
     for dsl in dsls:
         dsl["natural_language"] = transfer_to_NL(dsl)
     return dsls

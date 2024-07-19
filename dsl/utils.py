@@ -565,7 +565,7 @@ def rearrange(table, by_values=None, by_array=None, axis=0):
     return table
 
 
-def format(table, label, pattern, axis=0):
+def format(table, label, pattern, replace_with='', axis=0):
     """
     Formats the values in a row or column based on the specified pattern.
 
@@ -573,9 +573,8 @@ def format(table, label, pattern, axis=0):
     - table: DataFrame in which the row/column will be formatted.
     - label: The label of the row/column to be formatted.
     - pattern: The format regex pattern to apply to the values.
-    - axis:
-      - 0 or "index": Indicates a row operation.
-      - 1 or "columns": Indicates a column operation.
+    - replace_with: The string to replace the matched pattern with.
+    - axis: 0 or "index" for a row operation, 1 or "columns" for a column operation.
     """
 
     axis = classify_axis(axis)
@@ -586,7 +585,7 @@ def format(table, label, pattern, axis=0):
             raise ValueError(f"Column {label} does not exist in the DataFrame.")
 
         # Apply the format pattern to the column values
-        table[label] = table[label].apply(lambda x: re.sub(pattern, "", str(x)))
+        table[label] = table[label].apply(lambda x: re.sub(pattern, replace_with, str(x)))
 
     # Format the values in a row
     else:
@@ -594,12 +593,12 @@ def format(table, label, pattern, axis=0):
             raise ValueError(f"Row {label} does not exist in the DataFrame.")
 
         # Apply the format pattern to the row values
-        table.loc[label] = table.loc[label].apply(lambda x: re.sub(pattern, "", str(x)))
+        table.loc[label] = table.loc[label].apply(lambda x: re.sub(pattern, replace_with, str(x)))
 
     return table
 
 
-def groupby(table, by, axis):
+def divide(table, by, axis):
     """
     Groups the table by values of a row or column and saves each group to a separate table.
 

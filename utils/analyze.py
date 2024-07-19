@@ -331,6 +331,8 @@ def get_multi_analyze(client_id, table_list, user_prompt):
     messages = append_message(response, "assistant", messages)
     if response["type"] == "question":
         history = get_history(client_id)
+        if "choices" not in response:
+            response["choices"] = ["other (please specify)"]
         history["question_answer_pairs"] = [
             {
                 "summary": response["summary"],

@@ -1,4 +1,5 @@
 import os
+import re
 from openai import OpenAI
 
 
@@ -18,5 +19,6 @@ def append_message(content, role, messages):
 def generate_chat_completion(messages, model="gpt-3.5-turbo", json=False):
     response = client.chat.completions.create(messages=messages, model=model).choices[0].message.content
     if json:
-        response = response.replace('\\', '\\\\')
+        invalid_backslash_pattern = r'(?<!\\)(\\(?!["\\/bfnrtu]))'
+        response = re.sub(invalid_backslash_pattern, r'\\\\', response)
     return response

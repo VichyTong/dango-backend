@@ -17,11 +17,11 @@ A condition in natural language.
 
 # OUTPUT #
 Your output should contain two parts:
-- The first line should be "Type: index" or "Type: columns" based on the condition.
+- The first line should be "Type: row" or "Type: column" based on the condition.
 - Then, a function that returns a boolean index between two ``` characters.
 
 example:
-Type: index/columns
+Type: row/column
 ```
 def boolean_indexing(df):
     return df[df['column_name'] > 5]
@@ -36,7 +36,7 @@ Example 1:
 - INPUT:
 rows where column 'a' is less than 10
 - OUTPUT:
-Type: index
+Type: row
 ```
 def boolean_indexing(df):
     return df['a'] < 10
@@ -48,7 +48,7 @@ Example 2:
 - INPUT:
 rows where sum of all columns is lower than 10.
 - OUTPUT:
-Type: index
+Type: row
 ```
 def boolean_indexing(df):
     return df.sum(axis=1) < 10
@@ -59,7 +59,7 @@ Example 3:
 - INPUT:
 rows where column 'b' is equal to 'apple'
 - OUTPUT:
-Type: index
+Type: row
 ```
 def boolean_indexing(df):
     return df['b'] == 'apple'
@@ -69,7 +69,7 @@ Example 4:
 '''
 - INPUT:
 columns where its name contains the string 'name'
-Type: columns
+Type: column
 - OUTPUT:
 ```
 def column_selection_example_2(df):
@@ -81,6 +81,7 @@ Example 5:
 - INPUT:
 columns where any value is null
 - OUTPUT:
+Type: column
 ```
 def boolean_indexing(df):
     return df.isnull().any()
@@ -91,6 +92,7 @@ Example 6:
 - INPUT:
 columns where any value is between 5 and 15 (inclusive)
 - OUTPUT:
+Type: column
 ```
 def boolean_indexing(df):
     return df.apply(lambda x: x.between(5, 15).any())

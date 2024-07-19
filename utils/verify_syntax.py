@@ -297,6 +297,7 @@ class FORMAT_PARAMS(BaseModel):
     table_name: str
     label: Union[str, int]
     pattern: str
+    replace_with: str
     axis: Union[str, int]
 
 def format(params: FORMAT_PARAMS):
@@ -635,11 +636,11 @@ def validate_test(arguments, error_list, sheets_names):
     return "Success"
 
 def validate_format(arguments, error_list, sheets_names):
-    if len(arguments) != 4:
+    if len(arguments) != 5:
         error = create_error_message("Invalid number of arguments", f"The function 'format' requires 4 arguments: 'table_name', 'label', 'pattern', 'axis'.", "format")
         error_list.append(error)
     try:
-        params = FORMAT_PARAMS(table_name=arguments[0], label=arguments[1], pattern=arguments[2], axis=arguments[3])
+        params = FORMAT_PARAMS(table_name=arguments[0], label=arguments[1], pattern=arguments[2], replace_with=arguments[3], axis=arguments[4])
         format(params)
     except ValidationError as e:
         error = create_error_message("Invalid argument format", f"The arguments for 'format' are not in the correct format. Please check the argument types and values.", "format")
