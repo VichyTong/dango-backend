@@ -30,7 +30,8 @@ Step-by-step description of the data cleaning process.
 #############
 
 # OUTPUT #
-Your output should be in JSON form. For example:
+Your output should be in a JSON list form. Each object of the list should contain the function name and its arguments. If a function need to be applied to special cells, you can add a "condition" parameter to the object.
+For example:
 [
     {
         "function_name": "copy",
@@ -38,14 +39,17 @@ Your output should be in JSON form. For example:
     },
     {
         "function_name": "drop",
-        "arguments": ["a.csv", 1, "index"]
+        "condition": "if column \"Profit\" > 100"
+        "arguments": ["a.csv", [1,2,3,4,5,6], "index"]
     },
     {
         "function_name": "split",
+        "condition": "if column \"Name\" contains \",\""
         "arguments": ["a.csv", 1, ",", ["new1", "new2"]]
     }
 ]
 Do not add any other characters to the output.
+
 #############
 
 # EXAMPLE #
@@ -96,6 +100,28 @@ Step-by-step plan:
     {
         "function_name": "drop",
         "arguments": ["Heart Disease Prediction dataset.csv", "sex", "columns"]
+    }
+]
+'''
+
+Example 3:
+'''
+- INPUT:
+Step-by-step plan:
+1. Drop rows in sales_data.csv where the column "Revenue" is less than 500. (drop function)
+2. Split the column "FullName" in employees.csv into two columns "FirstName" and "LastName" if it contains a space. (split function)
+
+- OUTPUT:
+[
+    {
+        "function_name": "drop",
+        "condition": "if column \"Revenue\" < 500",
+        "arguments": ["sales_data.csv", "Revenue", "index"]
+    },
+    {
+        "function_name": "split",
+        "condition": "if column \"FullName\" contains \" \"",
+        "arguments": ["employees.csv", "FullName", " ", ["FirstName", "LastName"]]
     }
 ]
 '''
