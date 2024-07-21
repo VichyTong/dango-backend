@@ -32,12 +32,12 @@ Parameters:
 - label (str or int or list[str] or list[int]): The label or list of labels of the row/column to be dropped.
 - axis (str or int): Refers to the direction of the operation.
 
-3. assign(table_name, start_row_index, end_row_index, start_column_index, end_column_index, values): Assigns a value to specific cells in the table.
+3. assign(table_name, start_row_index, end_row_index, start_column_index, end_column_index, values): Assigns constant values to specific cells in the table.
 Parameters:
 - table_name (str): The name of the table to assign the value to.
 - start_row_index, end_row_index (int): The range of row indices to assign the value to.
 - start_column_index, end_column_index (int): The range of column indices to assign the value to.
-- values (list[list[int/float/str]] or int/float/str): The value(s) to assign to the specified cell(s). Can be a single int/float/str or a list of lists of int/float/str.
+- values (list[list[int/float/str]] or int/float/str): The const value(s) to assign to the specified cell(s). Can be a single int/float/str or a list of lists of int/float/str.
 
 4. move(origin_table_name, origin_index, target_table_name, target_index, axis): Moves a row or column from the origin table to the target table.
 Parameters:
@@ -124,9 +124,11 @@ Parameters:
 Parameters:
 - table_name (str): table in which the row/column will be split.
 - label (str or int): The label of the row/column to be split.
-- delimiter (str): The delimiter used to split the row/column content.
+- delimiter (str): The delimiter used to split the row/column strings.
 - new_labels (list[str]): List of new labels for the resulting split rows/columns.
-- axis (str or int): Refers to the direction of the operation.
+- axis:
+    - 0 or "index": Indicates split a row.
+    - 1 or "columns": Indicates split a column.
 
 3. format(table, label, pattern, replace_with, axis): Formats the values in a row or column based on the specified pattern and replace_with using re.sub().
 Parameters:

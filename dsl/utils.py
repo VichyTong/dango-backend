@@ -392,7 +392,10 @@ def split(table, label, delimiter, new_labels, axis=0):
             raise ValueError(f"Column {label} does not exist in the DataFrame.")
 
         # Perform the split operation and create new columns
-        split_data = table[label].str.split(delimiter, expand=True)
+        split_data = table[label].str.split(delimiter).apply(lambda x: [i for i in x if i])
+        split_data = pd.DataFrame(split_data.tolist(), index=table.index)
+        if len(split_data.columns) != len(new_labels):
+            raise ValueError("The number of new labels must match the number of split parts.")
         split_data.columns = new_labels
 
         # Drop the original column and add new columns
@@ -405,7 +408,7 @@ def split(table, label, delimiter, new_labels, axis=0):
             raise ValueError(f"Row {label} does not exist in the DataFrame.")
 
         # Perform the split operation and create new rows
-        split_data = table.loc[label].str.split(delimiter).values[0]
+        split_data = [i for i in table.loc[label].split(delimiter) if i]
         if len(split_data) != len(new_labels):
             raise ValueError(
                 "The number of new labels must match the result of the split."

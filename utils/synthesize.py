@@ -290,12 +290,12 @@ def add_more_information(client_id, plan, information):
     label_name = response["label_name"]
     name, version = split_sheet_name(table_name)
     data = get_sheet(client_id, name, version)
-    result += f"\nExamples of {label_name} of {table_name}:\n"
+    result += f'\n3 Examples of "{label_name}" of {table_name}:\n'
     for index, keys in enumerate(data[label_name]):
         if index == 2:
-            plan += f"{data[label_name][keys]}\n\n"
+            result += f'"{data[label_name][keys]}"\n\n'
             break
-        result += f"{data[label_name][keys]}, "
+        result += f'"{data[label_name][keys]}", '
     return result
 
 
@@ -324,6 +324,7 @@ def get_step_by_step_plan(
     messages = append_message(plan_system_prompt, "system", [])
     messages = append_message(plan_user_prompt, "user", messages)
     step_by_step_plan = generate_chat_completion(messages, json=True)
+    print(step_by_step_plan)
     step_by_step_plan = json.loads(step_by_step_plan)
     messages = append_message(step_by_step_plan, "assistant", messages)
 
