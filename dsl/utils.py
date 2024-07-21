@@ -392,10 +392,14 @@ def split(table, label, delimiter, new_labels, axis=0):
             raise ValueError(f"Column {label} does not exist in the DataFrame.")
 
         # Perform the split operation and create new columns
-        split_data = table[label].str.split(delimiter).apply(lambda x: [i for i in x if i])
+        split_data = (
+            table[label].str.split(delimiter).apply(lambda x: [i for i in x if i])
+        )
         split_data = pd.DataFrame(split_data.tolist(), index=table.index)
         if len(split_data.columns) != len(new_labels):
-            raise ValueError("The number of new labels must match the number of split parts.")
+            raise ValueError(
+                "The number of new labels must match the number of split parts."
+            )
         split_data.columns = new_labels
 
         # Drop the original column and add new columns
@@ -550,25 +554,29 @@ def rearrange(table, by_values=None, by_array=None, axis=0):
             sorted_indices = table[by_values].argsort()
             return table.iloc[sorted_indices]
         elif axis == 1:
-            
+
             sorted_indices = table.loc[by_values].argsort()
             return table.iloc[:, sorted_indices]
         else:
-            raise ValueError("axis should be 0 or 'index' for row operation, 1 or 'columns' for column operation")
+            raise ValueError(
+                "axis should be 0 or 'index' for row operation, 1 or 'columns' for column operation"
+            )
     elif by_array is not None:
         if axis == 0:
             return table.iloc[by_array]
         elif axis == 1:
             return table.iloc[:, by_array]
         else:
-            raise ValueError("axis should be 0 or 'index' for row operation, 1 or 'columns' for column operation")
+            raise ValueError(
+                "axis should be 0 or 'index' for row operation, 1 or 'columns' for column operation"
+            )
     else:
         raise ValueError("Either by_values or by_array must be provided")
 
     return table
 
 
-def format(table, label, pattern, replace_with='', axis=0):
+def format(table, label, pattern, replace_with="", axis=0):
     """
     Formats the values in a row or column based on the specified pattern.
 
@@ -588,7 +596,9 @@ def format(table, label, pattern, replace_with='', axis=0):
             raise ValueError(f"Column {label} does not exist in the DataFrame.")
 
         # Apply the format pattern to the column values
-        table[label] = table[label].apply(lambda x: re.sub(pattern, replace_with, str(x)))
+        table[label] = table[label].apply(
+            lambda x: re.sub(pattern, replace_with, str(x))
+        )
 
     # Format the values in a row
     else:
@@ -596,7 +606,9 @@ def format(table, label, pattern, replace_with='', axis=0):
             raise ValueError(f"Row {label} does not exist in the DataFrame.")
 
         # Apply the format pattern to the row values
-        table.loc[label] = table.loc[label].apply(lambda x: re.sub(pattern, replace_with, str(x)))
+        table.loc[label] = table.loc[label].apply(
+            lambda x: re.sub(pattern, replace_with, str(x))
+        )
 
     return table
 
@@ -629,3 +641,23 @@ def divide(table, by, axis):
             }
         )
     return result
+
+
+def pivot_table(table, index, columns, values, aggfunc="first"):
+    """
+    Reshapes the table based on the specified index, columns, values, and aggregation function.
+
+    Parameters:
+    - table (DataFrame): The table to pivot.
+    - index (str): The column name to use as the new row headers.
+    - columns (str): The column name to use as the new column headers.
+    - values (str): The column name whose values will fill the new table.
+    - aggfunc (str): The aggregation function to apply to the values. Common options are 'first', 'sum', 'mean', etc.
+
+    Returns:
+    DataFrame: The pivoted table.
+    """
+    pivot_df = table.pivot_table(
+        index=index, columns=columns, values=values, aggfunc=aggfunc
+    ).reset_index()
+    return pivot_df

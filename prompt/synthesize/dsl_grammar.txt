@@ -19,6 +19,14 @@ Parameters:
 Parameters:
 - table_name (str): The name of the table to be deleted.
 
+3. pivot_table(table, index, columns, values, aggfunc): Reshapes the table so that each unique 'columns' value becomes a separate column, with the 'index' values as row headers, and the corresponding 'values' filled in their respective cells.
+Parameters:
+- table (DataFrame): The table to pivot.
+- index (str): The column name to use as the new row headers.
+- columns (str): The column name to use as the new column headers.
+- values (str): The column name whose values will fill the new table.
+- aggfunc (str): The aggregation function to apply to the values. Common options are 'first', 'sum', 'mean', etc.
+
 ### Column/Row-level Functions
 
 1. insert(table_name, index, index_name, axis): Inserts an empty row or column at the specified index in the table.

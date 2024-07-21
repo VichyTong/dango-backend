@@ -305,6 +305,7 @@ async def handle_execute_dsl_list(request_body: ExecuteDSLList):
     table_function_list = [
         "delete_table",
         "create_table",
+        "pivot_table",
     ]
     # table_name in arguments[0]
     type_a_function_list = [
@@ -387,7 +388,7 @@ async def handle_execute_dsl_list(request_body: ExecuteDSLList):
                 )
                 upload_sheet(client_id, sheet_id, 0, data.to_dict())
                 tmp_sheet_data_map[sheet_id] = data
-                tmp_sheet_version_map = 0
+                tmp_sheet_version_map[sheet_id] = 0
             elif function == "delete_table":
                 sheet_id, version = split_sheet_name(arguments[0])
                 delete_sheet(
@@ -401,6 +402,14 @@ async def handle_execute_dsl_list(request_body: ExecuteDSLList):
                         "version": version,
                     }
                 )
+            elif function == "pivot_table":
+                load_sheet(arguments[0])
+                sheet_id, _ = split_sheet_name(arguments[0])
+                sheet = tmp_sheet_data_map[sheet_id]
+                new_sheet = execute_dsl(sheet, function, arguments[1:])
+                upload_sheet(client_id, "Pivot_Result.csv", 0, new_sheet.to_dict())
+                tmp_sheet_data_map[sheet_id] = new_sheet
+                tmp_sheet_version_map[sheet_id] = 0
         elif function in type_a_function_list:
             load_sheet(arguments[0])
             sheet_id, _ = split_sheet_name(arguments[0])

@@ -14,6 +14,7 @@ from dsl.utils import (
     rearrange,
     format,
     divide,
+    pivot_table,
 )
 
 
@@ -48,5 +49,7 @@ def execute_dsl(sheet, function, arguments, target_sheet=None):
         return format(sheet, *arguments)
     elif function == "divide":
         return divide(sheet, *arguments)
+    elif function == "pivot_table":
+        return pivot_table(sheet, *arguments)
     else:
         return "Invalid function"

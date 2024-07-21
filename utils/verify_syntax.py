@@ -337,6 +337,23 @@ class DIVIDE(BaseModel):
 def divide(params: DIVIDE):
     pass
 
+# pivot_table(table, index, columns, values, aggfunc): Reshapes the table so that each unique 'columns' value becomes a separate column, with the 'index' values as row headers, and the corresponding 'values' filled in their respective cells.
+# Parameters:
+# - table (DataFrame): The table to pivot.
+# - index (str): The column name to use as the new row headers.
+# - columns (str): The column name to use as the new column headers.
+# - values (str): The column name whose values will fill the new table.
+# - aggfunc (str): The aggregation function to apply to the values. Common options are 'first', 'sum', 'mean', etc.
+
+class PIVOT_TABLE(BaseModel):
+    table_name: str
+    index: str
+    columns: str
+    values: str
+    aggfunc: str
+
+def pivot_table(params: PIVOT_TABLE):
+    pass
 
 def get_sheet_names(all_sheets):
     sheets_names = [sheet[0] for sheet in all_sheets]
@@ -682,6 +699,23 @@ def validate_divide(arguments, error_list, sheets_names):
         error = create_error_message("Table does not exist", f"The table '{arguments[0]}' does not exist. Please create the table before performing operations on it.", "divide")
         error_list.append(error)
     return "Success"
+
+def validate_pivot_table(arguments, error_list, sheets_names):
+    if len(arguments) != 5:
+        error = create_error_message("Invalid number of arguments", f"The function 'pivot_table' requires 4 arguments: 'table_name', 'index', 'columns', 'values'.", "pivot_table")
+        error_list.append(error)
+    try:
+        params = PIVOT_TABLE_PARAMS(table_name=arguments[0], index=arguments[1], columns=arguments[2], values=arguments[3], aggfunc=arguments[4])
+        pivot_table(params)
+    except ValidationError as e:
+        error = create_error_message("Invalid argument format", f"The arguments for 'pivot_table' are not in the correct format. Please check the argument types and values.", "pivot_table")
+        error_list.append(error)
+
+    if arguments[0] not in sheets_names:
+        error = create_error_message("Table does not exist", f"The table '{arguments[0]}' does not exist. Please create the table before performing operations on it.", "pivot_table")
+        error_list.append(error)
+    return "Success"
+
 
 # # Example usage:
 
