@@ -19,6 +19,7 @@ def init_prompt():
     global verifier_semantic_system_prompt, verifier_semantic_user_prompt_template
     global plan_with_feedback_user_prompt, generate_with_feedback_user_prompt
     global add_information_system_prompt, add_information_user_prompt_template
+    global boolean_indexing_system_prompt, boolean_indexing_user_prompt_template
     with open("prompt/synthesize/dsl_grammar.txt", "r") as f:
         dsl_grammar = f.read()
     with open("prompt/synthesize/summarize_system.txt", "r") as f:
@@ -43,7 +44,10 @@ def init_prompt():
         add_information_system_prompt = f.read()
     with open("prompt/synthesize/add_information_user.txt", "r") as f:
         add_information_user_prompt_template = f.read()
-
+    with open("prompt/synthesize/boolean_indexing_system.txt", "r") as f:
+        boolean_indexing_system_prompt = f.read()
+    with open("prompt/synthesize/boolean_indexing_user.txt", "r") as f:
+        boolean_indexing_user_prompt_template = f.read()
 
 init_prompt()
 
@@ -402,6 +406,35 @@ def verify(client_id, history, summarization, dsls, error_list):
     feedback = verify_semantics(client_id, history, summarization, dsls, error_list)
     return feedback
 
+def fill_condition(client_id, dsls):
+    def extract_to_dict(s):
+        type_pattern = r"Type: (\w+)"
+        function_pattern = r"```(.*?)```"
+        
+        type_match = re.search(type_pattern, s, re.DOTALL)
+        function_match = re.search(function_pattern, s, re.DOTALL)
+        
+        result = {
+            "type": type_match.group(1) if type_match else None,
+            "function": function_match.group(1).strip() if function_match else None
+        }
+        return result
+    
+    for dsl in dsls:
+        if "condition" in dsl:
+            boolean_indexing_user_prompt = boolean_indexing_user_prompt_template.replace(
+                "CONDITION", dsl["condition"]
+            )
+            messages = append_message(boolean_indexing_system_prompt, "system", [])
+            messages = append_message(boolean_indexing_user_prompt, "user", messages)
+            response = generate_chat_completion(messages, json=True)
+            messages = append_message(response, "assistant", messages)
+            log_messages(client_id, "generate_boolean_indexing", messages)
+            response = extract_to_dict(response)
+            dsl["type"] = response["type"]
+            dsl["function"] = response["function"]
+    return dsls
+
 
 def dsl_synthesize(client_id: str) -> str:
     error_list = []
@@ -410,6 +443,7 @@ def dsl_synthesize(client_id: str) -> str:
     step_by_step_plan = get_step_by_step_plan(client_id, history, summarization)
     dsls = get_dsls(client_id, history, step_by_step_plan)
     feedback = verify(client_id, history, summarization, dsls, error_list)
+    dsls = fill_condition(client_id, dsls)
     print("1 run")
     count = 1
     while feedback["correctness"] == "No" and count < 10:
@@ -421,6 +455,7 @@ def dsl_synthesize(client_id: str) -> str:
         )
         dsls = get_dsls(client_id, history, step_by_step_plan, feedback, error_list)
         feedback = verify(client_id, history, summarization, dsls, error_list)
+        dsls = fill_condition(client_id, dsls)
     print(f"Total count: {count}")
     for dsl in dsls:
         dsl["natural_language"] = transfer_to_NL(dsl)
