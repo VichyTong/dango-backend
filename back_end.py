@@ -289,6 +289,7 @@ async def handle_generate_dsl(request_body: GenerateDSL):
 class DSL(BaseModel):
     function_name: str
     arguments: List[Union[str, int, float, None, list, dict]]
+    condition: Optional[dict]
 
 
 class ExecuteDSLList(BaseModel):
