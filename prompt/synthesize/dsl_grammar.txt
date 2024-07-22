@@ -119,7 +119,7 @@ Parameters:
 Parameters:
 - table (str): Table to fill missing values.
 - method (str): The method to use for filling missing values. Choose from 'value', 'mean', 'median', 'mode', 'ffill', 'bfill', 'interpolate'.
-- column: The column to fill missing values in. If None, missing values in all columns will be filled.
+- column (str or list[str]): The column or columns to fill missing values in. If None, missing values in all columns will be filled.
 
 ### Summarization Functions
 
