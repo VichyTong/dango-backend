@@ -233,15 +233,12 @@ def transfer_to_NL(dsl):
             return f"Divide the %[given table(s)] by the values in the row $[{by}]."
         elif axis == 1 or axis == "columns" or axis == "1":
             return f"Divide the %[given table(s)] by the values in the column $[{by}]."
-
-    elif dsl["function_name"] == "groupby":
+    elif dsl["function_name"] == "fill":
         table = dsl["arguments"][0]
-        by = dsl["arguments"][1]
-        axis = dsl["arguments"][2]
-        if axis == 0 or axis == "index" or axis == "0":
-            return f"Divide the %[given table(s)] by the values in the row $[{by}]."
-        elif axis == 1 or axis == "columns" or axis == "1":
-            return f"Divide the %[given table(s)] by the values in the column $[{by}]."
+        method = dsl["arguments"][1]
+        if len(dsl["arguments"]) == 3:
+            column = dsl["arguments"][2]
+        return f"Fill the missing values in %[given table(s)] with the method *[{method}]."
     else:
         return "Invalid function"
 
