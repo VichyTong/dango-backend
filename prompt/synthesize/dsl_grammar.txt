@@ -100,20 +100,26 @@ Parameters:
 
 9. rearrange(table_name, by_values=None, by_array=None, axis): Rearranges the rows or columns of the table based on the specified order.
 Parameters:
-- table_name: table to be rearranged.
-- by_values: If this parameter is set, the rows/columns will be rearranged based on the values in the specified row/column.
-- by_array: If this parameter is set, the rows/columns will be rearranged based on the order of the values in the array.
-- axis:
+- table_name (str): table to be rearranged.
+- by_values (str, optional): If this parameter is set, the rows/columns will be rearranged based on the values in the specified row/column.
+- by_array (str, list[str/int]): If this parameter is set, the rows/columns will be rearranged based on the order of the values in the array.
+- axis (str or int):
     - 0 or "index": Indicates to rearrange rows.
     - 1 or "columns": Indicates to rearrange columns.
 
 10. divide(table, by, axis): Divides the table by values of a row or column and saves each group to a separate table.
 Parameters:
-- table: DataFrame to be divided.
-- by: Column/Row name to group the table by.
-- axis:
+- table (str): table to be divided.
+- by (str): Column/Row name to group the table by.
+- axis (str or int):
     - 0 or "index": Indicates to divide the table by a row.
     - 1 or "columns": Indicates to divide the table by a column.
+
+11. fill(table, method, column=None): Fills missing values in the table using the specified method.
+Parameters:
+- table (str): Table to fill missing values.
+- method (str): The method to use for filling missing values. Choose from 'value', 'mean', 'median', 'mode', 'ffill', 'bfill', 'interpolate'.
+- column: The column to fill missing values in. If None, missing values in all columns will be filled.
 
 ### Summarization Functions
 
@@ -160,10 +166,10 @@ Parameters:
 
 3. format(table, label, pattern, replace_with, axis): Formats the values in a row or column based on the specified pattern and replace_with using re.sub().
 Parameters:
-- table: DataFrame in which the row/column will be formatted.
-- label: The label of the row/column to be formatted.
-- pattern: The format regex pattern to apply to the values, You can use group syntax.
-- replace_with: The string or backreference to replace the matched pattern with.
+- table (str): DataFrame in which the row/column will be formatted.
+- label (str or int): The label of the row/column to be formatted.
+- pattern (str): The format regex pattern to apply to the values, You can use group syntax.
+- replace_with (str): The string or backreference to replace the matched pattern with.
 - axis (str or int):
     - 0 or "index": Indicates to format a row.
     - 1 or "columns": Indicates to format a column.

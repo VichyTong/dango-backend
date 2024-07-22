@@ -355,6 +355,20 @@ class PIVOT_TABLE(BaseModel):
 def pivot_table(params: PIVOT_TABLE):
     pass
 
+# fill(table, method, column=None): Fills missing values in the table using the specified method.
+# Parameters:
+# - table: Table to fill missing values.
+# - method: The method to use for filling missing values. Choose from 'value', 'mean', 'median', 'mode', 'ffill', 'bfill', 'interpolate'.
+# - column: The column to fill missing values in. If None, missing values in all columns will be filled.
+
+class FILL(BaseModel):
+    table_name: str
+    method: str
+    column: Optional[str]
+
+def fill(params: FILL):
+    pass
+
 def get_sheet_names(all_sheets):
     sheets_names = [sheet[0] for sheet in all_sheets]
     sheets_names = [sheet.split(".")[0] for sheet in sheets_names]
@@ -713,6 +727,25 @@ def validate_pivot_table(arguments, error_list, sheets_names):
 
     if arguments[0] not in sheets_names:
         error = create_error_message("Table does not exist", f"The table '{arguments[0]}' does not exist. Please create the table before performing operations on it.", "pivot_table")
+        error_list.append(error)
+    return "Success"
+
+def validate_fill(arguments, error_list, sheets_names):
+    if not (len(arguments) == 2 or len(arguments) == 3):
+        error = create_error_message("Invalid number of arguments", f"The function 'fill' requires 3 arguments: 'table_name', 'method', 'column'.", "fill")
+        error_list.append(error)
+    try:
+        if len(arguments) == 2:
+            params = FILL(table_name=arguments[0], method=arguments[1], column=None)
+        elif len(arguments) == 3:
+            params = FILL(table_name=arguments[0], method=arguments[1], column=arguments[2])
+        fill(params)
+    except ValidationError as e:
+        error = create_error_message("Invalid argument format", f"The arguments for 'fill' are not in the correct format. Please check the argument types and values.", "fill")
+        error_list.append(error)
+
+    if arguments[0] not in sheets_names:
+        error = create_error_message("Table does not exist", f"The table '{arguments[0]}' does not exist. Please create the table before performing operations on it.", "fill")
         error_list.append(error)
     return "Success"
 

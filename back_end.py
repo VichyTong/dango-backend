@@ -320,6 +320,7 @@ async def handle_execute_dsl_list(request_body: ExecuteDSLList):
         "format",
         "rearrange",
         "divide",
+        "fill",
     ]
     # table_name_a in arguments[0], table_name_b in arguments[2]
     type_b_function_list = [
