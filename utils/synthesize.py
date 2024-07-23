@@ -319,7 +319,7 @@ def get_step_by_step_plan(
                 "{INFORMATION}",
                 format_information(history["information"], with_table_diff=False),
             )
-            .replace("{FEEDBACK}", json.dumps(error_list))
+            .replace("{ERROR_MESSAGE}", json.dumps(error_list))
         )
 
     messages = append_message(plan_system_prompt, "system", [])
@@ -363,7 +363,7 @@ def get_dsls(client_id, history, step_by_step_plan, feedback=None, error_list=[]
                 "{INFORMATION}",
                 format_information(history["information"], with_table_diff=False),
             )
-            .replace("{FEEDBACK}", json.dumps(error_list))
+            .replace("{ERROR_MESSAGE}", json.dumps(error_list))
         )
 
     messages = append_message(generate_system_prompt, "system", [])
