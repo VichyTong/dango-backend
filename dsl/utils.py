@@ -453,6 +453,10 @@ def aggregate(table, functions, axis=0):
     """
 
     axis = classify_axis(axis)
+    if axis == 1:
+        axis = 0
+    else:
+        axis = 1
 
     try:
         result = table.agg(functions, axis=axis)

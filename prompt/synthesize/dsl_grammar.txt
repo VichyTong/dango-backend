@@ -128,8 +128,8 @@ Parameters:
 - table_name (str): table to be aggregated.
 - functions (dict): Keys are names of rows or columns, and values are lists of function names. Example: {'A': ['sum', 'mean'], 'B': ['min', 'max']}.
 - axis (str or int):
-    - 0 or "index": Indicates to aggregate rows.
-    - 1 or "columns": Indicates to aggregate columns.
+    - 0 or "index": Applies the aggregate operations row-wise, meaning each row is aggregated independently across all columns.
+    - 1 or "columns": Applies the aggregate operations column-wise, meaning each column is aggregated independently across all rows.
 
 2. test(table_name, label_a, label_b, strategy, axis): Returns a new result table by comparing two labels using the specified strategy.
 Parameters:
