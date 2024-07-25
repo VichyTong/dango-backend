@@ -288,36 +288,25 @@ def swap(table_a, label_a, table_b, label_b, axis=0):
     return table_a, table_b
 
 
-def merge(table_a, table_b, on=None, how="inner", axis=0):
+def merge(table_a, table_b, how="outer", on=None, axis=0):
     """
     Merges two tables based on a common column or along columns.
 
     Parameters:
-    - table_a: The first DataFrame.
-    - table_b: The second DataFrame.
-    - on: The column or index level name to join on (ignored if axis=1).
-    - how: The type of merge to perform ('inner', 'outer', 'left', 'right').
-    - axis:
-      - 0 or "index": Indicates a row operation.
-      - 1 or "columns": Indicates a column operation.
+    - table_a: First table
+    - table_b: Second table
+    - how: Type of merge to be performed. Options are 'left', 'right', 'outer', 'inner'. Default is 'outer'.
+    - on: Column or index level names to join on. Must be found in both DataFrames. If not provided and the DataFrames
+          have a common column, will default to the intersection of the columns in the DataFrames.
+    - axis: Axis to concatenate along. 0 or "index" for row-wise, 1 or "column" for column-wise. Default is 0.
     """
 
     axis = classify_axis(axis)
 
-    if axis == 1:
-        # Merge along columns
-        result = pd.concat([table_a, table_b], axis=1, join=how)
-    else:
-        # Merge along rows based on the 'on' column(s)
-        if on == []:
-            on = None
-        if isinstance(on, list):
-            on_a, on_b = on
-            result = pd.merge(
-                table_a, table_b, left_on=on_a, right_on=on_b, how=how, sort=False
-            )
-        else:
-            result = pd.merge(table_a, table_b, on=on, how=how, sort=False)
+    if axis == 0:
+        return pd.concat([table_a, table_b], ignore_index=True)
+    elif axis == 1:
+        return pd.merge(table_a, table_b, how=how, on=on)
 
     return result
 
@@ -453,10 +442,10 @@ def aggregate(table, functions, axis=0):
     """
 
     axis = classify_axis(axis)
-    if axis == 1:
-        axis = 0
-    else:
+    if axis == 0:
         axis = 1
+    elif axis == 1:
+        axis = 0
 
     try:
         result = table.agg(functions, axis=axis)
@@ -617,34 +606,56 @@ def format(table, label, pattern, replace_with="", axis=0):
     return table
 
 
-def divide(table, by, axis):
+def divide(table, by_values=None, by_array=None, axis=0):
     """
-    Groups the table by values of a row or column and saves each group to a separate table.
+    Divides the table by the specific values of a row or column or by the given sets of rows or columns.
 
     Parameters:
-    - table: DataFrame to be divided.
-    - by: Column/Row name to group the table by.
-    - axis:
-        - 0 or "index": Indicates a row operation.
-        - 1 or "columns": Indicates a column operation.
+    - table (str): table to be divided.
+    - by_values (str): Column/Row name to group the table by.
+    - by_array (list[list[str/int]]): List of lists of column/row indexes to group the table by.
+    - axis (str or int):
+        - 0 or "index": Indicates to divide the table by a row.
+        - 1 or "columns": Indicates to divide the table by a column.
     """
     axis = classify_axis(axis)
-    if axis == 1:
-        # Group by the specified column
-        groups = table.groupby(by)
-    elif axis == 0:
-        # Group by the specified row
-        groups = table.T.groupby(by).T
 
-    result = []
-    for group in groups:
-        result.append(
-            {
-                "unique_value": group[0],
-                "data": group[1].reset_index(drop=True),
-            }
-        )
-    return result
+    if by_values:
+        if axis == 1:
+            groups = table.groupby(by)
+        elif axis == 0:
+            groups = table.T.groupby(by).T
+
+        result = []
+        for group in groups:
+            result.append(
+                {
+                    "unique_value": group[0],
+                    "data": group[1].reset_index(drop=True),
+                }
+            )
+        return result
+    
+    elif by_array:
+        result = []
+        if axis == 1:
+            for index, group in enumerate(by_array, start=1):
+                subset = table[group]
+                result.append({
+                    "unique_value": f"table {index}",
+                    "data": subset.reset_index(drop=True)
+                })
+        elif axis == 0:
+            for index, group in enumerate(by_array, start=1):
+                subset = table.iloc[group]
+                result.append({
+                    "unique_value": f"table {index}",
+                    "data": subset.reset_index(drop=True)
+                })
+        return result
+
+    else:
+        raise ValueError("Either by_values or by_array must be provided.")
 
 
 def pivot_table(table, index, columns, values, aggfunc="first"):

@@ -30,7 +30,7 @@ def validate_dsls_format(function_calls: List[dict], error_list):
         error = create_error_message("DSLs format is invalid", "The format should be a list of dictionaries with keys 'function_name' and 'arguments' where 'arguments' is a list.")
         error_list.append(error)
         return "Failed"
-# 1. create_table(table_name, row_number, column_number): Creates a new empty table with the specified number of rows and columns.
+# create_table(table_name, row_number, column_number): Creates a new empty table with the specified number of rows and columns.
 # Parameters:
 # - table_name (str): The name of the new table to be created. The table name should end with ".csv".
 # - row_number (int): The number of rows in the table.
@@ -47,7 +47,7 @@ def create_table(params: CREATE_TABLE_PARAMS):
     return
 
 
-# 2. delete_table(table_name): Deletes the specified table.
+# delete_table(table_name): Deletes the specified table.
 # Parameters:
 # - table_name (str): The name of the table to be deleted.
 
@@ -76,7 +76,7 @@ class INSERT_PARAMS(BaseModel):
 def insert(params: INSERT_PARAMS):
     return
 
-# 4. drop(table_name, label, axis): Drops a row or column in the table.
+# drop(table_name, label, axis): Drops a row or column in the table.
 # Parameters:
 # - table_name (str): The name of the table to drop the row/column from.
 # - label (str or int or list[str] or list[int]): The label or list of labels of the row/column to be dropped.
@@ -92,7 +92,7 @@ class DROP_PARAMS(BaseModel):
 def drop(params: DROP_PARAMS):
     return
 
-# 5. assign(table_name, start_row_index, end_row_index, start_column_index, end_column_index, values): Assigns a value to specific cells in the table.
+# assign(table_name, start_row_index, end_row_index, start_column_index, end_column_index, values): Assigns a value to specific cells in the table.
 # Parameters:
 # - table_name (str): The name of the table to assign the value to.
 # - start_row_index, end_row_index (int): The range of row indices to assign the value to.
@@ -112,7 +112,7 @@ class ASSIGN_PARAMS(BaseModel):
 def assign(params: ASSIGN_PARAMS):
     return
 
-# 6. move(origin_table_name, origin_index, target_table_name, target_index, axis): Moves a row or column from the origin table to the target table.
+# move(origin_table_name, origin_index, target_table_name, target_index, axis): Moves a row or column from the origin table to the target table.
 # Parameters:
 # - origin_table_name (str): The name of the table from which the row/column will be moved.
 # - origin_index (int): The index of the row/column to be moved.
@@ -132,7 +132,7 @@ class MOVE_PARAMS(BaseModel):
 def move(params: MOVE_PARAMS):
     return
 
-# 7. copy(origin_table_name, origin_index, target_table_name, target_index, target_label_name, axis): Copies a row or column from the origin table to the target table at the specified index.
+# copy(origin_table_name, origin_index, target_table_name, target_index, target_label_name, axis): Copies a row or column from the origin table to the target table at the specified index.
 # Parameters:
 # - origin_table_name (str): The name of the table from which the row/column will be copied.
 # - origin_index (int): The index of the row/column to be copied.
@@ -154,7 +154,7 @@ class COPY_PARAMS(BaseModel):
 def copy(params: COPY_PARAMS):
     return
 
-# 8. swap(table_name_a, label_a, table_name_b, label_b, axis): Swaps rows or columns between two tables.
+# swap(table_name_a, label_a, table_name_b, label_b, axis): Swaps rows or columns between two tables.
 # Parameters:
 # - table_name_a (str): The first table from which the row/column will be swapped.
 # - label_a (str or int): The label of the row/column to be swapped in the first table.
@@ -173,27 +173,27 @@ class SWAP_PARAMS(BaseModel):
 
 def swap(params: SWAP_PARAMS):
     return
-# 9. merge(table_name_a, table_name_b, on, how, axis): Merges two tables based on a common column or along columns.
+# merge(table_a, table_b, how="outer", on=None, left_on=None, right_on=None, axis=0): Merges two tables based on a common column or along columns.
 # Parameters:
-# - table_name_a (str): The first table to merge.
-# - table_name_b (str): The second table to merge.
-# - on (list[str]): The column or index level name to join on (ignored if axis=1).
-# - how (str): The type of merge to perform ('inner', 'outer', 'left', 'right').
-# - axis (str or int): Refers to the direction of the operation.
+# - table_a: First table
+# - table_b: Second table
+# - how: Type of merge to be performed. Options are 'left', 'right', 'outer', 'inner'. Default is 'outer'.
+# - on: Column or index level names to join on. Must be found in both DataFrames. If not provided and the DataFrames have a common column, will default to the intersection of the columns in the DataFrames.
+# - axis: Axis to concatenate along. 0 or "index" for row-wise, 1 or "column" for column-wise. Default is 0.
 
 
 class MERGE_PARAMS(BaseModel):
     table_name_a: str
     table_name_b: str
-    on: Optional[List[str]] 
     how: str
+    on: Optional[str]
     axis: Union[str, int]
 
 
 def merge(params: MERGE_PARAMS):
     return
 
-# 10. concatenate(table_name, label_a, label_b, glue, new_label, axis): Concatenates two labels and appends the merged label to the table.
+# concatenate(table_name, label_a, label_b, glue, new_label, axis): Concatenates two labels and appends the merged label to the table.
 # Parameters:
 # - table_name (str): table in which the rows/columns will be concatenated.
 # - label_a (str or int): The label of the first row/column to be concatenated.
@@ -215,7 +215,7 @@ class CONCATENATE_PARAMS(BaseModel):
 def concatenate(params: CONCATENATE_PARAMS):
     return
 
-# 11. split(table_name, label, delimiter, new_labels, axis): Splits a label into multiple parts at each occurrence of the specified delimiter.
+# split(table_name, label, delimiter, new_labels, axis): Splits a label into multiple parts at each occurrence of the specified delimiter.
 # Parameters:
 # - table_name (str): table in which the row/column will be split.
 # - label (str or int): The label of the row/column to be split.
@@ -235,7 +235,7 @@ class SPLIT_PARAMS(BaseModel):
 def split(params: SPLIT_PARAMS):
     return
 
-# 12. transpose(table_name): Transposes the given table.
+# transpose(table_name): Transposes the given table.
 # Parameters:
 # - table_name (str): table to be transposed.
 
@@ -248,7 +248,7 @@ def transpose(params: TRANSPOSE_PARAMS):
     return
 
 
-# 13. aggregate(table_name, functions, axis): Aggregates the table using the specified function.
+# aggregate(table_name, functions, axis): Aggregates the table using the specified function.
 # Parameters:
 # - table_name (str): table to be aggregated.
 # - functions (dict): Keys are names of rows or columns, and values are lists of function names. Example: {'A': ['sum', 'mean'], 'B': ['min', 'max']}.
@@ -263,7 +263,7 @@ class AGGREGATE_PARAMS(BaseModel):
 def aggregate(params: AGGREGATE_PARAMS):
     return
 
-# 14. test(table_name, label_a, label_b, strategy, axis): Returns a new result table by comparing two labels using the specified strategy.
+# test(table_name, label_a, label_b, strategy, axis): Returns a new result table by comparing two labels using the specified strategy.
 # Parameters:
 # - table_name (str): table on which the test will be performed.
 # - label_a (str or int): The label of the first row/column to be tested.
@@ -321,23 +321,25 @@ class REARRANGE(BaseModel):
 def rearrange(params: REARRANGE):
     pass
 
-# divide(table, by, axis): Divide the table by values of a row or column and saves each group to a separate table.
+# divide(table_name, by_values=None, by_array=None, axis): Divides the table by the specific values of a row or column or by the given sets of rows or columns.
 # Parameters:
-# - table: DataFrame to be divided.
-# - by: Column/Row name to group the table by.
-# - axis:
-#     - 0 or "index": Indicates a row operation.
-#     - 1 or "columns": Indicates a column operation.
+# - table (str): table to be divided.
+# - by_values (str): If this parameter is set, the table will be divided based on the unique values in the specified row/column.
+# - by_array (list[list[str/int]]): If this parameter is set, the table will be divided based on the specified sets of rows/columns.
+# - axis (str or int):
+#     - 0 or "index": Indicates to divide the table by a row.
+#     - 1 or "columns": Indicates to divide the table by a column.
 
 class DIVIDE(BaseModel):
     table_name: str
-    by: str
+    by_values: Optional[str]
+    by_array: Optional[List[List[Union[str, int]]]]
     axis: Union[str, int]
 
 def divide(params: DIVIDE):
     pass
 
-# pivot_table(table, index, columns, values, aggfunc): Reshapes the table so that each unique 'columns' value becomes a separate column, with the 'index' values as row headers, and the corresponding 'values' filled in their respective cells.
+# pivot_table(table_name, index, columns, values, aggfunc): Reshapes the table so that each unique 'columns' value becomes a separate column, with the 'index' values as row headers, and the corresponding 'values' filled in their respective cells.
 # Parameters:
 # - table (DataFrame): The table to pivot.
 # - index (str): The column name to use as the new row headers.
@@ -355,7 +357,7 @@ class PIVOT_TABLE(BaseModel):
 def pivot_table(params: PIVOT_TABLE):
     pass
 
-# fill(table, method, column=None): Fills missing values in the table using the specified method.
+# fill(table_name, method, column=None): Fills missing values in the table using the specified method.
 # Parameters:
 # - table: Table to fill missing values.
 # - method: The method to use for filling missing values. Choose from 'value', 'mean', 'median', 'mode', 'ffill', 'bfill', 'interpolate'.
@@ -564,14 +566,11 @@ def validate_swap(arguments, error_list, sheets_names):
 
 
 def validate_merge(arguments, error_list, sheets_names):
-    if len(arguments) not in [4, 5]:
-        error = create_error_message("Invalid number of arguments", f"The function 'merge' requires 5 arguments: 'table_name_a', 'table_name_b', 'on', 'how', 'axis'.", "merge")
+    if len(arguments) != 5:
+        error = create_error_message("Invalid number of arguments", f"The function 'merge' requires 6 arguments: 'table_name_a', 'table_name_b', 'how', 'on', 'left_on', 'right_on', 'axis'.", "merge")
         error_list.append(error)
     try:
-        if len(arguments) == 4:
-            params = MERGE_PARAMS(table_name_a=arguments[0], table_name_b=arguments[1], on=None, how=arguments[2], axis=arguments[3])
-        else:
-            params = MERGE_PARAMS(table_name_a=arguments[0], table_name_b=arguments[1], on=arguments[2], how=arguments[3], axis=arguments[4])
+        params = MERGE_PARAMS(table_name_a=arguments[0], table_name_b=arguments[1], how=arguments[2], on=arguments[3], axis=arguments[4])
         merge(params)
     except ValidationError as e:
         error = create_error_message("Invalid argument format", f"The arguments for 'merge' are not in the correct format. Please check the argument types and values.", "merge")
@@ -683,7 +682,7 @@ def validate_format(arguments, error_list, sheets_names):
     return "Success"
 
 def validate_rearrange(arguments, error_list, sheets_names):
-    if len(arguments) != 3:
+    if len(arguments) != 4:
         error = create_error_message("Invalid number of arguments", f"The function 'rearrange' requires 3 arguments: 'table_name', 'by_values', 'axis'.", "rearrange")
         error_list.append(error)
     try:
@@ -699,11 +698,11 @@ def validate_rearrange(arguments, error_list, sheets_names):
     return "Success"
 
 def validate_divide(arguments, error_list, sheets_names):
-    if len(arguments) != 3:
+    if len(arguments) != 4:
         error = create_error_message("Invalid number of arguments", f"The function 'divide' requires 3 arguments: 'table_name', 'by', 'axis'.", "divide")
         error_list.append(error)
     try:
-        params = DIVIDE(table_name=arguments[0], by=arguments[1], axis=arguments[2])
+        params = DIVIDE(table_name=arguments[0], by_values=arguments[1], by_array=arguments[2], axis=arguments[3])
         divide(params)
     except ValidationError as e:
         error = create_error_message("Invalid argument format", f"The arguments for 'divide' are not in the correct format. Please check the argument types and values.", "divide")

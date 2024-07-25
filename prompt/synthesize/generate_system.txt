@@ -20,7 +20,8 @@ Create a DSL script to clean the data based on the description.
 1. You should only use the DSL functions provided in the DSL Grammar. Do not add or invent new functions.
 2. For every step, you need to find the best function from the DSL Grammar to perform the described action.
 3. Table names should end with ".csv" to indicate that they are CSV files.
-4. Note that the row index starts from 0, which is the header row. The column index starts from 1.
+4. For data, the row index and column index starts from 1. Row 0 and Column 0 are reserved for the row and column names.
+5. For None values, you can use "null" in the output.
 
 #############
 

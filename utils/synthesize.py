@@ -147,13 +147,18 @@ def transfer_to_NL(dsl):
     elif dsl["function_name"] == "merge":
         table_a = dsl["arguments"][0]
         table_b = dsl["arguments"][1]
-        on = dsl["arguments"][2]
-        how = dsl["arguments"][3]
+        how = dsl["arguments"][2]
+        on = dsl["arguments"][3]
         axis = dsl["arguments"][4]
         if axis == 0 or axis == "index" or axis == "0":
-            return f"Merge %[{table_a}] and %[{table_b}] on $[{on}] with the method *[{how}] along the rows."
+            return f"Merge the %[given table(s)] with the table $[{table_b}]"
         elif axis == 1 or axis == "columns" or axis == "1":
-            return f"Merge %[{table_a}] and %[{table_b}] on $[{on}] with the method *[{how}] along the columns."
+            if on is not None:
+                return f"Merge the %[given table(s)] with the table $[{table_b}] based on the values in the column $[{on}]."
+            elif left_on is not None and right_on is not None:
+                return f"Merge the %[given table(s)] with the table $[{table_b}] based on the values in the column $[{left_on}] and $[{right_on}]."
+            else:
+                return "Invalid function"
         else:
             return "Invalid function"
     elif dsl["function_name"] == "concatenate":
@@ -301,16 +306,17 @@ def add_more_information(client_id, plan, information):
     log_messages(client_id, "add_information", messages)
 
     result = ""
-    table_name = response["table_name"]
-    label_name = response["label_name"]
-    name, version = split_sheet_name(table_name)
-    data = get_sheet(client_id, name, version)
-    result += f'\n3 Examples of "{label_name}" of {table_name}:\n'
-    for index, keys in enumerate(data[label_name]):
-        if index == 2:
-            result += f'"{data[label_name][keys]}"\n\n'
-            break
-        result += f'"{data[label_name][keys]}", '
+    for item in response:
+        table_name = item["table_name"]
+        label_name = item["label_name"]
+        name, version = split_sheet_name(table_name)
+        data = get_sheet(client_id, name, version)
+        result += f'\n3 Examples of "{label_name}" of {table_name}:\n'
+        for index, keys in enumerate(data[label_name]):
+            if index == 2:
+                result += f'"{data[label_name][keys]}"\n\n'
+                break
+            result += f'"{data[label_name][keys]}", '
     return result
 
 
@@ -350,6 +356,7 @@ def get_step_by_step_plan(client_id, history, summarization, error_list=[]):
 
     messages = append_message(plan_user_prompt, "user", messages)
     step_by_step_plan = generate_chat_completion(messages, json=True)
+    print(step_by_step_plan)
     step_by_step_plan = json.loads(step_by_step_plan)
     messages = append_message(step_by_step_plan, "assistant", messages)
 
@@ -361,7 +368,6 @@ def get_step_by_step_plan(client_id, history, summarization, error_list=[]):
 
     function_list = [
         "format",
-        "concatenate",
         "split",
     ]
     for item in step_by_step_plan:
@@ -402,7 +408,7 @@ def get_dsls(client_id, history, step_by_step_plan, error_list=[]):
     generated_dsl = generate_chat_completion(messages, json=True)
     messages = append_message(generated_dsl, "assistant", messages)
     log_messages(client_id, "generate_dsl", messages)
-
+    print(generated_dsl)
     dsls = json.loads(generated_dsl)
     return dsls
 

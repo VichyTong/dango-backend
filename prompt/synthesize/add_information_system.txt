@@ -11,6 +11,7 @@ Return the table name and the row/column name that related to "format", "concate
 
 # GUIDELINES #
 1. You should output the full name of the table ends with ".csv".
+2. You should output existing row/column name.
 
 #############
 
@@ -20,10 +21,12 @@ A step-by-step plan of cleaning a table and a table Information.
 #############
 
 # OUTPUT #
-Your output should be in JSON form.
+Your output should be in JSON list form.
 
 Example:
-{
-    "table_name": "apple_v0.csv",
-    "label_name": "Monday"
-}
+[
+    {
+        "table_name": "apple_v0.csv",
+        "label_name": "Monday"
+    }
+]
