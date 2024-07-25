@@ -17,7 +17,9 @@ def init_prompt():
     global plan_system_prompt, plan_user_prompt_template
     global generate_system_prompt, generate_user_prompt_template
     global verifier_semantic_system_prompt, verifier_semantic_user_prompt_template
-    global plan_with_feedback_user_prompt, generate_with_feedback_user_prompt
+    global error_message_template
+    global plan_with_error_message_system_prompt, plan_with_error_message_user_prompt_template
+    global generate_with_error_message_system_prompt, generate_with_error_message_user_prompt_template
     global add_information_system_prompt, add_information_user_prompt_template
     global boolean_indexing_system_prompt, boolean_indexing_user_prompt_template
     with open("prompt/synthesize/dsl_grammar.txt", "r") as f:
@@ -36,10 +38,16 @@ def init_prompt():
         verifier_semantic_system_prompt = f.read().replace("{DSL_GRAMMAR}", dsl_grammar)
     with open("prompt/synthesize/verifier_user.txt", "r") as f:
         verifier_semantic_user_prompt_template = f.read()
-    with open("prompt/synthesize/plan_with_feedback_user.txt", "r") as f:
-        plan_with_feedback_user_prompt = f.read()
-    with open("prompt/synthesize/generate_with_feedback_user.txt", "r") as f:
-        generate_with_feedback_user_prompt = f.read()
+    with open("prompt/synthesize/error_message_template.txt", "r") as f:
+        error_message_template = f.read()
+    with open("prompt/synthesize/plan_with_error_message_system.txt", "r") as f:
+        plan_with_error_message_system_prompt = f.read()
+    with open("prompt/synthesize/plan_with_error_message_user.txt", "r") as f:
+        plan_with_error_message_user_prompt_template = f.read()
+    with open("prompt/synthesize/generate_with_error_message_system.txt", "r") as f:
+        generate_with_error_message_system_prompt = f.read()
+    with open("prompt/synthesize/generate_with_error_message_user.txt", "r") as f:
+        generate_with_error_message_user_prompt_template = f.read()
     with open("prompt/synthesize/add_information_system.txt", "r") as f:
         add_information_system_prompt = f.read()
     with open("prompt/synthesize/add_information_user.txt", "r") as f:
@@ -48,6 +56,7 @@ def init_prompt():
         boolean_indexing_system_prompt = f.read()
     with open("prompt/synthesize/boolean_indexing_user.txt", "r") as f:
         boolean_indexing_user_prompt_template = f.read()
+
 
 init_prompt()
 
@@ -169,7 +178,9 @@ def transfer_to_NL(dsl):
         if axis == 0 or axis == "index" or axis == "0":
             return f"Split the row $[{label}] in %[given table(s)] by &[{delimiter}]."
         elif axis == 1 or axis == "columns" or axis == "1":
-            return f"Split the column $[{label}] in %[given table(s)] by &[{delimiter}]."
+            return (
+                f"Split the column $[{label}] in %[given table(s)] by &[{delimiter}]."
+            )
         else:
             return "Invalid function"
     elif dsl["function_name"] == "transpose":
@@ -242,7 +253,9 @@ def transfer_to_NL(dsl):
         method = dsl["arguments"][1]
         if len(dsl["arguments"]) == 3:
             column = dsl["arguments"][2]
-        return f"Fill the missing values in %[given table(s)] with the method *[{method}]."
+        return (
+            f"Fill the missing values in %[given table(s)] with the method *[{method}]."
+        )
     else:
         return "Invalid function"
 
@@ -257,6 +270,7 @@ def get_summarization(client_id, history):
     log_messages(client_id, "generate_summarization", messages)
 
     return summarization
+
 
 def add_more_information(client_id, plan, information):
     def split_sheet_name(sheet_name):
@@ -300,16 +314,27 @@ def add_more_information(client_id, plan, information):
     return result
 
 
-def get_step_by_step_plan(
-    client_id, history, summarization, feedback=None, error_list=[]
-):
-    if feedback is None:
+def format_error_message(error_list):
+    error_message = "ERROR_LIST:\n"
+    for index, error in enumerate(error_list, start=1):
+        error_message += (
+            error_message_template.replace("{INDEX}", str(index))
+            .replace("{ERROR_TYPE}", error["error_type"])
+            .replace("{FUNCTION_NAME}", error["function_name"])
+            .replace("{MESSAGE}", error["error_message"])
+        )
+    return error_message
+
+
+def get_step_by_step_plan(client_id, history, summarization, error_list=[]):
+    if len(error_list) == 0:
         plan_user_prompt = plan_user_prompt_template.replace(
             "{USER_INTENTS}", summarization
         ).replace(
             "{INFORMATION}",
             format_information(history["information"], with_table_diff=False),
         )
+        messages = append_message(plan_system_prompt, "system", [])
     else:
         if "error" in feedback["feedback"]:
             error_list.append(feedback["feedback"]["error"])
@@ -319,19 +344,20 @@ def get_step_by_step_plan(
                 "{INFORMATION}",
                 format_information(history["information"], with_table_diff=False),
             )
-            .replace("{ERROR_MESSAGE}", json.dumps(error_list))
+            .replace("{ERROR_MESSAGE}", format_error_message(error_list))
         )
+        messages = append_message(plan_with_error_message_system_prompt, "system", [])
 
-    messages = append_message(plan_system_prompt, "system", [])
     messages = append_message(plan_user_prompt, "user", messages)
     step_by_step_plan = generate_chat_completion(messages, json=True)
-    print(step_by_step_plan)
     step_by_step_plan = json.loads(step_by_step_plan)
     messages = append_message(step_by_step_plan, "assistant", messages)
 
     step_by_step_plan_string = "Step-by-step Plan:\n"
     for index, item in enumerate(step_by_step_plan, start=1):
-        step_by_step_plan_string += f"{index}: {item['description']} ({item['function']} function)\n"
+        step_by_step_plan_string += (
+            f"{index}: {item['description']} ({item['function']} function)\n"
+        )
 
     function_list = [
         "format",
@@ -341,21 +367,24 @@ def get_step_by_step_plan(
     for item in step_by_step_plan:
         if item["function"] in function_list:
             step_by_step_plan_string += add_more_information(
-                client_id, item["description"], format_information(history["information"], with_table_diff=False)
+                client_id,
+                item["description"],
+                format_information(history["information"], with_table_diff=False),
             )
-    
+
     log_messages(client_id, "generate_step_by_step_plan", messages)
     return step_by_step_plan_string
 
 
-def get_dsls(client_id, history, step_by_step_plan, feedback=None, error_list=[]):
-    if feedback is None:
+def get_dsls(client_id, history, step_by_step_plan, error_list=[]):
+    if len(error_list) == 0:
         generate_user_prompt = generate_user_prompt_template.replace(
             "{PLAN}", step_by_step_plan
         ).replace(
             "{INFORMATION}",
             format_information(history["information"], with_table_diff=False),
         )
+        messages = append_message(generate_system_prompt, "system", [])
     else:
         generate_user_prompt = (
             generate_with_feedback_user_prompt.replace("{PLAN}", step_by_step_plan)
@@ -363,10 +392,12 @@ def get_dsls(client_id, history, step_by_step_plan, feedback=None, error_list=[]
                 "{INFORMATION}",
                 format_information(history["information"], with_table_diff=False),
             )
-            .replace("{ERROR_MESSAGE}", json.dumps(error_list))
+            .replace("{ERROR_MESSAGE}", format_error_message(error_list))
+        )
+        messages = append_message(
+            generate_with_error_message_system_prompt, "system", []
         )
 
-    messages = append_message(generate_system_prompt, "system", [])
     messages = append_message(generate_user_prompt, "user", messages)
     generated_dsl = generate_chat_completion(messages, json=True)
     messages = append_message(generated_dsl, "assistant", messages)
@@ -406,24 +437,27 @@ def verify(client_id, history, summarization, dsls, error_list):
     feedback = verify_semantics(client_id, history, summarization, dsls, error_list)
     return feedback
 
+
 def fill_condition(client_id, dsls):
     def extract_to_dict(s):
         type_pattern = r"Type: (\w+)"
         function_pattern = r"```(.*?)```"
-        
+
         type_match = re.search(type_pattern, s, re.DOTALL)
         function_match = re.search(function_pattern, s, re.DOTALL)
-        
+
         result = {
             "type": type_match.group(1) if type_match else None,
-            "function": function_match.group(1).strip() if function_match else None
+            "function": function_match.group(1).strip() if function_match else None,
         }
         return result
-    
+
     for dsl in dsls:
         if "condition" in dsl:
-            boolean_indexing_user_prompt = boolean_indexing_user_prompt_template.replace(
-                "CONDITION", dsl["condition"]
+            boolean_indexing_user_prompt = (
+                boolean_indexing_user_prompt_template.replace(
+                    "CONDITION", dsl["condition"]
+                )
             )
             messages = append_message(boolean_indexing_system_prompt, "system", [])
             messages = append_message(boolean_indexing_user_prompt, "user", messages)
@@ -451,9 +485,9 @@ def dsl_synthesize(client_id: str) -> str:
         count += 1
         print(f"{count} run")
         step_by_step_plan = get_step_by_step_plan(
-            client_id, history, summarization, feedback, error_list
+            client_id, history, summarization, error_list
         )
-        dsls = get_dsls(client_id, history, step_by_step_plan, feedback, error_list)
+        dsls = get_dsls(client_id, history, step_by_step_plan, error_list)
         feedback = verify(client_id, history, summarization, dsls, error_list)
         dsls = fill_condition(client_id, dsls)
     print(f"Total count: {count}")
