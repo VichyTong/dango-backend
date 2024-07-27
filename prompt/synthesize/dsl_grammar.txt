@@ -27,7 +27,7 @@ Parameters:
 - values (str): The column name whose values will fill the new table.
 - aggfunc (str): The aggregation function to apply to the values. Common options are 'first', 'sum', 'mean', etc.
 
-4. merge(table_name_a, table_name_b, how="outer", on=None, axis=0): Merges two tables based on a common column or along columns.
+4. merge(table_name_a, table_name_b, how="outer", on=None, axis): Merges two tables based on a common column or along columns.
 Parameters:
 - table_name_a: First table
 - table_name_b: Second table
@@ -35,13 +35,14 @@ Parameters:
 - on: Column or index level names to join on. Must be found in both DataFrames. If not provided and the DataFrames have a common column, will default to the intersection of the columns in the DataFrames.
 - axis: Axis to concatenate along. 0 or "index" for row-wise, 1 or "column" for column-wise. Default is 0.
 
-5. sub_table(table_name, label_list, axis): Returns a new table with only the specified rows or columns.
+5. sub_table(table_name, label_list, new_name, axis): Returns a new table with only the specified rows or columns.
 Parameters:
 - table_name (str): The name of the table to extract the rows/columns from.
 - label_list (list[str/int]): The list of row/column labels to extract.
+- new_name (str): The name of the new table.
 - axis (str or int):
-    - 0 or "index": Indicates to extract rows.
-    - 1 or "columns": Indicates to extract columns.
+    - 0 or "index": Indicates to extract rows. The label_list contains row indexes.
+    - 1 or "columns": Indicates to extract columns. The label_list contains column names.
 
 ### Column/Row-level Functions
 

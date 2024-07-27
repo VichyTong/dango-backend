@@ -22,7 +22,7 @@ def create_error_message(error, error_message, function_name=None):
         }
 
 
-def validate_dsls_format(function_calls: List[dict], error_list):
+def validate_dsls_format(function_calls: List[dict], error_list=[]):
     try:
         validated_calls = [FunctionCall(**call) for call in function_calls]
         return validated_calls
@@ -380,6 +380,7 @@ def fill(params: FILL):
 class SUB_TABLE(BaseModel):
     table_name: str
     label_list: List[Union[str, int]]
+    new_name: str
     axis: Union[str, int]
 
 def sub_table(params: SUB_TABLE):
@@ -393,7 +394,7 @@ def get_sheet_names(all_sheets):
     return sheets_names
 
 
-def validate_dsls_functions(function_calls: List[dict], error_list, all_sheets):
+def validate_dsls_functions(function_calls: List[dict], all_sheets, error_list=[]):
     valid_functions = ["create_table", "delete_table", "insert", "drop", "assign", "move", "copy", "swap", "merge", "concatenate", "split", "transpose", "aggregate", "test", "format", "rearrange", "divide"]
     sheets_names = get_sheet_names(all_sheets)
     for call in function_calls:
@@ -763,20 +764,15 @@ def validate_fill(arguments, error_list, sheets_names):
     return "Success"
 
 def validate_sub_table(arguments, error_list, sheets_names):
-    if len(arguments) != 3:
-        error = create_error_message("Invalid number of arguments", f"The function 'sub_table' requires 3 arguments: 'table_name', 'label_list', 'axis'.", "sub_table")
+    if len(arguments) != 4:
+        error = create_error_message("Invalid number of arguments", f"The function 'sub_table' requires 4 arguments: 'table_name', 'label_list', 'new_name', 'axis'.", "sub_table")
         error_list.append(error)
     try:
-        params = SUB_TABLE(table_name=arguments[0], label_list=arguments[1], axis=arguments[2])
+        params = SUB_TABLE(table_name=arguments[0], label_list=arguments[1], new_name=arguments[2], axis=arguments[3])
         sub_table(params)
     except ValidationError as e:
         error = create_error_message("Invalid argument format", f"The arguments for 'sub_table' are not in the correct format. Please check the argument types and values.", "sub_table")
         error_list.append(error)
-
-    if arguments[0] not in sheets_names:
-        error = create_error_message("Table does not exist", f"The table '{arguments[0]}' does not exist. Please create the table before performing operations on it.", "sub_table")
-        error_list.append(error)
-    return "Success"
 
 
 # # Example usage:

@@ -344,10 +344,10 @@ def get_step_by_step_plan(
         )
         messages = append_message(plan_system_prompt, "system", [])
     else:
-        if "error" in feedback["feedback"]:
-            error_list.append(feedback["feedback"]["error"])
         plan_user_prompt = (
-            plan_with_feedback_user_prompt.replace("{USER_INTENTS}", summarization)
+            plan_with_error_message_user_prompt_template.replace(
+                "{USER_INTENTS}", summarization
+            )
             .replace(
                 "{INFORMATION}",
                 format_information(history["information"], with_table_diff=False),
@@ -396,13 +396,15 @@ def get_dsls(client_id, history, step_by_step_plan, error_list=[], last_dsl=None
         messages = append_message(generate_system_prompt, "system", [])
     else:
         generate_user_prompt = (
-            generate_with_feedback_user_prompt.replace("{PLAN}", step_by_step_plan)
+            generate_with_error_message_user_prompt_template.replace(
+                "{PLAN}", step_by_step_plan
+            )
             .replace(
                 "{INFORMATION}",
                 format_information(history["information"], with_table_diff=False),
             )
             .replace("{ERROR_MESSAGE}", format_error_message(error_list))
-            .replace("{DSL}", last_dsl)
+            .replace("{DSL}", json.dumps(last_dsl, indent=4))
         )
         messages = append_message(
             generate_with_error_message_system_prompt, "system", []
@@ -417,21 +419,21 @@ def get_dsls(client_id, history, step_by_step_plan, error_list=[], last_dsl=None
     return dsls
 
 
-def verify_syntax(client_id, dsls, error_list):
+def verify_syntax(client_id, dsls):
     all_sheets = get_all_sheets(client_id)
-    validate_dsls_format(dsls, error_list)
-    validate_dsls_functions(dsls, error_list, all_sheets)
+    validate_dsls_format(dsls)
+    validate_dsls_functions(dsls, all_sheets)
     return True
 
 
-def verify_semantics(client_id, history, summarization, dsls, error_list):
+def verify_semantics(client_id, history, summarization, dsls):
     verifier_semantic_user_prompt = (
         verifier_semantic_user_prompt_template.replace(
             "{INFORMATION}",
             format_information(history["information"], with_table_diff=False),
         )
         .replace("{USER_INTENTS}", summarization)
-        .replace("{GENERATED_DSLS}", json.dumps(dsls))
+        .replace("{GENERATED_DSLS}", json.dumps(dsls, indent=4))
     )
     messages = append_message(verifier_semantic_system_prompt, "system", [])
     messages = append_message(verifier_semantic_user_prompt, "user", messages)
@@ -442,9 +444,9 @@ def verify_semantics(client_id, history, summarization, dsls, error_list):
     return feedback
 
 
-def verify(client_id, history, summarization, dsls, error_list):
-    verify_syntax(client_id, dsls, error_list)
-    feedback = verify_semantics(client_id, history, summarization, dsls, error_list)
+def verify(client_id, history, summarization, dsls):
+    verify_syntax(client_id, dsls)
+    feedback = verify_semantics(client_id, history, summarization, dsls)
     return feedback
 
 
@@ -481,23 +483,23 @@ def fill_condition(client_id, dsls):
 
 
 def dsl_synthesize(client_id: str) -> str:
-    error_list = []
     history = get_history(client_id)
     summarization = get_summarization(client_id, history)
     step_by_step_plan = get_step_by_step_plan(client_id, history, summarization)
     dsls = get_dsls(client_id, history, step_by_step_plan)
-    feedback = verify(client_id, history, summarization, dsls, error_list)
+    feedback = verify(client_id, history, summarization, dsls)
     dsls = fill_condition(client_id, dsls)
     print("1 run")
     count = 1
     while feedback["correctness"] == "No" and count < 10:
+        error_list = [feedback["feedback"]["error"]]
         count += 1
         print(f"{count} run")
         step_by_step_plan = get_step_by_step_plan(
             client_id, history, summarization, error_list, step_by_step_plan
         )
         dsls = get_dsls(client_id, history, step_by_step_plan, error_list, dsls)
-        feedback = verify(client_id, history, summarization, dsls, error_list)
+        feedback = verify(client_id, history, summarization, dsls)
         dsls = fill_condition(client_id, dsls)
     print(f"Total count: {count}")
     for dsl in dsls:

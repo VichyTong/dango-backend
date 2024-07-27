@@ -16,6 +16,7 @@ from dsl.utils import (
     divide,
     pivot_table,
     fill,
+    sub_table,
 )
 
 
@@ -54,5 +55,7 @@ def execute_dsl(sheet, function, arguments, target_sheet=None):
         return pivot_table(sheet, *arguments)
     elif function == "fill":
         return fill(sheet, *arguments)
+    elif function == "sub_table":
+        return sub_table(sheet, *arguments)
     else:
         return "Invalid function"
