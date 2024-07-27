@@ -321,19 +321,17 @@ class REARRANGE(BaseModel):
 def rearrange(params: REARRANGE):
     pass
 
-# divide(table_name, by_values=None, by_array=None, axis): Divides the table by the specific values of a row or column or by the given sets of rows or columns.
+# divide(table_name, by=None, axis): Divides the table by the specific values of a row or column, return a list of tables.
 # Parameters:
 # - table (str): table to be divided.
-# - by_values (str): If this parameter is set, the table will be divided based on the unique values in the specified row/column.
-# - by_array (list[list[str/int]]): If this parameter is set, the table will be divided based on the specified sets of rows/columns.
+# - by(int/str): The label of a row or column.
 # - axis (str or int):
 #     - 0 or "index": Indicates to divide the table by a row.
 #     - 1 or "columns": Indicates to divide the table by a column.
 
 class DIVIDE(BaseModel):
     table_name: str
-    by_values: Optional[str]
-    by_array: Optional[List[List[Union[str, int]]]]
+    by: Union[str, int]
     axis: Union[str, int]
 
 def divide(params: DIVIDE):
@@ -369,6 +367,22 @@ class FILL(BaseModel):
     column: Optional[str]
 
 def fill(params: FILL):
+    pass
+
+# sub_table(table_name, label_list, axis): Returns a new table with only the specified rows or columns.
+# Parameters:
+# - table_name (str): The name of the table to extract the rows/columns from.
+# - label_list (list[str/int]): The list of row/column labels to extract.
+# - axis (str or int):
+#     - 0 or "index": Indicates to extract rows.
+#     - 1 or "columns": Indicates to extract columns.
+
+class SUB_TABLE(BaseModel):
+    table_name: str
+    label_list: List[Union[str, int]]
+    axis: Union[str, int]
+
+def sub_table(params: SUB_TABLE):
     pass
 
 def get_sheet_names(all_sheets):
@@ -698,11 +712,11 @@ def validate_rearrange(arguments, error_list, sheets_names):
     return "Success"
 
 def validate_divide(arguments, error_list, sheets_names):
-    if len(arguments) != 4:
+    if len(arguments) != 3:
         error = create_error_message("Invalid number of arguments", f"The function 'divide' requires 3 arguments: 'table_name', 'by', 'axis'.", "divide")
         error_list.append(error)
     try:
-        params = DIVIDE(table_name=arguments[0], by_values=arguments[1], by_array=arguments[2], axis=arguments[3])
+        params = DIVIDE(table_name=arguments[0], by=arguments[1], axis=arguments[2])
         divide(params)
     except ValidationError as e:
         error = create_error_message("Invalid argument format", f"The arguments for 'divide' are not in the correct format. Please check the argument types and values.", "divide")
@@ -745,6 +759,22 @@ def validate_fill(arguments, error_list, sheets_names):
 
     if arguments[0] not in sheets_names:
         error = create_error_message("Table does not exist", f"The table '{arguments[0]}' does not exist. Please create the table before performing operations on it.", "fill")
+        error_list.append(error)
+    return "Success"
+
+def validate_sub_table(arguments, error_list, sheets_names):
+    if len(arguments) != 3:
+        error = create_error_message("Invalid number of arguments", f"The function 'sub_table' requires 3 arguments: 'table_name', 'label_list', 'axis'.", "sub_table")
+        error_list.append(error)
+    try:
+        params = SUB_TABLE(table_name=arguments[0], label_list=arguments[1], axis=arguments[2])
+        sub_table(params)
+    except ValidationError as e:
+        error = create_error_message("Invalid argument format", f"The arguments for 'sub_table' are not in the correct format. Please check the argument types and values.", "sub_table")
+        error_list.append(error)
+
+    if arguments[0] not in sheets_names:
+        error = create_error_message("Table does not exist", f"The table '{arguments[0]}' does not exist. Please create the table before performing operations on it.", "sub_table")
         error_list.append(error)
     return "Success"
 

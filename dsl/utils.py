@@ -606,7 +606,7 @@ def format(table, label, pattern, replace_with="", axis=0):
     return table
 
 
-def divide(table, by_values=None, by_array=None, axis=0):
+def divide(table, by, axis=0):
     """
     Divides the table by the specific values of a row or column or by the given sets of rows or columns.
 
@@ -620,42 +620,20 @@ def divide(table, by_values=None, by_array=None, axis=0):
     """
     axis = classify_axis(axis)
 
-    if by_values:
-        if axis == 1:
-            groups = table.groupby(by)
-        elif axis == 0:
-            groups = table.T.groupby(by).T
+    if axis == 1:
+        groups = table.groupby(by)
+    elif axis == 0:
+        groups = table.T.groupby(by).T
 
-        result = []
-        for group in groups:
-            result.append(
-                {
-                    "unique_value": group[0],
-                    "data": group[1].reset_index(drop=True),
-                }
-            )
-        return result
-    
-    elif by_array:
-        result = []
-        if axis == 1:
-            for index, group in enumerate(by_array, start=1):
-                subset = table[group]
-                result.append({
-                    "unique_value": f"table {index}",
-                    "data": subset.reset_index(drop=True)
-                })
-        elif axis == 0:
-            for index, group in enumerate(by_array, start=1):
-                subset = table.iloc[group]
-                result.append({
-                    "unique_value": f"table {index}",
-                    "data": subset.reset_index(drop=True)
-                })
-        return result
-
-    else:
-        raise ValueError("Either by_values or by_array must be provided.")
+    result = []
+    for group in groups:
+        result.append(
+            {
+                "unique_value": group[0],
+                "data": group[1].reset_index(drop=True),
+            }
+        )
+    return result
 
 
 def pivot_table(table, index, columns, values, aggfunc="first"):
@@ -734,3 +712,18 @@ def fill(table, method, column=None):
         )
 
     return df
+
+
+def sub_table(table, label_list, axis=0):
+    """
+    Returns a sub-table containing only the specified rows or columns.
+    """
+
+    axis = classify_axis(axis)
+
+    if axis == 0:
+        return table.loc[label_list]
+    elif axis == 1:
+        return table[label_list]
+    else:
+        raise ValueError("Invalid axis. Choose from 0 or 'index', 1 or 'columns'.")

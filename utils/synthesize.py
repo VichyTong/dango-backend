@@ -332,7 +332,9 @@ def format_error_message(error_list):
     return error_message
 
 
-def get_step_by_step_plan(client_id, history, summarization, error_list=[]):
+def get_step_by_step_plan(
+    client_id, history, summarization, error_list=[], last_plan=None
+):
     if len(error_list) == 0:
         plan_user_prompt = plan_user_prompt_template.replace(
             "{USER_INTENTS}", summarization
@@ -351,6 +353,7 @@ def get_step_by_step_plan(client_id, history, summarization, error_list=[]):
                 format_information(history["information"], with_table_diff=False),
             )
             .replace("{ERROR_MESSAGE}", format_error_message(error_list))
+            .replace("{PLAN}", last_plan)
         )
         messages = append_message(plan_with_error_message_system_prompt, "system", [])
 
@@ -382,7 +385,7 @@ def get_step_by_step_plan(client_id, history, summarization, error_list=[]):
     return step_by_step_plan_string
 
 
-def get_dsls(client_id, history, step_by_step_plan, error_list=[]):
+def get_dsls(client_id, history, step_by_step_plan, error_list=[], last_dsl=None):
     if len(error_list) == 0:
         generate_user_prompt = generate_user_prompt_template.replace(
             "{PLAN}", step_by_step_plan
@@ -399,6 +402,7 @@ def get_dsls(client_id, history, step_by_step_plan, error_list=[]):
                 format_information(history["information"], with_table_diff=False),
             )
             .replace("{ERROR_MESSAGE}", format_error_message(error_list))
+            .replace("{DSL}", last_dsl)
         )
         messages = append_message(
             generate_with_error_message_system_prompt, "system", []
@@ -487,13 +491,12 @@ def dsl_synthesize(client_id: str) -> str:
     print("1 run")
     count = 1
     while feedback["correctness"] == "No" and count < 10:
-        error_list = []
         count += 1
         print(f"{count} run")
         step_by_step_plan = get_step_by_step_plan(
-            client_id, history, summarization, error_list
+            client_id, history, summarization, error_list, step_by_step_plan
         )
-        dsls = get_dsls(client_id, history, step_by_step_plan, error_list)
+        dsls = get_dsls(client_id, history, step_by_step_plan, error_list, dsls)
         feedback = verify(client_id, history, summarization, dsls, error_list)
         dsls = fill_condition(client_id, dsls)
     print(f"Total count: {count}")

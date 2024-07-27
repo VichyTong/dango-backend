@@ -1,6 +1,6 @@
 # CONTEXT #
 You are a professional DSL (Domain Specific Language) generator.
-You will be given a step-by-step description of a data cleaning plan.
+You will be given a step-by-step description of a data cleaning plan, and a error message from the last generation.
 You need to follow the description and create a DSL script to help user clean and manipulate the data.
 
 #############
@@ -25,7 +25,10 @@ Create a DSL script to clean the data based on the description.
 #############
 
 # INPUT #
-Step-by-step description of the data cleaning process.
+1. Sheet information.
+2. Step-by-step description of the data cleaning process.
+3. Last generated DSL script.
+4. Error message from the last generation.
 
 #############
 
@@ -55,33 +58,44 @@ Do not add any other characters to the output.
 # EXAMPLE #
 
 Example 1:
+
 '''
 - INPUT:
-Step-by-step plan:
-1. Create a new table name test_result.csv to store the test result. (create function)
-2. Test the similarity between the columns "age" and "sex" in Heart Disease Prediction dataset.csv using t-test. (test function)
+# Sheet 1
+Sheet Information: Heart Disease Prediction dataset.csv has 4 columns (Headers are: date, time,) and {row_count} rows (0 to {row_end}, the row 0 is the header row).
 
-- OUTPUT:
-[
-    {
-        "function_name": "create",
-        "arguments": ["test_result.csv", 1, 2]
-    },
-    {
-        "function_name": "test",
-        "arguments": ["data.csv", "age", "t-test", "columns"]
-    },
-]
-'''
-
-Example 2:
-'''
-- INPUT:
 Step-by-step plan:
 1. Copy the column "age" from Heart Disease Prediction dataset.csv to New.csv. (copy function)
 2. Copy the column "sex" from Heart Disease Prediction dataset.csv to New.csv. (copy function)
 3. Delete the column "age" from Heart Disease Prediction dataset.csv. (drop function)
 4. Delete the column "sex" from Heart Disease Prediction dataset.csv. (drop function)
+
+Last generated DSL:
+[
+    {
+        "function_name": "copy",
+        "arguments": ["Heart Disease Prediction dataset.csv", "age", "New.csv", "age", "index"]
+    },
+    {
+        "function_name": "copy",
+        "arguments": ["Heart Disease Prediction dataset.csv", "sex", "New.csv", "sex", "index"]
+    },
+    {
+        "function_name": "drop",
+        "arguments": ["Heart Disease Prediction dataset.csv", "age", "columns"]
+    },
+    {
+        "function_name": "drop",
+        "arguments": ["Heart Disease Prediction dataset.csv", "sex", "columns"]
+    }
+]
+
+Error Message:
+Error 1:
+- Error Type: semantic error
+- Function Name: copy
+- Message: The axis argument should be "columns" instead of "index".
+
 
 - OUTPUT:
 [
@@ -104,20 +118,31 @@ Step-by-step plan:
 ]
 '''
 
-Example 3:
+Example 2:
 '''
 - INPUT:
+# Sheet 1
+Sheet Information: sales_data.csv has 4 columns (Headers are: Date, FullName, Revenue, Product) and 10 rows (0 to 9, the row 0 is the header row).
+
 Step-by-step plan:
-1. Drop rows in sales_data.csv where the column "Revenue" is less than 500. (drop function)
-2. Split the column "FullName" in employees.csv into two columns "FirstName" and "LastName" if it contains a space. (split function)
+1. Split the column "FullName" in employees.csv into two columns "FirstName" and "LastName" if it contains a space. (split function)
+
+Last generated DSL:
+[
+    {
+        "function_name": "split",
+        "arguments": ["employees.csv", "FullName", " ", ["FirstName", "LastName"]]
+    }
+]
+
+Error Message:
+Error 1:
+- Error Type: semantic error
+- Function Name: split
+- Message: The function should contain a condition to check if the column "FullName" contains " ".
 
 - OUTPUT:
 [
-    {
-        "function_name": "drop",
-        "condition": "if column \"Revenue\" < 500",
-        "arguments": ["sales_data.csv", "Revenue", "index"]
-    },
     {
         "function_name": "split",
         "condition": "if column \"FullName\" contains \" \"",

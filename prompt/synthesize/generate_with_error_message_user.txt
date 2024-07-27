@@ -1,4 +1,7 @@
 {INFORMATION}
 {PLAN}
+
+Last generated DSL:
+{DSL}
 Error Message:
 {ERROR_MESSAGE}
