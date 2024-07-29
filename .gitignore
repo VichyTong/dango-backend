@@ -9,3 +9,4 @@ clean.db
 /logs/*
 app.log
 test_function.ipynb
+run.sh

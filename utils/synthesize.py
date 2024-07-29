@@ -238,13 +238,12 @@ def transfer_to_NL(dsl):
         table = dsl["arguments"][0]
         label = dsl["arguments"][1]
         pattern = dsl["arguments"][2]
-        axis = dsl["arguments"][3]
+        replace_with = dsl["arguments"][3]
+        axis = dsl["arguments"][4]
         if axis == 0 or axis == "index" or axis == "0":
-            return f"Format the values in the row $[{label}] in %[given table(s)] based on the *[given pattern]."
+            return f"Format the values in the row $[{label}] in %[given table(s)] with the pattern *[{pattern}] and replace them with *[{replace_with}]."
         elif axis == 1 or axis == "columns" or axis == "1":
-            return f"Format the values in the column $[{label}] in %[given table(s)] based on the *[given pattern]."
-        else:
-            return "Invalid function"
+            return f"Format the values in the column $[{label}] in %[given table(s)] with the pattern *[{pattern}] and replace them with *[{replace_with}]."
     elif dsl["function_name"] == "divide":
         table = dsl["arguments"][0]
         by = dsl["arguments"][1]
@@ -256,11 +255,26 @@ def transfer_to_NL(dsl):
     elif dsl["function_name"] == "fill":
         table = dsl["arguments"][0]
         method = dsl["arguments"][1]
-        if len(dsl["arguments"]) == 3:
-            column = dsl["arguments"][2]
-        return (
-            f"Fill the missing values in %[given table(s)] with the method *[{method}]."
-        )
+        column = dsl["arguments"][2]
+        return f"Fill the missing values in the column $[{column}] in %[given table(s)] with the method *[{method}]."
+    elif dsl["function_name"] == "pivot_table":
+        table = dsl["arguments"][0]
+        index = dsl["arguments"][1]
+        columns = dsl["arguments"][2]
+        values = dsl["arguments"][3]
+        aggfunc = dsl["arguments"][4]
+        return f"Create a pivot table based on the %[given table(s)] with the index $[{index}], columns $[{columns}], values $[{values}] and the aggregation function *[{aggfunc}]."
+    elif dsl["function_name"] == "sub_table":
+        table = dsl["arguments"][0]
+        label_list = dsl["arguments"][1]
+        new_name = dsl["arguments"][2]
+        axis = dsl["arguments"][3]
+        if axis == 0 or axis == "index" or axis == "0":
+            return f"Create a sub-table %[given table(s)] with the rows $[{label_list}]."
+        elif axis == 1 or axis == "columns" or axis == "1":
+            return f"Create a sub-table %[given table(s)] with the columns $[{label_list}]."
+        else:
+            return "Invalid function"
     else:
         return "Invalid function"
 
