@@ -178,16 +178,11 @@ def transfer_to_NL(dsl):
         table = dsl["arguments"][0]
         label = dsl["arguments"][1]
         delimiter = dsl["arguments"][2]
-        new_labels = dsl["arguments"][3]
-        axis = dsl["arguments"][4]
+        axis = dsl["arguments"][3]
         if axis == 0 or axis == "index" or axis == "0":
-            return f"Split the row $[{label}] in %[given table(s)] by &[{delimiter}]."
+            return f"Split the values in the row $[{label}] in %[given table(s)] with the delimiter &[{delimiter}]."
         elif axis == 1 or axis == "columns" or axis == "1":
-            return (
-                f"Split the column $[{label}] in %[given table(s)] by &[{delimiter}]."
-            )
-        else:
-            return "Invalid function"
+            return f"Split the values in the column $[{label}] in %[given table(s)] with the delimiter &[{delimiter}]."
     elif dsl["function_name"] == "transpose":
         table = dsl["arguments"][0]
         return f"Transpose %[given table(s)]."

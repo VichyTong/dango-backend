@@ -215,22 +215,23 @@ class CONCATENATE_PARAMS(BaseModel):
 def concatenate(params: CONCATENATE_PARAMS):
     return
 
-# split(table_name, label, delimiter, new_labels, axis): Splits a label into multiple parts at each occurrence of the specified delimiter.
+# split(table, label, delimiter, axis, split_column=None): Splits rows or columns in the given table based on a specified delimiter.
 # Parameters:
-# - table_name (str): table in which the row/column will be split.
+# - table_name (str): The table in which the rows/columns will be split.
 # - label (str or int): The label of the row/column to be split.
-# - delimiter (str): The delimiter used to split the row/column content.
-# - new_labels (list[str]): List of new labels for the resulting split rows/columns.
-# - axis (str or int): Refers to the direction of the operation.
+# - delimiter (str): The delimiter to use for splitting the rows/columns.
+# - axis (str or int):
+#     - 0 or 'index' for row splitting
+#     - 1 or 'columns' for column splitting.
+# - split_column (list of str, optional): The label of the column to split when mode is 'columns'. Required for 'columns' mode.
 
 
 class SPLIT_PARAMS(BaseModel):
     table_name: str
     label: Union[str, int]
     delimiter: str
-    new_labels: List[str]
     axis: Union[str, int]
-
+    split_column: Optional[List[str]]
 
 def split(params: SPLIT_PARAMS):
     return
@@ -615,12 +616,14 @@ def validate_concatenate(arguments, error_list, sheets_names):
 
 
 def validate_split(arguments, error_list, sheets_names):
-    if len(arguments) != 5:
-        error = create_error_message("Invalid number of arguments", f"The function 'split' requires 5 arguments: 'table_name', 'label', 'delimiter', 'new_labels', 'axis'.", "split")
+    if not(len(arguments) == 4 or len(arguments) == 5):
+        error = create_error_message("Invalid number of arguments", f"The function 'split' requires 4 or 5 arguments: 'table_name', 'label', 'delimiter', 'axis', 'split_column'.", "split")
         error_list.append(error)
     try:
-        params = SPLIT_PARAMS(table_name=arguments[0], label=arguments[1], delimiter=arguments[2], new_labels=arguments[3], axis=arguments[4])
-        split(params)
+        if len(arguments) == 4:
+            params = SPLIT_PARAMS(table_name=arguments[0], label=arguments[1], delimiter=arguments[2], axis=arguments[3], split_column=None)
+        else:
+            params = SPLIT_PARAMS(table_name=arguments[0], label=arguments[1], delimiter=arguments[2], axis=arguments[3], split_column=arguments[4])
     except ValidationError as e:
         error = create_error_message("Invalid argument format", f"The arguments for 'split' are not in the correct format. Please check the argument types and values.", "split")
         error_list.append(error)

@@ -359,60 +359,50 @@ def concatenate(table, label_a, label_b, glue, new_label, axis=0):
     return table
 
 
-def split(table, label, delimiter, new_labels, axis=0):
+def split(table, label, delimiter, axis=0, split_column=None):
     """
-    Splits a label into multiple parts at each occurrence of the specified delimiter.
+    Splits rows or columns in the given table based on a specified delimiter.
 
     Parameters:
-    - table: DataFrame in which the row/column will be split.
+    - table: The table in which the rows/columns will be split.
     - label: The label of the row/column to be split.
-    - delimiter: The delimiter used to split the row/column content.
-    - new_labels: List of new labels for the resulting split rows/columns.
+    - delimiter: The delimiter to use for splitting the rows/columns.
     - axis:
-      - 0 or "index": Indicates a row operation.
-      - 1 or "columns": Indicates a column operation.
+      - 0 or 'index' for row splitting
+      - 1 or 'columns' for column splitting.
+    - split_column: The label of the column to split when mode is 'columns'. Required for 'columns' mode.
     """
-
     axis = classify_axis(axis)
 
-    # Splitting a column
-    if axis == 1:
-        if label not in table.columns:
-            raise ValueError(f"Column {label} does not exist in the DataFrame.")
-
-        # Perform the split operation and create new columns
-        split_data = (
-            table[label].str.split(delimiter).apply(lambda x: [i for i in x if i])
-        )
-        split_data = pd.DataFrame(split_data.tolist(), index=table.index)
-        if len(split_data.columns) != len(new_labels):
-            raise ValueError(
-                "The number of new labels must match the number of split parts."
-            )
-        split_data.columns = new_labels
-
-        # Drop the original column and add new columns
-        table = table.drop(labels=label, axis=axis)
-        table = pd.concat([table, split_data], axis=axis)
-
-    # Splitting a row
+    if axis == 0:
+        return split_rows(table, label, delimiter)
+    elif axis == 1:
+        if split_column is None:
+            raise ValueError("split_column must be provided for column splitting.")
+        return split_columns(table, label, delimiter, split_column)
     else:
-        if label not in table.index:
-            raise ValueError(f"Row {label} does not exist in the DataFrame.")
+        raise ValueError("Invalid mode. Use 'rows' or 'columns'.")
 
-        # Perform the split operation and create new rows
-        split_data = [i for i in table.loc[label].split(delimiter) if i]
-        if len(split_data) != len(new_labels):
-            raise ValueError(
-                "The number of new labels must match the result of the split."
-            )
 
-        # Drop the original row and add new rows
-        table = table.drop(labels=label, axis=axis)
-        for new_label, data in zip(new_labels, split_data):
-            table.loc[new_label] = data
+def split_rows(df, label, delimiter):
+    new_rows = []
+    for index, row in df.iterrows():
+        authors = row[label].split(delimiter)
+        for author in authors:
+            new_row = row.copy()
+            new_row[label] = author.strip()
+            new_rows.append(new_row)
+    return pd.DataFrame(new_rows)
 
-    return table
+
+def split_columns(df, label, delimiter, split_column):
+    new_columns = df[split_column].str.split(delimiter, expand=True)
+    new_columns.columns = [
+        f"{split_column}_part{i+1}" for i in range(new_columns.shape[1])
+    ]
+    df = df.drop(columns=[split_column])
+    df = pd.concat([df, new_columns], axis=1)
+    return df
 
 
 def transpose(table):
