@@ -310,7 +310,7 @@ def add_more_information(client_id, plan, information):
         messages,
     )
 
-    response = json.loads(generate_chat_completion(messages, json=True))
+    response = generate_chat_completion(messages, special_type="json_list")
     messages = append_message(response, "assistant", messages)
     log_messages(client_id, "add_information", messages)
 
@@ -367,9 +367,8 @@ def get_step_by_step_plan(
         messages = append_message(plan_with_error_message_system_prompt, "system", [])
 
     messages = append_message(plan_user_prompt, "user", messages)
-    step_by_step_plan = generate_chat_completion(messages, json=True)
-    print(step_by_step_plan)
-    step_by_step_plan = json.loads(step_by_step_plan)
+    step_by_step_plan = generate_chat_completion(messages, special_type="json_list")
+    print(json.dumps(step_by_step_plan, indent=4))
     messages = append_message(step_by_step_plan, "assistant", messages)
 
     step_by_step_plan_string = "Step-by-step Plan:\n"
@@ -420,12 +419,11 @@ def get_dsls(client_id, history, step_by_step_plan, error_list=[], last_dsl=None
         )
 
     messages = append_message(generate_user_prompt, "user", messages)
-    generated_dsl = generate_chat_completion(messages, json=True)
+    generated_dsl = generate_chat_completion(messages, special_type="json_list")
+    print(json.dumps(generated_dsl, indent=4))
     messages = append_message(generated_dsl, "assistant", messages)
     log_messages(client_id, "generate_dsl", messages)
-    print(generated_dsl)
-    dsls = json.loads(generated_dsl)
-    return dsls
+    return generated_dsl
 
 
 def verify_syntax(client_id, dsls, error_list):
@@ -446,16 +444,19 @@ def verify_semantics(client_id, history, summarization, dsls):
     )
     messages = append_message(verifier_semantic_system_prompt, "system", [])
     messages = append_message(verifier_semantic_user_prompt, "user", messages)
-    feedback = generate_chat_completion(messages, json=True)
+    feedback = json.loads(generate_chat_completion(messages))
     messages = append_message(feedback, "assistant", messages)
     log_messages(client_id, "generate_feedback", messages)
-    feedback = json.loads(feedback)
     return feedback
 
 
 def verify(client_id, history, summarization, dsls, error_list=[]):
+    print("syntax_start")
     verify_syntax(client_id, dsls, error_list)
+    print("syntax_end")
+    print("semantic_start")
     feedback = verify_semantics(client_id, history, summarization, dsls)
+    print("semantic_end")
     if feedback["correctness"] == "No":
         error_list.append(feedback["feedback"]["error"])
     return error_list
@@ -484,7 +485,7 @@ def fill_condition(client_id, dsls):
             )
             messages = append_message(boolean_indexing_system_prompt, "system", [])
             messages = append_message(boolean_indexing_user_prompt, "user", messages)
-            response = generate_chat_completion(messages, json=True)
+            response = generate_chat_completion(messages)
             messages = append_message(response, "assistant", messages)
             log_messages(client_id, "generate_boolean_indexing", messages)
             response = extract_to_dict(response)
@@ -499,6 +500,7 @@ def dsl_synthesize(client_id: str) -> str:
     step_by_step_plan = get_step_by_step_plan(client_id, history, summarization)
     dsls = get_dsls(client_id, history, step_by_step_plan)
     error_list = verify(client_id, history, summarization, dsls)
+    print(error_list)
     dsls = fill_condition(client_id, dsls)
     print("1 run")
     count = 1

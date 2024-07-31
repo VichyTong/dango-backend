@@ -327,7 +327,7 @@ def get_multi_analyze(client_id, table_list, user_prompt):
 
     messages = append_message(init_system_prompt, "system", [])
     messages = append_message(input_user_prompt, "user", messages)
-    response = json.loads(generate_chat_completion(messages, json=True))
+    response = generate_chat_completion(messages, special_type="json_object")
     messages = append_message(response, "assistant", messages)
     if response["type"] == "question":
         history = get_history(client_id)
@@ -379,15 +379,10 @@ def followup(client_id, response):
     history_text = get_history_text(history, is_dump=True)
     messages = append_message(followup_system_prompt, "system", [])
     messages = append_message(history_text, "user", messages)
-    response = generate_chat_completion(messages, json=True)
+    response = generate_chat_completion(messages, special_type="json_object")
     message = append_message(response, "assistant", messages)
     log_messages(client_id, "followup", message)
 
-    try:
-        response = json.loads(response)
-    except json.JSONDecodeError as e:
-        log_error(client_id, f">>> followup\nFailed to decode response:\n{response}")
-        raise e
     if response["type"] == "question":
         history = get_history(client_id)
         if "choices" not in response:

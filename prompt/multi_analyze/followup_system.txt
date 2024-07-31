@@ -27,6 +27,7 @@ The input includes the following:
 #############
 
 # OUTPUT #
+Your output must be in JSON list form.
 If you need more information, output a question to ask the user:
 {
     "type": "question",
