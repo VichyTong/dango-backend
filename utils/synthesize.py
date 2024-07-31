@@ -428,10 +428,10 @@ def get_dsls(client_id, history, step_by_step_plan, error_list=[], last_dsl=None
     return dsls
 
 
-def verify_syntax(client_id, dsls):
+def verify_syntax(client_id, dsls, error_list):
     all_sheets = get_all_sheets(client_id)
     validate_dsls_format(dsls)
-    validate_dsls_functions(dsls, all_sheets)
+    validate_dsls_functions(dsls, all_sheets, error_list)
     return True
 
 
@@ -453,10 +453,12 @@ def verify_semantics(client_id, history, summarization, dsls):
     return feedback
 
 
-def verify(client_id, history, summarization, dsls):
-    verify_syntax(client_id, dsls)
+def verify(client_id, history, summarization, dsls, error_list=[]):
+    verify_syntax(client_id, dsls, error_list)
     feedback = verify_semantics(client_id, history, summarization, dsls)
-    return feedback
+    if feedback["correctness"] == "No":
+        error_list.append(feedback["feedback"]["error"])
+    return error_list
 
 
 def fill_condition(client_id, dsls):
@@ -496,20 +498,20 @@ def dsl_synthesize(client_id: str) -> str:
     summarization = get_summarization(client_id, history)
     step_by_step_plan = get_step_by_step_plan(client_id, history, summarization)
     dsls = get_dsls(client_id, history, step_by_step_plan)
-    feedback = verify(client_id, history, summarization, dsls)
+    error_list = verify(client_id, history, summarization, dsls)
     dsls = fill_condition(client_id, dsls)
     print("1 run")
     count = 1
-    while feedback["correctness"] == "No" and count < 10:
-        error_list = [feedback["feedback"]["error"]]
+    while len(error_list) > 0 and count < 10:
+        print(error_list)
         count += 1
-        print(f"{count} run")
         step_by_step_plan = get_step_by_step_plan(
             client_id, history, summarization, error_list, step_by_step_plan
         )
         dsls = get_dsls(client_id, history, step_by_step_plan, error_list, dsls)
-        feedback = verify(client_id, history, summarization, dsls)
+        error_list = verify(client_id, history, summarization, dsls)
         dsls = fill_condition(client_id, dsls)
+        print(f"{count} run")
     print(f"Total count: {count}")
     for dsl in dsls:
         dsl["natural_language"] = transfer_to_NL(dsl)

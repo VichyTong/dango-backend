@@ -11,13 +11,13 @@ def create_error_message(error, error_message, function_name=None):
 
     if function_name:
         return {
-            "error type": error,
+            "error_type": error,
             "function_name": function_name,
             "error_message": error_message
         }
     else:
         return {
-            "error type": error,
+            "error_type": error,
             "error_message": error_message
         }
 
@@ -450,10 +450,6 @@ def validate_create_table(arguments, error_list, sheets_names):
     except ValidationError as e:
         error = create_error_message("Invalid argument format", f"The arguments for 'create_table' are not in the correct format. Please check the argument types and values.", "create_table")
         error_list.append(error)
-
-    if arguments[0] not in sheets_names:
-        error = create_error_message("Table does not exist", f"The table '{arguments[0]}' does not exist. Please create the table before performing operations on it.", "create_table")
-        error_list.append(error)
     return "Success"
 
 
@@ -616,7 +612,7 @@ def validate_concatenate(arguments, error_list, sheets_names):
 
 
 def validate_split(arguments, error_list, sheets_names):
-    if not(len(arguments) == 4 or len(arguments) == 5):
+    if len(arguments) not in [4, 5]:
         error = create_error_message("Invalid number of arguments", f"The function 'split' requires 4 or 5 arguments: 'table_name', 'label', 'delimiter', 'axis', 'split_column'.", "split")
         error_list.append(error)
     try:
@@ -748,7 +744,7 @@ def validate_pivot_table(arguments, error_list, sheets_names):
     return "Success"
 
 def validate_fill(arguments, error_list, sheets_names):
-    if not (len(arguments) == 2 or len(arguments) == 3):
+    if len(arguments) not in [2, 3]:
         error = create_error_message("Invalid number of arguments", f"The function 'fill' requires 3 arguments: 'table_name', 'method', 'column'.", "fill")
         error_list.append(error)
     try:
