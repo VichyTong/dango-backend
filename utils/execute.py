@@ -20,11 +20,11 @@ from dsl.utils import (
 )
 
 
-def execute_dsl(sheet, function, arguments, target_sheet=None):
+def execute_dsl(sheet, function, arguments, target_sheet=None, condition=None):
     if function == "insert":
         return insert(sheet, *arguments)
     elif function == "drop":
-        return drop(sheet, *arguments)
+        return drop(sheet, *arguments, condition)
     elif function == "assign":
         return assign(sheet, *arguments)
     elif function == "copy":

@@ -389,7 +389,7 @@ def sub_table(params: SUB_TABLE):
 
 def get_sheet_names(all_sheets):
     sheets_names = [sheet[0] for sheet in all_sheets]
-    sheets_names = [sheet.split(".")[0] for sheet in sheets_names]
+    sheets_names = [sheet.split(".csv")[0] for sheet in sheets_names]
     sheets_versions = [sheet[1] for sheet in all_sheets]
     sheets_names = [f"{sheets_names[i]}_v{sheets_versions[i]}.csv" for i in range(len(sheets_names))]
     return sheets_names
@@ -541,14 +541,11 @@ def validate_move(arguments, error_list, sheets_names):
 
 
 def validate_copy(arguments, error_list, sheets_names):
-    if len(arguments) not in [5, 6]:
+    if len(arguments) != 6:
         error = create_error_message("Invalid number of arguments", f"The function 'copy' requires 5 or 6 arguments: 'origin_table_name', 'origin_index', 'target_table_name', 'target_index', 'target_label_name', 'axis'.", "copy")
         error_list.append(error)
     try:
-        if len(arguments) == 5:
-            params = COPY_PARAMS(origin_table_name=arguments[0], origin_index=arguments[1], target_table_name=arguments[2], target_index=arguments[3], target_label_name=None, axis=arguments[4])
-        else:
-            params = COPY_PARAMS(origin_table_name=arguments[0], origin_index=arguments[1], target_table_name=arguments[2], target_index=arguments[3], target_label_name=arguments[4], axis=arguments[5])
+        params = COPY_PARAMS(origin_table_name=arguments[0], origin_index=arguments[1], target_table_name=arguments[2], target_index=arguments[3], target_label_name=arguments[4], axis=arguments[5])
         copy(params)
     except ValidationError as e:
         error = create_error_message("Invalid argument format", f"The arguments for 'copy' are not in the correct format. Please check the argument types and values.", "copy")

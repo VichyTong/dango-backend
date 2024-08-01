@@ -332,12 +332,19 @@ def add_more_information(client_id, plan, information):
 def format_error_message(error_list):
     error_message = "ERROR_LIST:\n"
     for index, error in enumerate(error_list, start=1):
-        error_message += (
-            error_message_template.replace("{INDEX}", str(index))
-            .replace("{ERROR_TYPE}", error["error_type"])
-            .replace("{FUNCTION_NAME}", error["function_name"])
-            .replace("{MESSAGE}", error["error_message"])
-        )
+        if "function_name" in error:
+            error_message += (
+                error_message_template.replace("{INDEX}", str(index))
+                .replace("{ERROR_TYPE}", error["error_type"])
+                .replace("{FUNCTION_NAME}", error["function_name"])
+                .replace("{MESSAGE}", error["error_message"])
+            )
+        else:
+            error_message += (
+                error_message_template.replace("{INDEX}", str(index))
+                .replace("{ERROR_TYPE}", error["error_type"])
+                .replace("{MESSAGE}", error["error_message"])
+            )
     return error_message
 
 
@@ -450,13 +457,17 @@ def verify_semantics(client_id, history, summarization, dsls):
     return feedback
 
 
-def verify(client_id, history, summarization, dsls, error_list=[]):
+def verify(client_id, history, summarization, dsls):
+    error_list = []
+    print(f"Step 0:\n{json.dumps(error_list, indent=4)}")
     print("syntax_start")
     verify_syntax(client_id, dsls, error_list)
     print("syntax_end")
+    print(f"Step 1:\n{json.dumps(error_list, indent=4)}")
     print("semantic_start")
     feedback = verify_semantics(client_id, history, summarization, dsls)
     print("semantic_end")
+    print(f"Step 2:\n{json.dumps(error_list, indent=4)}")
     if feedback["correctness"] == "No":
         error_list.append(feedback["feedback"]["error"])
     return error_list
@@ -504,8 +515,7 @@ def dsl_synthesize(client_id: str) -> str:
     dsls = fill_condition(client_id, dsls)
     print("1 run")
     count = 1
-    while len(error_list) > 0 and count < 10:
-        print(error_list)
+    while len(error_list) > 0 and count < 5:
         count += 1
         step_by_step_plan = get_step_by_step_plan(
             client_id, history, summarization, error_list, step_by_step_plan

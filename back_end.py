@@ -288,6 +288,7 @@ async def handle_generate_dsl(request_body: GenerateDSL):
 class DSL(BaseModel):
     function_name: str
     arguments: List[Union[str, int, float, None, list, dict]]
+    condition: Optional[str]
 
 
 class ExecuteDSLList(BaseModel):
@@ -377,6 +378,10 @@ async def handle_execute_dsl_list(request_body: ExecuteDSLList):
     for dsl in dsl_list:
         function = dsl.function_name
         arguments = dsl.arguments
+        try:
+            condition = dsl.condition
+        except AttributeError:
+            condition = None
         DependenciesManager.update_dependency(function, arguments)
         if function in table_function_list:
             if function == "create_table":
@@ -424,7 +429,7 @@ async def handle_execute_dsl_list(request_body: ExecuteDSLList):
             load_sheet(arguments[0])
             sheet_id, _ = split_sheet_name(arguments[0])
             sheet = tmp_sheet_data_map[sheet_id]
-            new_sheet = execute_dsl(sheet, function, arguments[1:])
+            new_sheet = execute_dsl(sheet, function, arguments[1:], condition=condition)
             if function == "test":
                 tmp_sheet_data_map["Test_Result.csv"] = new_sheet
                 upload_sheet(client_id, "Test_Result.csv", 0, new_sheet.to_dict())

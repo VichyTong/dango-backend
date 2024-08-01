@@ -58,7 +58,7 @@ def insert(table, index, index_name="new_column", axis=0):
     return table
 
 
-def drop(table, label, axis=0):
+def drop(table, label, axis=0, condition=None):
     """
     Drops rows or columns in the table.
 
@@ -72,29 +72,39 @@ def drop(table, label, axis=0):
 
     axis = classify_axis(axis)
 
-    # Ensure label is a list
-    if not isinstance(label, list):
-        label = [label]
-
-    # Dropping columns
-    if axis == 1:
-        missing_columns = [col for col in label if col not in table.columns]
-        if missing_columns:
-            raise ValueError(
-                f"Column(s) {missing_columns} do not exist in the DataFrame."
-            )
-        table.drop(labels=label, axis=axis, inplace=True)
-
-    # Dropping rows
+    if condition is not None:
+        exec(condition)
+        boolean_indexing = locals()["boolean_indexing"]
+        if axis == 0:
+            index_to_drop = table.index[boolean_indexing(table)]
+            table.drop(index=index_to_drop, axis=axis, inplace=True)
+        else:
+            columns_to_drop = table.columns[boolean_indexing(table)]
+            table.drop(columns=columns_to_drop, axis=axis, inplace=True)
     else:
-        label = [str(int(l) - 1) for l in label]
-        missing_rows = [l for l in label if l not in table.index]
-        print(table.index)
-        if missing_rows:
-            raise ValueError(
-                f"Row index(es) {missing_rows} do not exist in the DataFrame."
-            )
-        table.drop(labels=label, axis=axis, inplace=True)
+        # Ensure label is a list
+        if not isinstance(label, list):
+            label = [label]
+
+        # Dropping columns
+        if axis == 1:
+            missing_columns = [col for col in label if col not in table.columns]
+            if missing_columns:
+                raise ValueError(
+                    f"Column(s) {missing_columns} do not exist in the DataFrame."
+                )
+            table.drop(labels=label, axis=axis, inplace=True)
+
+        # Dropping rows
+        else:
+            label = [str(int(l) - 1) for l in label]
+            missing_rows = [l for l in label if l not in table.index]
+            print(table.index)
+            if missing_rows:
+                raise ValueError(
+                    f"Row index(es) {missing_rows} do not exist in the DataFrame."
+                )
+            table.drop(labels=label, axis=axis, inplace=True)
 
     return table
 

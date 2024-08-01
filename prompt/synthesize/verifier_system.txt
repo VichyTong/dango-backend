@@ -38,6 +38,10 @@ You need to output in this json form:
 }
 
 #############
+# GUIDELINES #
+1. There can be "condition" for every column/row function in the DSL.
+
+#############
 
 # EXAMPLES #
 
@@ -53,7 +57,16 @@ User Intent: The user wants to transpose the table.
 
 Generated DSL:
 ```
-drop("Heart Disease Prediction dataset.csv", [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19], 0)
+[
+    {
+        "function_name": "drop",
+        "arguments": [
+            "Heart Disease Prediction dataset.csv",
+            [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19],
+            "index"
+        ]
+    }
+]
 ```
 
 - OUTPUT:
@@ -66,6 +79,40 @@ drop("Heart Disease Prediction dataset.csv", [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 
             "error_message": "The 'drop' function is used incorrectly. The 'drop' function is meant to remove rows or columns from a table, not transpose the table. You should use the 'transpose' function to transpose the table."
         }
     }
+}
+'''
+
+Example 2:
+'''
+- INPUT:
+# Sheet 1
+Sheet Information: Heart Disease Prediction dataset.csv has 14 columns (Headers are: A: "age", B: "sex", C: "cp", D: "trestbps", E: "chol", F: "fbs", G: "restecg", H: "thalach", I: "exang", J: "oldpeak", K: "slope", L: "ca", M: "thal", N: "target") and 303 rows (0 to 302, the row 0 is the header row).
+
+User Instruction: Concatenate column "age" and "sex" to "{age}, {sex}" if there is no missing value in the columns.
+
+User Intent: The user wants to concatenate the "age" and "sex" with a comma and space if there are no missing values in the columns.
+
+Generated DSL:
+```
+[
+    {
+        "function_name": "concatenate",
+        "condition": "if there is no missing value",
+        "arguments": [
+            "Heart Disease Prediction dataset.csv",
+            "age",
+            "sex",
+            ", ",
+            "age and sex",
+            "columns"
+        ]
+    }
+]
+```
+
+- OUTPUT:
+{
+    "correctness": "Yes"
 }
 '''
 
