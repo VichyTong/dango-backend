@@ -48,14 +48,12 @@ Example format:
 Example 1:
 '''
 - INPUT:
-Example 1:
-'''
-- INPUT:
 # Sheet 1
 Sheet Information: Heart Disease Prediction dataset.csv has 3 columns (Headers are: 1: "age", 2: "sex", 3: "cp", 4: "trestbps") and 303 rows (the row 0 is the header row).
+
 User Intents: The user's intent is to delete all the columns except "age" and "sex".
 
-Last generated DSL:
+Last generated step-by-step plan:
 [
     "function": "drop",
     "description": "Drop all columns except \"age\" and \"sex\" in Heart Disease Prediction dataset.csv."
@@ -80,4 +78,29 @@ Error 1:
 ]
 '''
 
+Example 2:
+'''
+Sheet Information: Heart Disease Prediction dataset.csv has 14 columns (Headers are: A: "age", B: "sex", C: "cp", D: "trestbps", E: "chol", F: "fbs", G: "restecg", H: "thalach", I: "exang", J: "oldpeak", K: "slope", L: "ca", M: "thal", N: "target") and 303 rows (0 to 302, the row 0 is the header row).
+
+User Intents: The user wants to concatenate the "age" and "sex" with a comma and space if there are no missing values in the columns.
+
+Last generated step-by-step plan:
+[
+    "function": "concatenate",
+    "description": "Concatenate the columns \"age\" and \"sex\" in Heart Disease Prediction dataset.csv with a comma and space if there are no missing values."
+]
+
+Error Message:
+Error 1:
+- Error Type: missing condition
+- Function Name: concatenate
+- Message: The 'concatenate' function requires a condition to check for missing values in the columns 'age' and 'sex'.
+
+- OUTPUT:
+[
+    "function": "concatenate",
+    "description": "Concatenate the columns \"age\" and \"sex\" in Heart Disease Prediction dataset.csv with a comma and space. Use a condition argument in this function to check for missing values."
+]
+
+'''
 #############

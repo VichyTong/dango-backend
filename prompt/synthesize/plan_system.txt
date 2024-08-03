@@ -113,4 +113,20 @@ User Intents: The user's intent is to test the similarity between the columns "a
 ]
 '''
 
+Example 4:
+'''
+# Sheet 1
+Sheet Information: Heart Disease Prediction dataset.csv has 14 columns (Headers are: A: "age", B: "sex", C: "cp", D: "trestbps", E: "chol", F: "fbs", G: "restecg", H: "thalach", I: "exang", J: "oldpeak", K: "slope", L: "ca", M: "thal", N: "target") and 303 rows (0 to 302, the row 0 is the header row).
+
+User intents: The user wants to concatenate the "age" and "sex" with a comma and space if there are no missing values in the columns.
+
+- OUTPUT:
+[
+    {
+        "function": "concatenate",
+        "description": "Concatenate the columns \"age\" and \"sex\" in Heart Disease Prediction dataset.csv with a comma and space if there are no missing values."
+    }
+]
+'''
+
 #############

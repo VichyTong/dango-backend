@@ -42,12 +42,12 @@ For example:
     },
     {
         "function_name": "drop",
-        "condition": "if column \"Profit\" > 100"
+        "condition": "if column \"Profit\" > 100",
         "arguments": ["a.csv", [1,2,3,4,5,6], "index"]
     },
     {
         "function_name": "split",
-        "condition": "if column \"Name\" contains \",\""
+        "condition": "if column \"Name\" contains \",\"",
         "arguments": ["a.csv", 1, ",", ["new1", "new2"]]
     }
 ]
@@ -147,6 +147,53 @@ Error 1:
         "function_name": "split",
         "condition": "if column \"FullName\" contains \" \"",
         "arguments": ["employees.csv", "FullName", " ", ["FirstName", "LastName"]]
+    }
+]
+'''
+
+Example 3:
+'''
+- INPUT:
+# Sheet 1
+Sheet Information: Heart Disease Prediction dataset.csv has 14 columns (Headers are: A: "age", B: "sex", C: "cp", D: "trestbps", E: "chol", F: "fbs", G: "restecg", H: "thalach", I: "exang", J: "oldpeak", K: "slope", L: "ca", M: "thal", N: "target") and 303 rows (0 to 302, the row 0 is the header row).
+
+Step-by-step plan:
+1. Concatenate the columns "age" and "sex" in Heart Disease Prediction dataset.csv with a comma and space if there are no missing values.
+
+Last generated DSL:
+[
+    {
+        "function_name": "concatenate",
+        "arguments": [
+            "Heart Disease Prediction dataset.csv",
+            "age",
+            "sex",
+            ", ",
+            "age and sex",
+            "columns"
+        ]
+    }
+]
+
+Error Message:
+Error 1:
+- Error Type: missing condition
+- Function Name: concatenate
+- Message: The 'concatenate' function requires a condition to check for missing values in the columns 'age' and 'sex'.
+
+- OUTPUT:
+[
+    {
+        "function_name": "concatenate",
+        "condition": "if there are no missing values in columns \"age\" and \"sex\"",
+        "arguments": [
+            "Heart Disease Prediction dataset.csv",
+            "age",
+            "sex",
+            ", ",
+            "age and sex",
+            "columns"
+        ]
     }
 ]
 '''
