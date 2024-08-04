@@ -5,7 +5,7 @@ Common Definitions:
   - 0 or "index": Indicates a row operation.
   - 1 or "columns": Indicates a column operation.
 
-### Guidelines
+### Functions Usage Guidelines
 1. For column/row-level functions, our DSL supports a natural language string "condition," specifically used for handling if-type conditional statements to specify which rows or columns to operate on.
 2. You must set all the required parameters in the function.
 
