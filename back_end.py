@@ -1,22 +1,15 @@
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, FileResponse
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 from typing import List, Optional, Union
 from io import StringIO
-import os
-import uuid
-import re
 import json
 import pandas as pd
 
 
 from utils.analyze import multi_analyze, followup
 from utils.synthesize import dsl_synthesize
-from utils.llm import (
-    append_message,
-    generate_chat_completion,
-)
 from utils.db import (
     create_client,
     upload_sheet,
@@ -24,13 +17,10 @@ from utils.db import (
     delete_sheet,
     is_sheet_exists,
     get_all_sheets,
-    get_same_sheet_version,
-    find_next_version,
-    get_history,
 )
-from utils.execute import execute_dsl
+from utils.execute import execute_dsl_list
 from utils.dependency import DependenciesManager
-from utils.log import log_messages, log_text
+from utils.edit import edit_dsl
 
 # Initialize FastAPI app
 app = FastAPI()
@@ -300,225 +290,7 @@ class ExecuteDSLList(BaseModel):
 async def handle_execute_dsl_list(request_body: ExecuteDSLList):
     client_id = request_body.client_id
     dsl_list = request_body.dsl_list
-
-    # table-level operations
-    table_function_list = [
-        "delete_table",
-        "create_table",
-        "pivot_table",
-        "sub_table",
-    ]
-    # table_name in arguments[0]
-    type_a_function_list = [
-        "insert",
-        "drop",
-        "assign",
-        "concatenate",
-        "split",
-        "transpose",
-        "aggregate",
-        "test",
-        "format",
-        "rearrange",
-        "divide",
-        "fill",
-    ]
-    # table_name_a in arguments[0], table_name_b in arguments[2]
-    type_b_function_list = [
-        "move",
-        "copy",
-        "swap",
-    ]
-    # table_name_a in arguments[0], table_name_b in arguments[1]
-    type_c_function_list = [
-        "merge",
-    ]
-
-    def split_sheet_name(sheet_name):
-        # Regular expression to find "v{int}" suffix
-        match = re.search(r"_v(\d+)\.csv$", sheet_name)
-        if match:
-            # Extract base name and version number
-            base_name = sheet_name[: match.start()] + ".csv"
-            version = int(match.group(1))
-        else:
-            # No version number present
-            base_name = sheet_name
-            version = 0
-
-        return base_name, version
-
-    def get_sheet_info(sheet_name):
-        sheet_id, version = split_sheet_name(sheet_name)
-        sheet_data = get_sheet(client_id, sheet_id, version)
-        sheet = pd.DataFrame(sheet_data)
-        flag = False
-        if "Unnamed: 0" in sheet.columns:
-            flag = True
-            sheet = pd.DataFrame(sheet_data, index_col=0)
-        return sheet
-
-    tmp_sheet_data_map = {}
-    tmp_sheet_version_map = {}
-    delete_table_list = []
-
-    def load_sheet(sheet_name):
-        sheet_id, sheet_version = split_sheet_name(sheet_name)
-        if sheet_id not in tmp_sheet_data_map:
-            tmp_sheet_data_map[sheet_id] = get_sheet_info(sheet_name)
-            tmp_sheet_version_map[sheet_id] = sheet_version
-        else:
-            if tmp_sheet_version_map[sheet_id] != sheet_version:
-                log_text(
-                    client_id,
-                    f">>> Execute_DSL\nError: {sheet_id} version {tmp_sheet_version_map[sheet_id]} and {sheet_version} mismatch.",
-                )
-                return None
-
-    for dsl in dsl_list:
-        function = dsl.function_name
-        arguments = dsl.arguments
-        try:
-            condition = dsl.condition
-        except AttributeError:
-            condition = None
-        DependenciesManager.update_dependency(function, arguments)
-        if function in table_function_list:
-            if function == "create_table":
-                # create a dataframe have row_number and column_number
-                sheet_id = arguments[0]
-                row_number = arguments[1]
-                column_number = arguments[2]
-                data = pd.DataFrame(
-                    index=range(row_number), columns=range(column_number)
-                )
-                upload_sheet(client_id, sheet_id, 0, data.to_dict())
-                tmp_sheet_data_map[sheet_id] = data
-                tmp_sheet_version_map[sheet_id] = 0
-            elif function == "delete_table":
-                sheet_id, version = split_sheet_name(arguments[0])
-                delete_sheet(
-                    client_id,
-                    sheet_id=sheet_id,
-                    version=version,
-                )
-                delete_table_list.append(
-                    {
-                        "sheet_id": sheet_id,
-                        "version": version,
-                    }
-                )
-            elif function == "pivot_table":
-                load_sheet(arguments[0])
-                sheet_id, _ = split_sheet_name(arguments[0])
-                sheet = tmp_sheet_data_map[sheet_id]
-                new_sheet = execute_dsl(sheet, function, arguments[1:])
-                upload_sheet(client_id, "Pivot_Result.csv", 0, new_sheet.to_dict())
-                tmp_sheet_data_map["Pivot_Result.csv"] = new_sheet
-                tmp_sheet_version_map["Pivot_Result.csv"] = 0
-            elif function == "sub_table":
-                load_sheet(arguments[0])
-                sheet_id, _ = split_sheet_name(arguments[0])
-                new_name = arguments[2]
-                sheet = tmp_sheet_data_map[sheet_id]
-                new_sheet = execute_dsl(sheet, function, arguments[1:])
-                upload_sheet(client_id, new_name, 0, new_sheet.to_dict())
-                tmp_sheet_data_map[new_name] = new_sheet
-                tmp_sheet_version_map[new_name] = 0
-        elif function in type_a_function_list:
-            load_sheet(arguments[0])
-            sheet_id, _ = split_sheet_name(arguments[0])
-            sheet = tmp_sheet_data_map[sheet_id]
-            new_sheet = execute_dsl(sheet, function, arguments[1:], condition=condition)
-            if function == "test":
-                tmp_sheet_data_map["Test_Result.csv"] = new_sheet
-                upload_sheet(client_id, "Test_Result.csv", 0, new_sheet.to_dict())
-            elif function == "divide":
-                for group_sheet in new_sheet:
-                    unique_value = group_sheet["unique_value"]
-                    data = group_sheet["data"]
-                    tmp_sheet_data_map[unique_value] = data
-                    upload_sheet(client_id, unique_value, 0, data.to_dict())
-            else:
-                tmp_sheet_data_map[sheet_id] = new_sheet
-        elif function in type_b_function_list:
-            load_sheet(arguments[0])
-            load_sheet(arguments[2])
-            sheet_id, _ = split_sheet_name(arguments[0])
-            target_sheet_id, _ = split_sheet_name(arguments[2])
-            sheet = tmp_sheet_data_map[sheet_id]
-            target_sheet = tmp_sheet_data_map[target_sheet_id]
-            new_sheet, new_target_sheet = execute_dsl(
-                sheet,
-                function,
-                [arguments[1]] + arguments[3:],
-                target_sheet=target_sheet,
-            )
-            tmp_sheet_data_map[sheet_id] = new_sheet
-            tmp_sheet_data_map[target_sheet_id] = new_target_sheet
-        elif function in type_c_function_list:
-            load_sheet(arguments[0])
-            load_sheet(arguments[1])
-            sheet_id, _ = split_sheet_name(arguments[0])
-            target_sheet_id, _ = split_sheet_name(arguments[1])
-            sheet = tmp_sheet_data_map[sheet_id]
-            target_sheet = tmp_sheet_data_map[target_sheet_id]
-            if function == "merge":
-                merged_table = execute_dsl(
-                    sheet,
-                    function,
-                    arguments[2:],
-                    target_sheet=target_sheet,
-                )
-                tmp_sheet_data_map["merged.csv"] = merged_table
-                upload_sheet(client_id, "merged.csv", 0, merged_table.to_dict())
-                continue
-            new_sheet, new_target_sheet = execute_dsl(
-                sheet,
-                function,
-                arguments[2:],
-                target_sheet=target_sheet,
-            )
-            tmp_sheet_data_map[sheet_id] = new_sheet
-            tmp_sheet_data_map[target_sheet_id] = new_target_sheet
-        else:
-            return "Error: Invalid function"
-
-    output = []
-    for sheet_id, sheet in tmp_sheet_data_map.items():
-        sheet_data = sheet.fillna("").to_dict()
-        same_sheet_version = get_same_sheet_version(client_id, sheet_id, sheet_data)
-        if same_sheet_version is not None:
-            print(f"Sheet {sheet_id} already exists in version {same_sheet_version}")
-            output.append(
-                {
-                    "sheet_id": sheet_id,
-                    "version": same_sheet_version,
-                    "data": sheet.fillna("").to_dict(orient="list"),
-                    "is_delete": False,
-                }
-            )
-            continue
-        sheet_version = find_next_version(client_id, sheet_id)
-        upload_sheet(client_id, sheet_id, sheet_version, sheet_data)
-        output.append(
-            {
-                "sheet_id": sheet_id,
-                "version": sheet_version,
-                "data": sheet.fillna("").to_dict(orient="list"),
-                "is_delete": False,
-            }
-        )
-    for table in delete_table_list:
-        output.append(
-            {
-                "sheet_id": table["sheet_id"],
-                "version": table["version"],
-                "data": [],
-                "is_delete": True,
-            }
-        )
-    print(json.dumps(output, indent=4))
+    output = execute_dsl_list(client_id, dsl_list, DependenciesManager)
     return output
 
 
@@ -526,3 +298,17 @@ async def handle_execute_dsl_list(request_body: ExecuteDSLList):
 async def get_dependencies():
     dependency_list = DependenciesManager.get_all_nodes()
     return JSONResponse(status_code=200, content={"dependencies": dependency_list})
+
+
+class EditDSL(BaseModel):
+    client_id: str
+    dsl: DSL
+    new_instruction: str
+
+
+@app.post("/edit_dsl")
+async def handle_edit_dsl(request_body: EditDSL):
+    client_id = request_body.client_id
+    dsl = request_body.dsl
+    new_instruction = request_body.new_instruction
+    return edit_dsl(client_id, dsl, new_instruction)
