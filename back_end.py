@@ -291,6 +291,8 @@ async def handle_execute_dsl_list(request_body: ExecuteDSLList):
     client_id = request_body.client_id
     dsl_list = request_body.dsl_list
     output = execute_dsl_list(client_id, dsl_list, DependenciesManager)
+    print("output:", output)
+    print("dsl_list:", dsl_list)
     return output
 
 
@@ -308,6 +310,7 @@ class EditDSL(BaseModel):
 
 @app.post("/edit_dsl")
 async def handle_edit_dsl(request_body: EditDSL):
+    print("Received request_body:", request_body)
     client_id = request_body.client_id
     dsl = request_body.dsl
     new_instruction = request_body.new_instruction

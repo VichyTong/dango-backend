@@ -4,6 +4,7 @@ from utils.llm import (
     append_message,
     generate_chat_completion,
 )
+from utils.convert2NL import transfer_to_NL
 
 
 def init_prompt():
@@ -43,4 +44,6 @@ def edit_dsl(client_id, dsl, new_instruction):
     messages = append_message(edit_dsl_user_prompt, "user", messages)
     print(json.dumps(messages, indent=4))
     edited_dsl = generate_chat_completion(messages, special_type="json_object")
+    # Apply transfer_to_NL and add natural_language field
+    edited_dsl["natural_language"] = transfer_to_NL(edited_dsl)    
     return edited_dsl
