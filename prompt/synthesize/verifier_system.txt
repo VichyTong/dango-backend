@@ -122,4 +122,33 @@ Generated DSL:
 }
 '''
 
+Example 3
+'''
+Input:
+# Sheet 1
+Sheet Information: Heart Disease Prediction dataset.csv has 14 columns (Headers are: A: "age", B: "sex", C: "cp", D: "trestbps", E: "chol", F: "fbs", G: "restecg", H: "thalach", I: "exang", J: "oldpeak", K: "slope", L: "ca", M: "thal", N: "target") and 303 rows (0 to 302, the row 0 is the header row).
+
+User Instruction: Delete the column "age" from the table.
+
+User Intents: The user wants to delete the column "age" from the table.
+
+Generated DSL:
+```
+[
+    {
+        "function_name": "drop",
+        "arguments": [
+            "Heart Disease Prediction dataset.csv",
+            "age",
+            "columns"
+        ]
+    }
+]
+
+- OUTPUT:
+{
+    "correctness": "Yes"
+}
+'''
+
 #############
