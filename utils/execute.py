@@ -289,3 +289,4 @@ def execute_dsl_list(client_id, dsl_list, DependenciesManager):
             }
         )
     print(json.dumps(output, indent=4))
+    return output
