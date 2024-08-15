@@ -318,8 +318,6 @@ def merge(table_a, table_b, how="outer", on=None, axis=0):
     elif axis == 1:
         return pd.merge(table_a, table_b, how=how, on=on)
 
-    return result
-
 
 def concatenate(table, label_a, label_b, glue, new_label, axis=0):
     """
