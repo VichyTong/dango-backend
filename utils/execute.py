@@ -149,7 +149,7 @@ def execute_dsl_list(client_id, dsl_list, DependenciesManager):
         function = dsl.function_name
         arguments = dsl.arguments
         try:
-            condition = dsl.condition
+            condition = dsl.function
         except AttributeError:
             condition = None
         DependenciesManager.update_dependency(function, arguments)

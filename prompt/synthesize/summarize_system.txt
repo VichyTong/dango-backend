@@ -43,6 +43,6 @@ User Answer 1:
 Yes, delete rows 1 to 20
 
 - OUTPUT:
-The user's intent is to delete row 1 to 20 in Heart Disease Prediction dataset.csv.
+User Intents: The user wants to delete row 1 to 20 in Heart Disease Prediction dataset.csv.
 '''
 #############

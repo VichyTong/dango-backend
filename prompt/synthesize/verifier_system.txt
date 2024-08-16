@@ -17,7 +17,7 @@ Find semantic errors and give feedback on generated DSL.
 
 # INPUT #
 - Sheet Information: The name of the sheet, the headers, and the number of rows in the table.
-- User Instruction: The specific operation that the user wants to perform on the sheet.
+- User Instruction: The specific operation that the user wants to perform on the sheet. (Optional)
 - User Intent: A summary of what the user wants to achieve with the DSL.
 - Generated DSL: The DSL code generated to fulfill the user's intent.
 
@@ -40,6 +40,18 @@ You need to output in this json form:
 #############
 # GUIDELINES #
 1. There can be "condition" for every column/row function in the DSL.
+Example:
+[
+    {
+        "function_name": "drop",
+        "condition": "if there are no missing values in the columns",
+        "arguments": [
+            "Heart Disease Prediction dataset.csv",
+            [0, 1],
+            "index"
+        ]
+    }
+]
 
 #############
 

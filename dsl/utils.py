@@ -72,20 +72,25 @@ def drop(table, label, axis=0, condition=None):
 
     axis = classify_axis(axis)
 
-    if condition is not None:
-        exec(condition)
-        boolean_indexing = locals()["boolean_indexing"]
-        if axis == 0:
-            index_to_drop = table.index[boolean_indexing(table)]
-            table.drop(index=index_to_drop, axis=axis, inplace=True)
-        else:
-            columns_to_drop = table.columns[boolean_indexing(table)]
-            table.drop(columns=columns_to_drop, axis=axis, inplace=True)
-    else:
-        # Ensure label is a list
-        if not isinstance(label, list):
-            label = [label]
+    if not isinstance(label, list):
+        label = [label]
 
+    if condition is not None:
+        print(table)
+        print(condition)
+        exec(condition, globals())
+        boolean_indexing = globals().get("boolean_indexing")
+        boolean_index = boolean_indexing(table).tolist()
+        print(boolean_index)
+        if axis == 0:
+            for index, i in enumerate(label):
+                if boolean_index[index]:
+                    table.drop(index=i, axis=axis, inplace=True)
+        else:
+            for index, i in enumerate(label):
+                if boolean_index[index]:
+                    table.drop(columns=i, axis=axis, inplace=True)
+    else:
         # Dropping columns
         if axis == 1:
             missing_columns = [col for col in label if col not in table.columns]

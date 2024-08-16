@@ -7,7 +7,7 @@ class DangoTest(DangoFunction):
 
     def definition(self):
         return """\
-test(table_name, label_a, label_b, strategy, axis): Returns a new result table by comparing two labels using the specified strategy.
+test(table_name, label_a, label_b, strategy, axis): Returns a tuple (statistic, p_value) by comparing two labels using the specified strategy.
 Parameters:
 - table_name (str, required): table on which the test will be performed.
 - label_a (str or int, required): The label of the first row/column to be tested.

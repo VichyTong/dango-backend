@@ -58,6 +58,7 @@ async def upload_file(client_id: str = Form(...), file: UploadFile = File(...)):
     data = data.decode("utf-8")
     csv_data = StringIO(data)
     data = pd.read_csv(csv_data)
+    data.index = [str(i) for i in range(1, len(data) + 1)]
     data = data.to_dict()
     upload_sheet(client_id, sheet_id, 0, data)
 
@@ -273,13 +274,14 @@ async def handle_generate_dsl(request_body: GenerateDSL):
 
     response = dsl_synthesize(client_id)
     return_message = {"dsl": response, "status": "finish"}
+    print(return_message)
     return return_message
 
 
 class DSL(BaseModel):
     function_name: str
     arguments: List[Union[str, int, float, None, list, dict]]
-    condition: Optional[str]
+    function: Optional[str]
 
 
 class ExecuteDSLList(BaseModel):

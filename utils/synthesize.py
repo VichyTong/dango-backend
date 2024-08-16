@@ -149,7 +149,8 @@ def format_selected_dsl_grammar(function_list):
         if function_name in function_map:
             function_class = function_map[function_name]()
             function_type = function_class.function_type
-            function_definition = function_class.definition
+            function_definition = function_class.definition()
+            print(function_definition)
 
             if function_type == "table":
                 table_level_functions.add(function_definition)
@@ -161,29 +162,32 @@ def format_selected_dsl_grammar(function_list):
                 string_operation_functions.add(function_definition)
 
     def format_definition_set(definition_set, prefix):
+        if len(definition_set) == 0:
+            return ""
         text = prefix
         for index, definition in enumerate(definition_set, start=1):
             text += f"{index}. {definition}\n\n"
         return text
 
     table_level_text = format_definition_set(
-        table_level_functions, "Table-level Functions\n\n"
+        table_level_functions, "### Table-level Functions\n\n"
     )
     column_row_level_text = format_definition_set(
-        column_row_level_functions, "Column/Row-level Functions\n\n"
+        column_row_level_functions, "### Column/Row-level Functions\n\n"
     )
     summarization_text = format_definition_set(
-        summarization_functions, "Summarization Functions\n\n"
+        summarization_functions, "### Summarization Functions\n\n"
     )
     string_operation_functions = format_definition_set(
-        string_operation_functions, "String Operation Functions\n\n"
+        string_operation_functions, "### String Operation Functions\n\n"
     )
 
     return (
-        selected_dsl_grammar_template.replace("{TABLE_LEVEL FUNCTIONS}", table_level_text)
+        selected_dsl_grammar_template.replace("{TABLE-LEVEL FUNCTIONS}", table_level_text)
         .replace("{CLOUMN/ROW-LEVEL FUNCTIONS}", column_row_level_text)
         .replace("{SUMMARIZATION FUNCTIONS}", summarization_text)
         .replace("{STRING OPERATION FUNCTIONS}", string_operation_functions)
+        .strip()
     )
 
 
@@ -248,7 +252,7 @@ def get_dsls(
     last_dsl=None,
 ):
     funtion_list = []
-
+    print(step_by_step_plan)
     for step in step_by_step_plan:
         funtion_list.append(step["function"])
 
@@ -373,8 +377,8 @@ def dsl_synthesize(client_id: str) -> str:
     count = 1
     while len(error_list) > 0 and count < 5:
         count += 1
-        step_by_step_plan = get_step_by_step_plan(
-            client_id, history, summarization, error_list, step_by_step_plan
+        step_by_step_plan, step_by_step_plan_string = get_step_by_step_plan(
+            client_id, history, summarization, error_list, step_by_step_plan_string
         )
         dsls = get_dsls(
             client_id,

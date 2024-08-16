@@ -29,6 +29,10 @@ def boolean_indexing(df):
 
 #############
 
+# Note #
+1. df is a pandas DataFrame, which has rows indexed with string "1", "2", "3", ...
+#############
+
 # EXAMPLE #
 
 Example 1:

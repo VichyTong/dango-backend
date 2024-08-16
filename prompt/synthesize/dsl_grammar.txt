@@ -140,7 +140,7 @@ Parameters:
     - 0 or "index": Applies the aggregate operations on rows, the keys in the functions dict is some row names.
     - 1 or "columns": Applies the aggregate operations on columns, the keys in the functions dict is some column names.
 
-2. test(table_name, label_a, label_b, strategy, axis): Returns a new result table by comparing two labels using the specified strategy.
+2. test(table_name, label_a, label_b, strategy, axis): Returns a tuple (statistic, p_value) by comparing two labels using the specified strategy.
 Parameters:
 - table_name (str, required): table on which the test will be performed.
 - label_a (str or int, required): The label of the first row/column to be tested.
