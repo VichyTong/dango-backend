@@ -10,3 +10,4 @@ clean.db
 app.log
 test_function.ipynb
 run.sh
+config/config.yaml
