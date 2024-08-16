@@ -26,31 +26,37 @@ Create a DSL script to clean the data based on the description.
 
 # INPUT #
 1. Sheet information.
-2. Step-by-step description of the data cleaning process.
+2. Step-by-step plan of the data cleaning process.
 3. Last generated DSL script.
 4. Error message from the last generation.
 
 #############
 
 # OUTPUT #
-Your output should be in a JSON list form. Each object of the list should contain the function name and its arguments. If a function need to be applied to special cells, you can add a "condition" parameter to the object.
+Your output should be in a JSON form.
+The JSON should contain two parts:
+- "required_tables": A list of table names that are required to perform the cleaning process.
+- "program": A list of objects that represent the functions to be applied to the tables. Each object of the list should contain the function name and its arguments. If a function need to be applied to special cells, you can add a "condition" parameter to the object.
 For example:
-[
-    {
-        "function_name": "copy",
-        "arguments": ["a.csv", 1, "Table2", 4, "index"]
-    },
-    {
-        "function_name": "drop",
-        "condition": "if column \"Profit\" > 100",
-        "arguments": ["a.csv", [1,2,3,4,5,6], "index"]
-    },
-    {
-        "function_name": "split",
-        "condition": "if column \"Name\" contains \",\"",
-        "arguments": ["a.csv", 1, ",", ["new1", "new2"]]
-    }
-]
+{
+    "required_tables": ["a.csv", "table2.csv"],
+    "program": [
+        {
+            "function_name": "copy",
+            "arguments": ["a.csv", 1, "table2.csv", 4, "copied_row", "index"]
+        },
+        {
+            "function_name": "drop",
+            "condition": "if column \"Profit\" > 100"
+            "arguments": ["a.csv", [1,2,3,4,5,6], "index"]
+        },
+        {
+            "function_name": "split",
+            "condition": "if column \"Name\" contains \",\""
+            "arguments": ["a.csv", 1, ",", ["new1", "new2"]]
+        }
+    ]
+}
 Do not add any other characters to the output.
 
 #############
@@ -71,24 +77,27 @@ Step-by-step plan:
 4. Delete the column "sex" from Heart Disease Prediction dataset.csv. (drop function)
 
 Last generated DSL:
-[
-    {
-        "function_name": "copy",
-        "arguments": ["Heart Disease Prediction dataset.csv", "age", "New.csv", "age", "index"]
-    },
-    {
-        "function_name": "copy",
-        "arguments": ["Heart Disease Prediction dataset.csv", "sex", "New.csv", "sex", "index"]
-    },
-    {
-        "function_name": "drop",
-        "arguments": ["Heart Disease Prediction dataset.csv", "age", "columns"]
-    },
-    {
-        "function_name": "drop",
-        "arguments": ["Heart Disease Prediction dataset.csv", "sex", "columns"]
-    }
-]
+{
+    "required_tables": ["Heart Disease Prediction dataset.csv", "New.csv"],
+    "program": [
+        {
+            "function_name": "copy",
+            "arguments": ["Heart Disease Prediction dataset.csv", "age", "New.csv", "age", "index"]
+        },
+        {
+            "function_name": "copy",
+            "arguments": ["Heart Disease Prediction dataset.csv", "sex", "New.csv", "sex", "index"]
+        },
+        {
+            "function_name": "drop",
+            "arguments": ["Heart Disease Prediction dataset.csv", "age", "columns"]
+        },
+        {
+            "function_name": "drop",
+            "arguments": ["Heart Disease Prediction dataset.csv", "sex", "columns"]
+        }
+    ]
+}
 
 Error Message:
 Error 1:
@@ -98,24 +107,28 @@ Error 1:
 
 
 - OUTPUT:
-[
-    {
-        "function_name": "copy",
-        "arguments": ["Heart Disease Prediction dataset.csv", "age", "New.csv", "age", "columns"]
-    },
-    {
-        "function_name": "copy",
-        "arguments": ["Heart Disease Prediction dataset.csv", "sex", "New.csv", "sex", "columns"]
-    },
-    {
-        "function_name": "drop",
-        "arguments": ["Heart Disease Prediction dataset.csv", "age", "columns"]
-    },
-    {
-        "function_name": "drop",
-        "arguments": ["Heart Disease Prediction dataset.csv", "sex", "columns"]
-    }
-]
+{
+    "required_tables": ["Heart Disease Prediction dataset.csv", "New.csv"],
+    "program": [
+        {
+            "function_name": "copy",
+            "arguments": ["Heart Disease Prediction dataset.csv", "age", "New.csv", "age", "columns"]
+        },
+        {
+            "function_name": "copy",
+            "arguments": ["Heart Disease Prediction dataset.csv", "sex", "New.csv", "sex", "columns"]
+        },
+        {
+            "function_name": "drop",
+            "arguments": ["Heart Disease Prediction dataset.csv", "age", "columns"]
+        },
+        {
+            "function_name": "drop",
+            "arguments": ["Heart Disease Prediction dataset.csv", "sex", "columns"]
+        }
+    ]
+}
+
 '''
 
 Example 2:
@@ -128,12 +141,15 @@ Step-by-step plan:
 1. Split the column "FullName" in employees.csv into two columns "FirstName" and "LastName" if it contains a space. (split function)
 
 Last generated DSL:
-[
-    {
-        "function_name": "split",
-        "arguments": ["employees.csv", "FullName", " ", ["FirstName", "LastName"]]
-    }
-]
+{
+    "required_tables": ["employees.csv"],
+    "program": [
+        {
+            "function_name": "split",
+            "arguments": ["employees.csv", "FullName", " ", ["FirstName", "LastName"]]
+        }
+    ]
+}
 
 Error Message:
 Error 1:
@@ -142,13 +158,16 @@ Error 1:
 - Message: The function should contain a condition to check if the column "FullName" contains " ".
 
 - OUTPUT:
-[
-    {
-        "function_name": "split",
-        "condition": "if column \"FullName\" contains \" \"",
-        "arguments": ["employees.csv", "FullName", " ", ["FirstName", "LastName"]]
-    }
-]
+{
+    "required_tables": ["employees.csv"],
+    "program": [
+        {
+            "function_name": "split",
+            "condition": "if column \"FullName\" contains \" \"",
+            "arguments": ["employees.csv", "FullName", " ", ["FirstName", "LastName"]]
+        }
+    ]
+}
 '''
 
 Example 3:
@@ -161,19 +180,22 @@ Step-by-step plan:
 1. Concatenate the columns "age" and "sex" in Heart Disease Prediction dataset.csv with a comma and space if there are no missing values.
 
 Last generated DSL:
-[
-    {
-        "function_name": "concatenate",
-        "arguments": [
-            "Heart Disease Prediction dataset.csv",
-            "age",
-            "sex",
-            ", ",
-            "age and sex",
-            "columns"
-        ]
-    }
-]
+{
+    "required_tables": ["Heart Disease Prediction dataset.csv"],
+    "program": [
+        {
+            "function_name": "concatenate",
+            "arguments": [
+                "Heart Disease Prediction dataset.csv",
+                "age",
+                "sex",
+                ", ",
+                "age and sex",
+                "columns"
+            ]
+        }
+    ]
+}
 
 Error Message:
 Error 1:
@@ -182,18 +204,21 @@ Error 1:
 - Message: The 'concatenate' function requires a condition to check for missing values in the columns 'age' and 'sex'.
 
 - OUTPUT:
-[
-    {
-        "function_name": "concatenate",
-        "condition": "if there are no missing values in columns \"age\" and \"sex\"",
-        "arguments": [
-            "Heart Disease Prediction dataset.csv",
-            "age",
-            "sex",
-            ", ",
-            "age and sex",
-            "columns"
-        ]
-    }
-]
+{
+    "required_tables": ["Heart Disease Prediction dataset.csv"],
+    "program": [
+        {
+            "function_name": "concatenate",
+            "condition": "if there are no missing values in columns \"age\" and \"sex\"",
+            "arguments": [
+                "Heart Disease Prediction dataset.csv",
+                "age",
+                "sex",
+                ", ",
+                "age and sex",
+                "columns"
+            ]
+        }
+    ]
+}
 '''

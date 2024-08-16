@@ -150,7 +150,6 @@ def format_selected_dsl_grammar(function_list):
             function_class = function_map[function_name]()
             function_type = function_class.function_type
             function_definition = function_class.definition()
-            print(function_definition)
 
             if function_type == "table":
                 table_level_functions.add(function_definition)
@@ -284,17 +283,18 @@ def get_dsls(
         )
 
     messages = append_message(generate_user_prompt, "user", messages)
-    generated_dsl = generate_chat_completion(messages, special_type="json_list")
+    generated_dsl = generate_chat_completion(messages, special_type="json_object")
     print(json.dumps(generated_dsl, indent=4))
     messages = append_message(generated_dsl, "assistant", messages)
     log_messages(client_id, "generate_dsl", messages)
+    generated_dsl["step_by_step_plan"] = step_by_step_plan_string
     return generated_dsl
 
 
 def verify_syntax(client_id, dsls, error_list):
     all_sheets = get_all_sheets(client_id)
-    validate_dsls_format(dsls)
-    validate_dsls_functions(dsls, all_sheets, error_list)
+    validate_dsls_format(dsls["program"])
+    validate_dsls_functions(dsls["program"], all_sheets, error_list)
     return True
 
 
@@ -305,7 +305,7 @@ def verify_semantics(client_id, history, summarization, dsls):
             format_information(history["information"], with_table_diff=False),
         )
         .replace("{USER_INTENTS}", summarization)
-        .replace("{GENERATED_DSLS}", json.dumps(dsls, indent=4))
+        .replace("{GENERATED_DSLS}", json.dumps(dsls["program"], indent=4))
     )
     messages = append_message(verifier_semantic_system_prompt, "system", [])
     messages = append_message(verifier_semantic_user_prompt, "user", messages)
@@ -345,7 +345,7 @@ def fill_condition(client_id, dsls):
         }
         return result
 
-    for dsl in dsls:
+    for dsl in dsls["program"]:
         if "condition" in dsl:
             boolean_indexing_user_prompt = (
                 boolean_indexing_user_prompt_template.replace(
@@ -392,6 +392,6 @@ def dsl_synthesize(client_id: str) -> str:
         dsls = fill_condition(client_id, dsls)
         print(f"{count} run")
     print(f"Total count: {count}")
-    for dsl in dsls:
+    for dsl in dsls["program"]:
         dsl["natural_language"] = transfer_to_NL(dsl)
     return dsls

@@ -31,24 +31,30 @@ Step-by-step description of the data cleaning process.
 #############
 
 # OUTPUT #
-Your output should be in a JSON list form. Each object of the list should contain the function name and its arguments. If a function need to be applied to special cells, you can add a "condition" parameter to the object.
+Your output should be in a JSON form.
+The JSON should contain two parts:
+- "required_tables": A list of table names that are required to perform the cleaning process.
+- "program": A list of objects that represent the functions to be applied to the tables. Each object of the list should contain the function name and its arguments. If a function need to be applied to special cells, you can add a "condition" parameter to the object.
 For example:
-[
-    {
-        "function_name": "copy",
-        "arguments": ["a.csv", 1, "Table2", 4, "index"]
-    },
-    {
-        "function_name": "drop",
-        "condition": "if column \"Profit\" > 100"
-        "arguments": ["a.csv", [1,2,3,4,5,6], "index"]
-    },
-    {
-        "function_name": "split",
-        "condition": "if column \"Name\" contains \",\""
-        "arguments": ["a.csv", 1, ",", ["new1", "new2"]]
-    }
-]
+{
+    "required_tables": ["a.csv", "table2.csv"],
+    "program": [
+        {
+            "function_name": "copy",
+            "arguments": ["a.csv", 1, "table2.csv", 4, "copied_row", "index"]
+        },
+        {
+            "function_name": "drop",
+            "condition": "if column \"Profit\" > 100"
+            "arguments": ["a.csv", [1,2,3,4,5,6], "index"]
+        },
+        {
+            "function_name": "split",
+            "condition": "if column \"Name\" contains \",\""
+            "arguments": ["a.csv", 1, ",", ["new1", "new2"]]
+        }
+    ]
+}
 Do not add any other characters to the output.
 
 #############
@@ -63,16 +69,19 @@ Step-by-step plan:
 2. Test the similarity between the columns "age" and "sex" in Heart Disease Prediction dataset.csv using t-test. (test function)
 
 - OUTPUT:
-[
-    {
-        "function_name": "create",
-        "arguments": ["test_result.csv", 1, 2]
-    },
-    {
-        "function_name": "test",
-        "arguments": ["data.csv", "age", "t-test", "columns"]
-    },
-]
+{
+    "required_tables": ["test_result.csv", "data.csv"],
+    "program": [
+        {
+            "function_name": "create",
+            "arguments": ["test_result.csv", 1, 2]
+        },
+        {
+            "function_name": "test",
+            "arguments": ["data.csv", "age", "t-test", "columns"]
+        },
+    ]
+}
 '''
 
 Example 2:
@@ -85,24 +94,27 @@ Step-by-step plan:
 4. Delete the column "sex" from Heart Disease Prediction dataset.csv. (drop function)
 
 - OUTPUT:
-[
-    {
-        "function_name": "copy",
-        "arguments": ["Heart Disease Prediction dataset.csv", "age", "New.csv", "age", "columns"]
-    },
-    {
-        "function_name": "copy",
-        "arguments": ["Heart Disease Prediction dataset.csv", "sex", "New.csv", "sex", "columns"]
-    },
-    {
-        "function_name": "drop",
-        "arguments": ["Heart Disease Prediction dataset.csv", "age", "columns"]
-    },
-    {
-        "function_name": "drop",
-        "arguments": ["Heart Disease Prediction dataset.csv", "sex", "columns"]
-    }
-]
+{
+    "required_tables": ["Heart Disease Prediction dataset.csv", "New.csv"],
+    "program": [
+        {
+            "function_name": "copy",
+            "arguments": ["Heart Disease Prediction dataset.csv", "age", "New.csv", "age", "columns"]
+        },
+        {
+            "function_name": "copy",
+            "arguments": ["Heart Disease Prediction dataset.csv", "sex", "New.csv", "sex", "columns"]
+        },
+        {
+            "function_name": "drop",
+            "arguments": ["Heart Disease Prediction dataset.csv", "age", "columns"]
+        },
+        {
+            "function_name": "drop",
+            "arguments": ["Heart Disease Prediction dataset.csv", "sex", "columns"]
+        }
+    ]
+}
 '''
 
 Example 3:
@@ -113,16 +125,19 @@ Step-by-step plan:
 2. Split the column "FullName" in employees.csv into two columns "FirstName" and "LastName" if it contains a space. (split function)
 
 - OUTPUT:
-[
-    {
-        "function_name": "drop",
-        "condition": "if column \"Revenue\" < 500",
-        "arguments": ["sales_data.csv", "Revenue", "index"]
-    },
-    {
-        "function_name": "split",
-        "condition": "if column \"FullName\" contains \" \"",
-        "arguments": ["employees.csv", "FullName", " ", ["FirstName", "LastName"]]
-    }
-]
+{
+    "required_tables": ["sales_data.csv", "employees.csv"],
+    "program": [
+        {
+            "function_name": "drop",
+            "condition": "if column \"Revenue\" < 500",
+            "arguments": ["sales_data.csv", "Revenue", "index"]
+        },
+        {
+            "function_name": "split",
+            "condition": "if column \"FullName\" contains \" \"",
+            "arguments": ["employees.csv", "FullName", " ", ["FirstName", "LastName"]]
+        }
+    ]
+}
 '''
