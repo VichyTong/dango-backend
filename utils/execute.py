@@ -146,6 +146,7 @@ def execute_dsl_list(client_id, dsl_list, DependenciesManager):
                 return None
 
     for dsl in dsl_list:
+        dsl = dsl["program"]
         function = dsl.function_name
         arguments = dsl.arguments
         try:

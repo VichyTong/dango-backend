@@ -278,11 +278,15 @@ async def handle_generate_dsl(request_body: GenerateDSL):
     return return_message
 
 
-class DSL(BaseModel):
+class Program(BaseModel):
     function_name: str
     arguments: List[Union[str, int, float, None, list, dict]]
     function: Optional[str]
 
+class DSL(BaseModel):
+    required_tables: List[str]
+    program: List[Program]
+    step_by_step_plan: str
 
 class ExecuteDSLList(BaseModel):
     client_id: str
