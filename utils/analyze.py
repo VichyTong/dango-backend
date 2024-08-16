@@ -10,6 +10,7 @@ from utils.llm import (
 from utils.log import log_messages, log_text, log_warn, log_error
 from utils.db import update_history, get_history
 from utils.format_text import get_history_text
+from config.config import config
 
 
 def init_prompt():
@@ -327,10 +328,17 @@ def get_multi_analyze(client_id, table_list, user_prompt):
         },
     )
 
-    messages = append_message(init_system_prompt, "system", [])
-    messages = append_message(input_user_prompt, "user", messages)
-    response = generate_chat_completion(messages, special_type="json_object")
-    messages = append_message(response, "assistant", messages)
+    if config["mode"] == "without_CQ":
+        messages = append_message(init_system_prompt_without_CQ, "system", [])
+        messages = append_message(input_user_prompt, "user", messages)
+        response = generate_chat_completion(messages, special_type="json_object")
+        messages = append_message(response, "assistant", messages)
+    else:
+        messages = append_message(init_system_prompt, "system", [])
+        messages = append_message(input_user_prompt, "user", messages)
+        response = generate_chat_completion(messages, special_type="json_object")
+        messages = append_message(response, "assistant", messages)
+
     if response["type"] == "question":
         history = get_history(client_id)
         if "choices" not in response:

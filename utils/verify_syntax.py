@@ -313,13 +313,13 @@ def format(params: FORMAT_PARAMS):
 #     - 0 or "index": Indicates a row operation.
 #     - 1 or "columns": Indicates a column operation.
 
-class REARRANGE(BaseModel):
+class REARRANGE_PARAMS(BaseModel):
     table_name: str
     by_values: Optional[str]
     by_array: Optional[List[str]]
     axis: Union[str, int]
 
-def rearrange(params: REARRANGE):
+def rearrange(params: REARRANGE_PARAMS):
     pass
 
 # divide(table_name, by=None, axis): Divides the table by the specific values of a row or column, return a list of tables.
@@ -330,12 +330,12 @@ def rearrange(params: REARRANGE):
 #     - 0 or "index": Indicates to divide the table by a row.
 #     - 1 or "columns": Indicates to divide the table by a column.
 
-class DIVIDE(BaseModel):
+class DIVIDE_PARAMS(BaseModel):
     table_name: str
     by: Union[str, int]
     axis: Union[str, int]
 
-def divide(params: DIVIDE):
+def divide(params: DIVIDE_PARAMS):
     pass
 
 # pivot_table(table_name, index, columns, values, aggfunc): Reshapes the table so that each unique 'columns' value becomes a separate column, with the 'index' values as row headers, and the corresponding 'values' filled in their respective cells.
@@ -346,14 +346,14 @@ def divide(params: DIVIDE):
 # - values (str): The column name whose values will fill the new table.
 # - aggfunc (str): The aggregation function to apply to the values. Common options are 'first', 'sum', 'mean', etc.
 
-class PIVOT_TABLE(BaseModel):
+class PIVOT_TABLE_PARAMS(BaseModel):
     table_name: str
     index: str
     columns: str
     values: str
     aggfunc: str
 
-def pivot_table(params: PIVOT_TABLE):
+def pivot_table(params: PIVOT_TABLE_PARAMS):
     pass
 
 # fill(table_name, method, column=None): Fills missing values in the table using the specified method.
@@ -444,6 +444,7 @@ def validate_create_table(arguments, error_list, sheets_names):
     if len(arguments) != 3:
         error = create_error_message("Invalid number of arguments", f"The function 'create_table' requires 3 arguments: 'table_name', 'row_number', 'column_number'.", "create_table")
         error_list.append(error)
+        return "Failed"
     try:
         params = CREATE_TABLE_PARAMS(table_name=arguments[0], row_number=arguments[1], column_number=arguments[2])
         create_table(params)
@@ -457,6 +458,7 @@ def validate_delete_table(arguments, error_list, sheets_names):
     if len(arguments) != 1:
         error = create_error_message("Invalid number of arguments", f"The function 'delete_table' requires 1 argument: 'table_name'.", "delete_table")
         error_list.append(error)
+        return "Failed"
     try:
         params = DELETE_TABLE_PARAMS(table_name=arguments[0])
         delete_table(params)
@@ -474,6 +476,7 @@ def validate_insert(arguments, error_list, sheets_names):
     if len(arguments) != 4:
         error = create_error_message("Invalid number of arguments", f"The function 'insert' requires 4 arguments: 'table_name', 'index', 'index_name', 'axis'.", "insert")
         error_list.append(error)
+        return "Failed"
     try:
         params = INSERT_PARAMS(table_name=arguments[0], index=arguments[1], index_name=arguments[2], axis=arguments[3])
         insert(params)
@@ -491,9 +494,9 @@ def validate_drop(arguments, error_list, sheets_names):
     if len(arguments) != 3:
         error = create_error_message("Invalid number of arguments", f"The function 'drop' requires 3 arguments: 'table_name', 'label', 'axis'.", "drop")
         error_list.append(error)
+        return "Failed"
     try:
         params = DROP_PARAMS(table_name=arguments[0], label=arguments[1], axis=arguments[2])
-
         drop(params)
     except ValidationError as e:
         error = create_error_message("Invalid argument format", f"The arguments for 'drop' are not in the correct format. Please check the argument types and values.", "drop")
@@ -510,6 +513,7 @@ def validate_assign(arguments, error_list, sheets_names):
     if len(arguments) != 6:
         error = create_error_message("Invalid number of arguments", f"The function 'assign' requires 6 arguments: 'table_name', 'start_row_index', 'end_row_index', 'start_column_index', 'end_column_index', 'values'.", "assign")
         error_list.append(error)
+        return "Failed"
     try:
         params = ASSIGN_PARAMS(table_name=arguments[0], start_row_index=arguments[1], end_row_index=arguments[2], start_column_index=arguments[3], end_column_index=arguments[4], values=arguments[5])
         assign(params)
@@ -527,6 +531,7 @@ def validate_move(arguments, error_list, sheets_names):
     if len(arguments) != 5:
         error = create_error_message("Invalid number of arguments", f"The function 'move' requires 5 arguments: 'origin_table_name', 'origin_index', 'target_table_name', 'target_index', 'axis'.", "move")
         error_list.append(error)
+        return "Failed"
     try:
         params = MOVE_PARAMS(origin_table_name=arguments[0], origin_index=arguments[1], target_table_name=arguments[2], target_index=arguments[3], axis=arguments[4])
         move(params)
@@ -544,6 +549,7 @@ def validate_copy(arguments, error_list, sheets_names):
     if len(arguments) != 6:
         error = create_error_message("Invalid number of arguments", f"The function 'copy' requires 5 or 6 arguments: 'origin_table_name', 'origin_index', 'target_table_name', 'target_index', 'target_label_name', 'axis'.", "copy")
         error_list.append(error)
+        return "Failed"
     try:
         params = COPY_PARAMS(origin_table_name=arguments[0], origin_index=arguments[1], target_table_name=arguments[2], target_index=arguments[3], target_label_name=arguments[4], axis=arguments[5])
         copy(params)
@@ -561,6 +567,7 @@ def validate_swap(arguments, error_list, sheets_names):
     if len(arguments) != 5:
         error = create_error_message("Invalid number of arguments", f"The function 'swap' requires 5 arguments: 'table_name_a', 'label_a', 'table_name_b', 'label_b', 'axis'.", "swap")
         error_list.append(error)
+        return "Failed"
     try:
         params = SWAP_PARAMS(table_name_a=arguments[0], label_a=arguments[1], table_name_b=arguments[2], label_b=arguments[3], axis=arguments[4])
         swap(params)
@@ -578,6 +585,7 @@ def validate_merge(arguments, error_list, sheets_names):
     if len(arguments) != 5:
         error = create_error_message("Invalid number of arguments", f"The function 'merge' requires 6 arguments: 'table_name_a', 'table_name_b', 'how', 'on', 'left_on', 'right_on', 'axis'.", "merge")
         error_list.append(error)
+        return "Failed"
     try:
         params = MERGE_PARAMS(table_name_a=arguments[0], table_name_b=arguments[1], how=arguments[2], on=arguments[3], axis=arguments[4])
         merge(params)
@@ -595,6 +603,7 @@ def validate_concatenate(arguments, error_list, sheets_names):
     if len(arguments) != 6:
         error = create_error_message("Invalid number of arguments", f"The function 'concatenate' requires 6 arguments: 'table_name', 'label_a', 'label_b', 'glue', 'new_label', 'axis'.", "concatenate")
         error_list.append(error)
+        return "Failed"
     try:
         params = CONCATENATE_PARAMS(table_name=arguments[0], label_a=arguments[1], label_b=arguments[2], glue=arguments[3], new_label=arguments[4], axis=arguments[5])
         concatenate(params)
@@ -612,11 +621,14 @@ def validate_split(arguments, error_list, sheets_names):
     if len(arguments) not in [4, 5]:
         error = create_error_message("Invalid number of arguments", f"The function 'split' requires 4 or 5 arguments: 'table_name', 'label', 'delimiter', 'axis', 'split_column'.", "split")
         error_list.append(error)
+        return "Failed"
     try:
         if len(arguments) == 4:
             params = SPLIT_PARAMS(table_name=arguments[0], label=arguments[1], delimiter=arguments[2], axis=arguments[3], split_column=None)
+            split(params)
         else:
             params = SPLIT_PARAMS(table_name=arguments[0], label=arguments[1], delimiter=arguments[2], axis=arguments[3], split_column=arguments[4])
+            split(params)
     except ValidationError as e:
         error = create_error_message("Invalid argument format", f"The arguments for 'split' are not in the correct format. Please check the argument types and values.", "split")
         error_list.append(error)
@@ -631,6 +643,7 @@ def validate_transpose(arguments, error_list, sheets_names):
     if len(arguments) != 1:
         error = create_error_message("Invalid number of arguments", f"The function 'transpose' requires 1 argument: 'table_name'.", "transpose")
         error_list.append(error)
+        return "Failed"
     try:
         transpose(arguments[0])
     except ValidationError as e:
@@ -647,6 +660,7 @@ def validate_aggregate(arguments, error_list, sheets_names):
     if len(arguments) != 3:
         error = create_error_message("Invalid number of arguments", f"The function 'aggregate' requires 3 arguments: 'table_name', 'functions', 'axis'.", "aggregate")
         error_list.append(error)
+        return "Failed"
     try:
         params = AGGREGATE_PARAMS(table_name=arguments[0], functions=arguments[1], axis=arguments[2])
         aggregate(params)
@@ -664,6 +678,7 @@ def validate_test(arguments, error_list, sheets_names):
     if len(arguments) != 5:
         error = create_error_message("Invalid number of arguments", f"The function 'test' requires 5 arguments: 'table_name', 'label_a', 'label_b', 'strategy', 'axis'.", "test")
         error_list.append(error)
+        return "Failed"
     try:
         params = TEST_PARAMS(table_name=arguments[0], label_a=arguments[1], label_b=arguments[2], strategy=arguments[3], axis=arguments[4])
         test(params)
@@ -680,6 +695,7 @@ def validate_format(arguments, error_list, sheets_names):
     if len(arguments) != 5:
         error = create_error_message("Invalid number of arguments", f"The function 'format' requires 4 arguments: 'table_name', 'label', 'pattern', 'axis'.", "format")
         error_list.append(error)
+        return "Failed"
     try:
         params = FORMAT_PARAMS(table_name=arguments[0], label=arguments[1], pattern=arguments[2], replace_with=arguments[3], axis=arguments[4])
         format(params)
@@ -696,8 +712,9 @@ def validate_rearrange(arguments, error_list, sheets_names):
     if len(arguments) != 4:
         error = create_error_message("Invalid number of arguments", f"The function 'rearrange' requires 3 arguments: 'table_name', 'by_values', 'axis'.", "rearrange")
         error_list.append(error)
+        return "Failed"
     try:
-        params = REARRANGE(table_name=arguments[0], by_values=arguments[1], by_array=arguments[2], axis=arguments[3])
+        params = REARRANGE_PARAMS(table_name=arguments[0], by_values=arguments[1], by_array=arguments[2], axis=arguments[3])
         rearrange(params)
     except ValidationError as e:
         error = create_error_message("Invalid argument format", f"The arguments for 'rearrange' are not in the correct format. Please check the argument types and values.", "rearrange")
@@ -712,8 +729,9 @@ def validate_divide(arguments, error_list, sheets_names):
     if len(arguments) != 3:
         error = create_error_message("Invalid number of arguments", f"The function 'divide' requires 3 arguments: 'table_name', 'by', 'axis'.", "divide")
         error_list.append(error)
+        return "Failed"
     try:
-        params = DIVIDE(table_name=arguments[0], by=arguments[1], axis=arguments[2])
+        params = DIVIDE_PARAMS(table_name=arguments[0], by=arguments[1], axis=arguments[2])
         divide(params)
     except ValidationError as e:
         error = create_error_message("Invalid argument format", f"The arguments for 'divide' are not in the correct format. Please check the argument types and values.", "divide")
@@ -728,6 +746,7 @@ def validate_pivot_table(arguments, error_list, sheets_names):
     if len(arguments) != 5:
         error = create_error_message("Invalid number of arguments", f"The function 'pivot_table' requires 4 arguments: 'table_name', 'index', 'columns', 'values'.", "pivot_table")
         error_list.append(error)
+        return "Failed"
     try:
         params = PIVOT_TABLE_PARAMS(table_name=arguments[0], index=arguments[1], columns=arguments[2], values=arguments[3], aggfunc=arguments[4])
         pivot_table(params)
@@ -744,6 +763,7 @@ def validate_fill(arguments, error_list, sheets_names):
     if len(arguments) not in [2, 3]:
         error = create_error_message("Invalid number of arguments", f"The function 'fill' requires 3 arguments: 'table_name', 'method', 'column'.", "fill")
         error_list.append(error)
+        return "Failed"
     try:
         if len(arguments) == 2:
             params = FILL(table_name=arguments[0], method=arguments[1], column=None)
@@ -763,80 +783,10 @@ def validate_subtable(arguments, error_list, sheets_names):
     if len(arguments) != 4:
         error = create_error_message("Invalid number of arguments", f"The function 'subtable' requires 4 arguments: 'table_name', 'label_list', 'new_name', 'axis'.", "subtable")
         error_list.append(error)
+        return "Failed"
     try:
         params = SUBTABLE(table_name=arguments[0], label_list=arguments[1], new_name=arguments[2], axis=arguments[3])
         subtable(params)
     except ValidationError as e:
         error = create_error_message("Invalid argument format", f"The arguments for 'subtable' are not in the correct format. Please check the argument types and values.", "subtable")
         error_list.append(error)
-
-
-# # Example usage:
-
-# function_calls = [
-#     {
-#         "function_name": "create_table",
-#         "arguments": ["Heart Disease Prediction dataset_v0.csv", 10, 5]
-#     },
-#     {
-#         "function_name": "delete_table",
-#         "arguments": ["AnotherSheet_v1.csv"]
-#     },
-#     {
-#         "function_name": "insert",
-#         "arguments": ["Heart Disease Prediction dataset_v0.csv", 2, "NewRow", 0]
-#     },
-#     {
-#         "function_name": "drop",
-#         "arguments": ["Heart Disease Prediction dataset_v0.csv", 9, 0]
-#     },
-#     {
-#         "function_name": "assign",
-#         "arguments": ["Heart Disease Prediction dataset_v0.csv", 0, 2, 0, 2, [[1, 2], [3, 4]]]
-#     },
-#     {
-#         "function_name": "move",
-#         "arguments": ["Heart Disease Prediction dataset_v0.csv", 0, "AnotherSheet_v1.csv", 1, 0]
-#     },
-#     {
-#         "function_name": "copy",
-#         "arguments": ["Heart Disease Prediction dataset_v0.csv", 0, "AnotherSheet_v1.csv", 1, "NewRow", 0]
-#     },
-#     {
-#         "function_name": "swap",
-#         "arguments": ["Heart Disease Prediction dataset_v0.csv", 0, "AnotherSheet_v1.csv", 1, 0]
-#     },
-#     {
-#         "function_name": "merge",
-#         "arguments": ["Heart Disease Prediction dataset_v0.csv", "AnotherSheet_v1.csv", ["A"], "inner", 0]
-#     },
-#     {
-#         "function_name": "concatenate",
-#         "arguments": ["Heart Disease Prediction dataset_v0.csv", 0, 1, " ", "NewRow", 0]
-#     },
-#     {
-#         "function_name": "split",
-#         "arguments": ["Heart Disease Prediction dataset_v0.csv", 0, " ", ["A", "B"], 0]
-#     },
-#     {
-#         "function_name": "transpose",
-#         "arguments": ["Heart Disease Prediction dataset_v0.csv"]
-#     },
-#     {
-#         "function_name": "aggregate",
-#         "arguments": ["Heart Disease Prediction dataset_v0.csv", {"A": ["sum", "mean"], "B": ["min", "max"]}, 0]
-#     },
-#     {
-#         "function_name": "test",
-#         "arguments": ["Heart Disease Prediction dataset_v0.csv", 0, 1, "t-test", 0]
-#     }
-# ]
-
-# all_sheets = [("Heart Disease Prediction dataset.csv", 0), ("AnotherSheet.csv", 1)]
-
-# error_list = []
-
-# validate_dsls_format(function_calls, error_list)
-
-# validate_dsls_functions(function_calls, error_list, all_sheets)
-

@@ -210,7 +210,8 @@ async def handle_multi_analyze(request_body: MultiAnalyze):
         processed_tables.append(processed_table)
 
     response = multi_analyze(client_id, processed_tables, user_prompt)
-
+    print(">>> response")
+    print(response)
     if response["type"] == "question":
         response_question = response["question"]
         response_choices = response["choices"]
@@ -221,7 +222,7 @@ async def handle_multi_analyze(request_body: MultiAnalyze):
             "type": "question",
             "status": "clarification",
         }
-    else:
+    elif response["type"] == "finish":
         return_message = {
             "client_id": client_id,
             "type": "finish",
