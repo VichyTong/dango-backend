@@ -1,9 +1,8 @@
-import pandas as pd
-from functions import DangoFunction
+from dsl.functions import DangoFunction
 
 class DangoPivotTable(DangoFunction):
     def __init__(self):
-        super().__init__(function_type="A")
+        super().__init__(function_type="column_row")
 
     def definition(self):
         return """\
@@ -15,22 +14,3 @@ Parameters:
 - values (str, required): The column name whose values will fill the new table.
 - aggfunc (str, required): The aggregation function to apply to the values. Common options are 'first', 'sum', 'mean', etc.
 """
-
-    def execute(self, table, index, columns, values, aggfunc="first"):
-        """
-        Reshapes the table based on the specified index, columns, values, and aggregation function.
-
-        Parameters:
-        - table (pd.DataFrame): The DataFrame to pivot.
-        - index (str): The column name to use as the new row headers.
-        - columns (str): The column name to use as the new column headers.
-        - values (str): The column name whose values will fill the new table.
-        - aggfunc (str): The aggregation function to apply to the values. Common options are 'first', 'sum', 'mean', etc.
-
-        Returns:
-        - pd.DataFrame: The pivoted table.
-        """
-        pivot_df = table.pivot_table(
-            index=index, columns=columns, values=values, aggfunc=aggfunc
-        ).reset_index()
-        return pivot_df

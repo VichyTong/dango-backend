@@ -370,7 +370,7 @@ class FILL(BaseModel):
 def fill(params: FILL):
     pass
 
-# sub_table(table_name, label_list, axis): Returns a new table with only the specified rows or columns.
+# subtable(table_name, label_list, axis): Returns a new table with only the specified rows or columns.
 # Parameters:
 # - table_name (str): The name of the table to extract the rows/columns from.
 # - label_list (list[str/int]): The list of row/column labels to extract.
@@ -378,13 +378,13 @@ def fill(params: FILL):
 #     - 0 or "index": Indicates to extract rows.
 #     - 1 or "columns": Indicates to extract columns.
 
-class SUB_TABLE(BaseModel):
+class SUBTABLE(BaseModel):
     table_name: str
     label_list: List[Union[str, int]]
     new_name: str
     axis: Union[str, int]
 
-def sub_table(params: SUB_TABLE):
+def subtable(params: SUBTABLE):
     pass
 
 def get_sheet_names(all_sheets):
@@ -759,15 +759,15 @@ def validate_fill(arguments, error_list, sheets_names):
         error_list.append(error)
     return "Success"
 
-def validate_sub_table(arguments, error_list, sheets_names):
+def validate_subtable(arguments, error_list, sheets_names):
     if len(arguments) != 4:
-        error = create_error_message("Invalid number of arguments", f"The function 'sub_table' requires 4 arguments: 'table_name', 'label_list', 'new_name', 'axis'.", "sub_table")
+        error = create_error_message("Invalid number of arguments", f"The function 'subtable' requires 4 arguments: 'table_name', 'label_list', 'new_name', 'axis'.", "subtable")
         error_list.append(error)
     try:
-        params = SUB_TABLE(table_name=arguments[0], label_list=arguments[1], new_name=arguments[2], axis=arguments[3])
-        sub_table(params)
+        params = SUBTABLE(table_name=arguments[0], label_list=arguments[1], new_name=arguments[2], axis=arguments[3])
+        subtable(params)
     except ValidationError as e:
-        error = create_error_message("Invalid argument format", f"The arguments for 'sub_table' are not in the correct format. Please check the argument types and values.", "sub_table")
+        error = create_error_message("Invalid argument format", f"The arguments for 'subtable' are not in the correct format. Please check the argument types and values.", "subtable")
         error_list.append(error)
 
 

@@ -162,7 +162,7 @@ def transfer_to_NL(dsl):
         values = dsl["arguments"][3]
         aggfunc = dsl["arguments"][4]
         return f"Create a pivot table in the given table(s) with the index {index}, columns {columns}, values {values}, and the aggregation function {aggfunc}"
-    elif dsl["function_name"] == "sub_table":
+    elif dsl["function_name"] == "subtable":
         label_list = dsl["arguments"][1]
         axis = dsl["arguments"][3]
         if axis == 0 or axis == "index" or axis == "0":

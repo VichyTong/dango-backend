@@ -10,13 +10,14 @@ from utils.log import log_messages
 from utils.format_text import get_history_text, format_information
 from utils.verify_syntax import validate_dsls_format, validate_dsls_functions
 from utils.convert2NL import transfer_to_NL
+from dsl import function_map
 
 
 def init_prompt():
-    global dsl_grammar
+    global dsl_grammar, selected_dsl_grammar_template
     global summarize_system_prompt
     global plan_system_prompt, plan_user_prompt_template
-    global generate_system_prompt, generate_user_prompt_template
+    global generate_system_prompt_template, generate_user_prompt_template
     global verifier_semantic_system_prompt, verifier_semantic_user_prompt_template
     global error_message_template
     global plan_with_error_message_system_prompt, plan_with_error_message_user_prompt_template
@@ -25,6 +26,8 @@ def init_prompt():
     global boolean_indexing_system_prompt, boolean_indexing_user_prompt_template
     with open("prompt/synthesize/dsl_grammar.txt", "r") as f:
         dsl_grammar = f.read()
+    with open("prompt/synthesize/dsl_grammar_selected.txt", "r") as f:
+        selected_dsl_grammar_template = f.read()
     with open("prompt/synthesize/summarize_system.txt", "r") as f:
         summarize_system_prompt = f.read()
     with open("prompt/synthesize/plan_system.txt", "r") as f:
@@ -32,7 +35,7 @@ def init_prompt():
     with open("prompt/synthesize/plan_user.txt", "r") as f:
         plan_user_prompt_template = f.read()
     with open("prompt/synthesize/generate_system.txt", "r") as f:
-        generate_system_prompt = f.read().replace("{DSL_GRAMMAR}", dsl_grammar)
+        generate_system_prompt_template = f.read().replace("{DSL_GRAMMAR}", dsl_grammar)
     with open("prompt/synthesize/generate_user.txt", "r") as f:
         generate_user_prompt_template = f.read()
     with open("prompt/synthesize/verifier_system.txt", "r") as f:
@@ -60,10 +63,6 @@ def init_prompt():
 
 
 init_prompt()
-
-
-
-
 
 
 def get_summarization(client_id, history):
@@ -140,6 +139,54 @@ def format_error_message(error_list):
     return error_message
 
 
+def format_selected_dsl_grammar(function_list):
+    table_level_functions = set()
+    column_row_level_functions = set()
+    string_operation_functions = set()
+    summarization_functions = set()
+
+    for function_name in function_list:
+        if function_name in function_map:
+            function_class = function_map[function_name]()
+            function_type = function_class.function_type
+            function_definition = function_class.definition
+
+            if function_type == "table":
+                table_level_functions.add(function_definition)
+            elif function_type == "column_row":
+                column_row_level_functions.add(function_definition)
+            elif function_type == "summarization":
+                summarization_functions.add(function_definition)
+            elif function_type == "string_operation":
+                string_operation_functions.add(function_definition)
+
+    def format_definition_set(definition_set, prefix):
+        text = prefix
+        for index, definition in enumerate(definition_set, start=1):
+            text += f"{index}. {definition}\n\n"
+        return text
+
+    table_level_text = format_definition_set(
+        table_level_functions, "Table-level Functions\n\n"
+    )
+    column_row_level_text = format_definition_set(
+        column_row_level_functions, "Column/Row-level Functions\n\n"
+    )
+    summarization_text = format_definition_set(
+        summarization_functions, "Summarization Functions\n\n"
+    )
+    string_operation_functions = format_definition_set(
+        string_operation_functions, "String Operation Functions\n\n"
+    )
+
+    return (
+        selected_dsl_grammar_template.replace("{TABLE_LEVEL FUNCTIONS}", table_level_text)
+        .replace("{CLOUMN/ROW-LEVEL FUNCTIONS}", column_row_level_text)
+        .replace("{SUMMARIZATION FUNCTIONS}", summarization_text)
+        .replace("{STRING OPERATION FUNCTIONS}", string_operation_functions)
+    )
+
+
 def get_step_by_step_plan(
     client_id, history, summarization, error_list=[], last_plan=None
 ):
@@ -189,22 +236,37 @@ def get_step_by_step_plan(
             )
 
     log_messages(client_id, "generate_step_by_step_plan", messages)
-    return step_by_step_plan_string
+    return step_by_step_plan, step_by_step_plan_string
 
 
-def get_dsls(client_id, history, step_by_step_plan, error_list=[], last_dsl=None):
+def get_dsls(
+    client_id,
+    history,
+    step_by_step_plan,
+    step_by_step_plan_string,
+    error_list=[],
+    last_dsl=None,
+):
+    funtion_list = []
+
+    for step in step_by_step_plan:
+        funtion_list.append(step["function"])
+
     if len(error_list) == 0:
         generate_user_prompt = generate_user_prompt_template.replace(
-            "{PLAN}", step_by_step_plan
+            "{PLAN}", step_by_step_plan_string
         ).replace(
             "{INFORMATION}",
             format_information(history["information"], with_table_diff=False),
+        )
+        generate_system_prompt = generate_system_prompt_template.replace(
+            "{SELECTED_DSL_GRAMMAR}", format_selected_dsl_grammar(funtion_list)
         )
         messages = append_message(generate_system_prompt, "system", [])
     else:
         generate_user_prompt = (
             generate_with_error_message_user_prompt_template.replace(
-                "{PLAN}", step_by_step_plan
+                "{PLAN}", step_by_step_plan_string
             )
             .replace(
                 "{INFORMATION}",
@@ -300,8 +362,10 @@ def fill_condition(client_id, dsls):
 def dsl_synthesize(client_id: str) -> str:
     history = get_history(client_id)
     summarization = get_summarization(client_id, history)
-    step_by_step_plan = get_step_by_step_plan(client_id, history, summarization)
-    dsls = get_dsls(client_id, history, step_by_step_plan)
+    step_by_step_plan, step_by_step_plan_string = get_step_by_step_plan(
+        client_id, history, summarization
+    )
+    dsls = get_dsls(client_id, history, step_by_step_plan, step_by_step_plan_string)
     error_list = verify(client_id, history, summarization, dsls)
     print(error_list)
     dsls = fill_condition(client_id, dsls)
@@ -312,7 +376,14 @@ def dsl_synthesize(client_id: str) -> str:
         step_by_step_plan = get_step_by_step_plan(
             client_id, history, summarization, error_list, step_by_step_plan
         )
-        dsls = get_dsls(client_id, history, step_by_step_plan, error_list, dsls)
+        dsls = get_dsls(
+            client_id,
+            history,
+            step_by_step_plan,
+            step_by_step_plan_string,
+            error_list,
+            dsls,
+        )
         error_list = verify(client_id, history, summarization, dsls)
         dsls = fill_condition(client_id, dsls)
         print(f"{count} run")

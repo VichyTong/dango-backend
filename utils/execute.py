@@ -28,7 +28,7 @@ from dsl.utils import (
     divide,
     pivot_table,
     fill,
-    sub_table,
+    subtable,
 )
 
 
@@ -67,8 +67,8 @@ def execute_dsl(sheet, function, arguments, target_sheet=None, condition=None):
         return pivot_table(sheet, *arguments)
     elif function == "fill":
         return fill(sheet, *arguments)
-    elif function == "sub_table":
-        return sub_table(sheet, *arguments)
+    elif function == "subtable":
+        return subtable(sheet, *arguments)
     else:
         return "Invalid function"
 
@@ -78,7 +78,7 @@ def execute_dsl_list(client_id, dsl_list, DependenciesManager):
         "delete_table",
         "create_table",
         "pivot_table",
-        "sub_table",
+        "subtable",
     ]
     # table_name in arguments[0]
     type_a_function_list = [
@@ -186,7 +186,7 @@ def execute_dsl_list(client_id, dsl_list, DependenciesManager):
                 upload_sheet(client_id, "Pivot_Result.csv", 0, new_sheet.to_dict())
                 tmp_sheet_data_map["Pivot_Result.csv"] = new_sheet
                 tmp_sheet_version_map["Pivot_Result.csv"] = 0
-            elif function == "sub_table":
+            elif function == "subtable":
                 load_sheet(arguments[0])
                 sheet_id, _ = split_sheet_name(arguments[0])
                 new_name = arguments[2]

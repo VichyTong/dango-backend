@@ -712,7 +712,7 @@ def fill(table, method, column=None):
     return df
 
 
-def sub_table(table, label_list, new_name, axis=1):
+def subtable(table, label_list, new_name, axis=1):
     """
     Returns a sub-table containing only the specified rows or columns.
     Parameters:

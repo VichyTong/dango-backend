@@ -37,7 +37,7 @@ Parameters:
 - on(str, required): Column or index level names to join on. Must be found in both DataFrames. If not provided and the DataFrames have a common column, will default to the intersection of the columns in the DataFrames.
 - axis(str or int, required): Axis to merge along. 0 or "index" for row-wise, 1 or "column" for column-wise. Default is 0.
 
-5. sub_table(table_name, label_list, new_name, axis): Returns a new table with only the specified rows or columns.
+5. subtable(table_name, label_list, new_name, axis): Returns a new table with only the specified rows or columns.
 Parameters:
 - table_name (str, required): The name of the table to extract the rows/columns from.
 - label_list (list[str/int], required): The list of row/column labels to extract.
@@ -45,6 +45,10 @@ Parameters:
 - axis (str or int, required):
     - 0 or "index": Indicates to extract rows. The label_list contains row indexes.
     - 1 or "columns": Indicates to extract columns. The label_list contains column names.
+
+6. transpose(table_name): Transposes the given table.
+Parameters:
+- table_name (str, required): table to be transposed.
 
 ### Column/Row-level Functions
 
@@ -103,11 +107,7 @@ Parameters:
     - 0 or "index": Indicates to swap rows.
     - 1 or "columns": Indicates to swap columns.
 
-7. transpose(table_name): Transposes the given table.
-Parameters:
-- table_name (str, required): table to be transposed.
-
-8. rearrange(table_name, by_values=None, by_array=None, axis): Rearranges the rows or columns of the table based on the specified order.
+7. rearrange(table_name, by_values=None, by_array=None, axis): Rearranges the rows or columns of the table based on the specified order.
 Parameters:
 - table_name (str, required): table to be rearranged.
 - by_values (str, optional): If this parameter is set, the rows/columns will be rearranged based on the values in the specified row/column.
@@ -116,7 +116,7 @@ Parameters:
     - 0 or "index": Indicates to rearrange rows. Rows will be rearranged based on the values in the specified row/column or the order in the array.
     - 1 or "columns": Indicates to rearrange columns. Columns will be rearranged based on the values in the specified row/column or the order in the array.
 
-9. divide(table_name, by, axis): Divides the table by the specific values of a row or column, return a list of tables.
+8. divide(table_name, by, axis): Divides the table by the specific values of a row or column, return a list of tables.
 Parameters:
 - table (str, required): table to be divided.
 - by(int/str, required): The label of a row or column.
@@ -124,7 +124,7 @@ Parameters:
     - 0 or "index": Indicates to divide the table by a row.
     - 1 or "columns": Indicates to divide the table by a column.
 
-10. fill(table_name, method, column=None): Fills missing values in the table using the specified method.
+9. fill(table_name, method, column=None): Fills missing values in the table using the specified method.
 Parameters:
 - table (str, required): Table to fill missing values.
 - method (str, required): The method to use for filling missing values. Choose from 'value', 'mean', 'median', 'mode', 'ffill', 'bfill', 'interpolate'.

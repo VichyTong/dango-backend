@@ -12,7 +12,7 @@ Create a DSL script to clean the data based on the description.
 
 # DSL GRAMMAR #
 
-{DSL_GRAMMAR}
+{SELECTED_DSL_GRAMMAR}
 
 #############
 

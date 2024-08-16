@@ -14,12 +14,14 @@ from utils.format_text import get_history_text
 
 def init_prompt():
     global transfer_prompt
-    global init_system_prompt, followup_system_prompt
+    global init_system_prompt, init_system_prompt_without_CQ, followup_system_prompt
     global sheet_state_template, table_diff_template
     with open("prompt/multi_analyze/transfer_meta_diff_to_NL.txt", "r") as f:
         transfer_prompt = f.read()
     with open("prompt/multi_analyze/init_system.txt") as f:
         init_system_prompt = f.read()
+    with open("prompt/multi_analyze/init_system_without_CQ.txt") as f:
+        init_system_prompt_without_CQ = f.read()
     with open("prompt/multi_analyze/followup_system.txt") as f:
         followup_system_prompt = f.read()
     with open("prompt/template/sheet_state.txt") as f:
