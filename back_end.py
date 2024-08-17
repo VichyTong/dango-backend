@@ -290,14 +290,15 @@ class DSL(BaseModel):
 
 class ExecuteDSLList(BaseModel):
     client_id: str
-    dsl_list: List[DSL]
+    dsl_list: DSL
 
 
 @app.post("/execute_dsl_list")
 async def handle_execute_dsl_list(request_body: ExecuteDSLList):
     client_id = request_body.client_id
-    dsl_list = request_body.dsl_list
-    output = execute_dsl_list(client_id, dsl_list, DependenciesManager)
+    dsl_list = request_body.dsl_list.program
+    required_tables = request_body.dsl_list.required_tables
+    output = execute_dsl_list(client_id, required_tables, dsl_list, DependenciesManager)
     print("output:", output)
     print("dsl_list:", dsl_list)
     return output

@@ -39,7 +39,7 @@ You need to output in this json form:
 
 #############
 # GUIDELINES #
-1. There can be "condition" for every column/row function in the DSL.
+1. If the user intends to perform conditional judgment (if statement) when operating a function, they can use "condition" in the DSL for certain functions.
 Example:
 [
     {

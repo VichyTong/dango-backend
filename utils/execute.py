@@ -72,7 +72,7 @@ def execute_dsl(sheet, function, arguments, target_sheet=None, condition=None):
     else:
         return "Invalid function"
 
-def execute_dsl_list(client_id, dsl_list, DependenciesManager):
+def execute_dsl_list(client_id, required_tables, dsl_list, DependenciesManager):
     # table-level operations
     table_function_list = [
         "delete_table",
@@ -146,7 +146,6 @@ def execute_dsl_list(client_id, dsl_list, DependenciesManager):
                 return None
 
     for dsl in dsl_list:
-        dsl = dsl["program"]
         function = dsl.function_name
         arguments = dsl.arguments
         try:
