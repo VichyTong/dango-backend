@@ -11,5 +11,7 @@ fill(table_name, method, column=None): Fills missing values in the table using t
 Parameters:
 - table (str, required): Table to fill missing values.
 - method (str, required): The method to use for filling missing values. Choose from 'value', 'mean', 'median', 'mode', 'ffill', 'bfill', 'interpolate'.
-- column (str or list[str], optional): The column or columns to fill missing values in. If None, missing values in all columns will be filled.\
+- column (str or list[str], optional): The column or columns to fill missing values in. If None, missing values in all columns will be filled.
+Output:
+- A new table with missing values filled.\
 """

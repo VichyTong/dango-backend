@@ -14,5 +14,7 @@ Parameters:
 - index_name (str, required): The name of the new row/column.
 - axis (str or int, required):
     - 0 or "index": Indicates to insert a row.
-    - 1 or "columns": Indicates to insert a column.\
+    - 1 or "columns": Indicates to insert a column.
+Output:
+- A new table with the inserted row/column.\
 """

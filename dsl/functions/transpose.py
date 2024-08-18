@@ -10,5 +10,7 @@ class DangoTranspose(DangoFunction):
         return """\
 transpose(table_name): Transposes the given table.
 Parameters:
-- table_name (str, required): table to be transposed.\
+- table_name (str, required): table to be transposed.
+Output:
+- A new table with the transposed data.\
 """

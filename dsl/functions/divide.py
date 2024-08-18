@@ -13,5 +13,7 @@ Parameters:
 - by(int/str, required): The label of a row or column.
 - axis (str or int, required):
     - 0 or "index": Indicates to divide the table by a row.
-    - 1 or "columns": Indicates to divide the table by a column.\
+    - 1 or "columns": Indicates to divide the table by a column.
+Output:
+- A list of tables divided by the specific values of a row or column.\
 """

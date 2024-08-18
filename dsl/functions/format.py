@@ -15,5 +15,7 @@ Parameters:
 - replace_with (str, required): The string or backreference to replace the matched pattern with.
 - axis (str or int, required):
     - 0 or "index": Indicates to format a row.
-    - 1 or "columns": Indicates to format a column.\
+    - 1 or "columns": Indicates to format a column.
+Output:
+- A new table with the formatted row/column.\
 """

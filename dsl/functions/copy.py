@@ -16,5 +16,7 @@ Parameters:
 - target_label_name (str, required): The name of the new row/column in the target table.
 - axis (str or int, required):
     - 0 or "index": Indicates to copy a row.
-    - 1 or "columns": Indicates to copy a column.\
+    - 1 or "columns": Indicates to copy a column.
+Output:
+- The new version of the target table with the copied row/column.\
 """

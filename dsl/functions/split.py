@@ -15,5 +15,7 @@ Parameters:
 - axis (str or int, required):
     - 0 or 'index' for row splitting
     - 1 or 'columns' for column splitting.
-- new_column (list of str, optional): The label of the column to split when mode is 'columns'. Required for 'columns' mode.\
+- new_column (list of str, optional): The label of the column to split when mode is 'columns'. Required for 'columns' mode.
+Output:
+- A new table with the split rows/columns.\
 """

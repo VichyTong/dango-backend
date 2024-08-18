@@ -14,5 +14,7 @@ Parameters:
 - by_array (str or list[str/int], optional): If this parameter is set, the rows/columns will be rearranged based on the order of the values in the array.
 - axis (str or int, required):
     - 0 or "index": Indicates to rearrange rows. Rows will be rearranged based on the values in the specified row/column or the order in the array.
-    - 1 or "columns": Indicates to rearrange columns. Columns will be rearranged based on the values in the specified row/column or the order in the array.\
+    - 1 or "columns": Indicates to rearrange columns. Columns will be rearranged based on the values in the specified row/column or the order in the array.
+Output:
+- A new table with the rearranged rows/columns.\
 """

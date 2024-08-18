@@ -16,4 +16,7 @@ Parameters:
 - axis (str or int, required):
     - 0 or "index": Indicates to move a row.
     - 1 or "columns": Indicates to move a column.\
+Output:
+- The new version of the origin table.
+- The new version of the target table.\
 """

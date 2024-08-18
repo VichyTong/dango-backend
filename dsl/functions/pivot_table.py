@@ -13,4 +13,6 @@ Parameters:
 - columns (str, required): The column name to use as the new column headers.
 - values (str, required): The column name whose values will fill the new table.
 - aggfunc (str, required): The aggregation function to apply to the values. Common options are 'first', 'sum', 'mean', etc.
+Output:
+- The pivoted table.\
 """

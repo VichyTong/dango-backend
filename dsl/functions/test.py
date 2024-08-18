@@ -15,5 +15,7 @@ Parameters:
 - strategy (str, required): The statistical test to perform ('t-test', 'z-test', 'chi-squared').
 - axis (str or int, required):
     - 0 or "index": Indicates to test rows.
-    - 1 or "columns": Indicates to test columns.\
+    - 1 or "columns": Indicates to test columns.
+Output:
+- A tuple containing the test statistic and the p-value.\
 """

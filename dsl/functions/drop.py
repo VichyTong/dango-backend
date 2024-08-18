@@ -13,5 +13,7 @@ Parameters:
 - label (str or int or list[str] or list[int], required): The label or list of labels of the row/column to be dropped.
 - axis (str or int, required):
     - 0 or "index": Indicates to drop one or more rows.
-    - 1 or "columns": Indicates to drop one or more columns.\
+    - 1 or "columns": Indicates to drop one or more columns.
+Output:
+- A new table with the dropped row/column.\
 """

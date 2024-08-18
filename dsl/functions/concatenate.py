@@ -16,5 +16,7 @@ Parameters:
 - new_label (str or int, required): The label of the new row/column created by the concatenation.
 - axis (str or int, required):
     - 0 or "index": Indicates to concatenate rows.
-    - 1 or "columns": Indicates to concatenate columns.\
+    - 1 or "columns": Indicates to concatenate columns.
+Output:
+- A new table with the concatenated row/column.\
 """

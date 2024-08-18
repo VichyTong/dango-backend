@@ -15,5 +15,8 @@ Parameters:
 - label_b (str or int, required): The label of the row/column to be swapped in the second table.
 - axis (str or int, required):
     - 0 or "index": Indicates to swap rows.
-    - 1 or "columns": Indicates to swap columns.\
+    - 1 or "columns": Indicates to swap columns.
+Output:
+- New version of the first table with the swapped row/column.
+- New version of the second table with the swapped row/column.\
 """
