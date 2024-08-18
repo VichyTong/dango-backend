@@ -98,7 +98,7 @@ Example 2:
 '''
 - INPUT:
 # Sheet 1
-Sheet Information: Heart Disease Prediction dataset.csv has 14 columns (Headers are: 1: "age", 2: "sex", 3: "cp", 4: "trestbps", 5: "chol", 6: "fbs", 7: "restecg", 8: "thalach", 9: "exang", 10: "oldpeak", 11: "slope", 12: "ca", 13: "thal", 14: "target") and 303 rows (0 to 302, the row 0 is the header row).
+Sheet Information: Heart Disease Prediction dataset.csv has 15 columns (Headers are: 1: "age", 2: "sex", 3: "cp", 4: "trestbps", 5: "chol", 6: "fbs", 7: "restecg", 8: "thalach", 9: "exang", 10: "oldpeak", 11: "slope", 12: "ca", 13: "thal", 14: "target", the column 0 is the header column) and 303 rows (0 to 302, the row 0 is the header row).
 
 User Instruction: Concatenate column "age" and "sex" to "{age}, {sex}" if there is no missing value in the columns.
 
@@ -138,7 +138,7 @@ Example 3
 '''
 Input:
 # Sheet 1
-Sheet Information: Heart Disease Prediction dataset.csv has 14 columns (Headers are: 1: "age", 2: "sex", 3: "cp", 4: "trestbps", 5: "chol", 6: "fbs", 7: "restecg", 8: "thalach", 9: "exang", 10: "oldpeak", 11: "slope", 12: "ca", 13: "thal", 14: "target") and 303 rows (0 to 302, the row 0 is the header row).
+Sheet Information: Heart Disease Prediction dataset.csv has 15 columns (Headers are: 1: "age", 2: "sex", 3: "cp", 4: "trestbps", 5: "chol", 6: "fbs", 7: "restecg", 8: "thalach", 9: "exang", 10: "oldpeak", 11: "slope", 12: "ca", 13: "thal", 14: "target", the column 0 is the header column) and 303 rows (0 to 302, the row 0 is the header row).
 
 User Instruction: Delete the column "age" from the table.
 

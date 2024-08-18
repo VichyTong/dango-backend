@@ -72,8 +72,8 @@ data = load_table("data_v0.csv")
 test_result = create("test_result_v0.csv", 1, 2)
 
 statistic, p_value = test(data, "age", "t-test", "columns")
-assign(test_result, 1, 1, 1, 1, statistic)
-assign(test_result, 1, 1, 2, 2, p_value)
+test_result = assign(test_result, 1, 1, 1, 1, statistic)
+test_result = assign(test_result, 1, 1, 2, 2, p_value)
 
 save_table(test_result, "test_result_v0.csv")
 ```

@@ -292,13 +292,12 @@ def get_multi_analyze(client_id, table_list, user_prompt):
         for column_index, item in enumerate(column_names, start=1):
             item = f'{column_index}: "{item}"'
             column_string_list.append(item)
-            # TODO: What if number of columns is more than 26?
         column_names = ", ".join(column_string_list)
 
         sheet_state_string = (
             sheet_state_template.replace("{index}", str(index))
             .replace("{file_name}", file_name)
-            .replace("{column_count}", str(column_number))
+            .replace("{column_count}", str(column_number + 1))
             .replace("{column_names}", column_names)
             .replace("{row_count}", str(row_count + 1))
             .replace("{row_end}", str(row_count))

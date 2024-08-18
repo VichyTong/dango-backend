@@ -396,7 +396,28 @@ def get_sheet_names(all_sheets):
 
 
 def validate_dsls_functions(function_calls: List[dict], all_sheets, error_list=[]):
-    valid_functions = ["create_table", "delete_table", "insert", "drop", "assign", "move", "copy", "swap", "merge", "concatenate", "split", "transpose", "aggregate", "test", "format", "rearrange", "divide"]
+    valid_functions = [
+        "create_table",
+        "delete_table",
+        "pivot_table",
+        "merge",
+        "subtable",
+        "transpose",
+        "insert",
+        "drop",
+        "assign",
+        "move",
+        "copy",
+        "swap",
+        "rearrange",
+        "divide",
+        "fill",
+        "aggregate",
+        "test",
+        "concatenate",
+        "split",
+        "format",
+    ]
     sheets_names = get_sheet_names(all_sheets)
     for call in function_calls:
         if call["function_name"] not in valid_functions:
@@ -407,6 +428,14 @@ def validate_dsls_functions(function_calls: List[dict], all_sheets, error_list=[
                 validate_create_table(call["arguments"], error_list, sheets_names)
             elif call["function_name"] == "delete_table":
                 validate_delete_table(call["arguments"], error_list, sheets_names)
+            elif call["function_name"] == "pivot_table":
+                validate_pivot_table(call["arguments"], error_list, sheets_names)
+            elif call["function_name"] == "merge":
+                validate_merge(call["arguments"], error_list, sheets_names)
+            elif call["function_name"] == "subtable":
+                validate_subtable(call["arguments"], error_list, sheets_names)
+            elif call["function_name"] == "transpose":
+                validate_transpose(call["arguments"], error_list, sheets_names)
             elif call["function_name"] == "insert":
                 validate_insert(call["arguments"], error_list, sheets_names)
             elif call["function_name"] == "drop":
@@ -419,24 +448,22 @@ def validate_dsls_functions(function_calls: List[dict], all_sheets, error_list=[
                 validate_copy(call["arguments"], error_list, sheets_names)
             elif call["function_name"] == "swap":
                 validate_swap(call["arguments"], error_list, sheets_names)
-            elif call["function_name"] == "merge":
-                validate_merge(call["arguments"], error_list, sheets_names)
-            elif call["function_name"] == "concatenate":
-                validate_concatenate(call["arguments"], error_list, sheets_names)
-            elif call["function_name"] == "split":
-                validate_split(call["arguments"], error_list, sheets_names)
-            elif call["function_name"] == "transpose":
-                validate_transpose(call["arguments"], error_list, sheets_names)
-            elif call["function_name"] == "aggregate":
-                validate_aggregate(call["arguments"], error_list, sheets_names)
-            elif call["function_name"] == "test":
-                validate_test(call["arguments"], error_list, sheets_names)
-            elif call["function_name"] == "format":
-                validate_format(call["arguments"], error_list, sheets_names)
             elif call["function_name"] == "rearrange":
                 validate_rearrange(call["arguments"], error_list, sheets_names)
             elif call["function_name"] == "divide":
                 validate_divide(call["arguments"], error_list, sheets_names)
+            elif call["function_name"] == "fill":
+                validate_fill(call["arguments"], error_list, sheets_names)
+            elif call["function_name"] == "aggregate":
+                validate_aggregate(call["arguments"], error_list, sheets_names)
+            elif call["function_name"] == "test":
+                validate_test(call["arguments"], error_list, sheets_names)
+            elif call["function_name"] == "concatenate":
+                validate_concatenate(call["arguments"], error_list, sheets_names)
+            elif call["function_name"] == "split":
+                validate_split(call["arguments"], error_list, sheets_names)
+            elif call["function_name"] == "format":
+                validate_format(call["arguments"], error_list, sheets_names)
     return "Success"
 
 

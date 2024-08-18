@@ -16,14 +16,10 @@ Parameters:
 - table_name (str, required): The name of the new table to be created. The table name should end with ".csv".
 - row_number (int, required): The number of rows in the table.
 - column_number (int, required): The number of columns in the table.
-Output:
-- The newly created table.
 
 2. delete_table(table_name): Deletes the specified table.
 Parameters:
 - table_name (str, required): The name of the table to be deleted.
-Output:
-- None
 
 3. pivot_table(table_name, index, columns, values, aggfunc): Reshapes the table so that each unique 'columns' value becomes a separate column, with the 'index' values as row headers, and the corresponding 'values' filled in their respective cells.
 Parameters:
@@ -32,8 +28,6 @@ Parameters:
 - columns (str, required): The column name to use as the new column headers.
 - values (str, required): The column name whose values will fill the new table.
 - aggfunc (str, required): The aggregation function to apply to the values. Common options are 'first', 'sum', 'mean', etc.
-Output:
-- The pivoted table.
 
 4. merge(table_name_a, table_name_b, how="outer", on=None, axis): Merges two tables based on a common column or along columns.
 Parameters:
@@ -42,8 +36,6 @@ Parameters:
 - how(str, required): Type of merge to be performed. Options are 'left', 'right', 'outer', 'inner'. Default is 'outer'.
 - on(str, required): Column or index level names to join on. Must be found in both DataFrames. If not provided and the DataFrames have a common column, will default to the intersection of the columns in the DataFrames.
 - axis(str or int, required): Axis to merge along. 0 or "index" for row-wise, 1 or "column" for column-wise. Default is 0.
-Output:
-- A new table with the merged data.
 
 5. subtable(table_name, row_list=None, column_list=None, subtable_name=None): Returns a new table with only the specified rows or columns.
 Parameters:
@@ -51,14 +43,10 @@ Parameters:
 - row_list (list[int], optional): The list of row indices to be extracted.
 - column_list (list[str], optional): The list of column names to be extracted.
 - subtable_name (str, optional): The name of the new table. If not provided, the new table will be named "subtable.csv".
-Output:
-- The new table with only the specified rows/columns.
 
 6. transpose(table_name): Transposes the given table.
 Parameters:
 - table_name (str, required): table to be transposed.
-Output:
-- A new table with the transposed data.
 
 ### Column/Row-level Functions
 
@@ -70,8 +58,6 @@ Parameters:
 - axis (str or int, required):
     - 0 or "index": Indicates to insert a row.
     - 1 or "columns": Indicates to insert a column.
-Output:
-- A new table with the inserted row/column.
 
 2. drop(table_name, label, axis): Drops one or more rows or columns in the table.
 Parameters:
@@ -80,8 +66,6 @@ Parameters:
 - axis (str or int, required):
     - 0 or "index": Indicates to drop one or more rows.
     - 1 or "columns": Indicates to drop one or more columns.
-Output:
-- A new table with the dropped row/column.
 
 3. assign(table_name, start_row_index, end_row_index, start_column_index, end_column_index, values): Assigns constant values to specific cells in the table.
 Parameters:
@@ -89,8 +73,6 @@ Parameters:
 - start_row_index, end_row_index (int, required): The range of row indices to assign the value to.
 - start_column_index, end_column_index (int, required): The range of column indices to assign the value to.
 - values (list[list[int/float/str]] or int/float/str, required): The const value(s) to assign to the specified cell(s). Can be a single int/float/str or a list of lists of int/float/str. The order of values is from top to bottom, left to right.
-Output:
-- A new table with the specified cells assigned with the specified values.
 
 4. move(origin_table_name, origin_index, target_table_name, target_index, axis): Moves a row or column from the origin table to the target table.
 Parameters:
@@ -101,9 +83,6 @@ Parameters:
 - axis (str or int, required):
     - 0 or "index": Indicates to move a row.
     - 1 or "columns": Indicates to move a column.
-Output:
-- The new version of the origin table.
-- The new version of the target table.
 
 5. copy(origin_table_name, origin_index, target_table_name, target_index, target_label_name, axis): Copies a row or column from the origin table to the target table at the specified index.
 Parameters:
@@ -115,8 +94,6 @@ Parameters:
 - axis (str or int, required):
     - 0 or "index": Indicates to copy a row.
     - 1 or "columns": Indicates to copy a column.
-Output:
-- The new version of the target table with the copied row/column.
 
 6. swap(table_name_a, label_a, table_name_b, label_b, axis): Swaps rows or columns between two tables.
 Parameters:
@@ -144,16 +121,12 @@ Parameters:
 - axis (str or int, required):
     - 0 or "index": Indicates to divide the table by a row.
     - 1 or "columns": Indicates to divide the table by a column.
-Output:
-- A list of tables divided by the specific values of a row or column.
 
 9. fill(table_name, method, column=None): Fills missing values in the table using the specified method.
 Parameters:
 - table (str, required): Table to fill missing values.
 - method (str, required): The method to use for filling missing values. Choose from 'value', 'mean', 'median', 'mode', 'ffill', 'bfill', 'interpolate'.
 - column (str or list[str], optional): The column or columns to fill missing values in. If None, missing values in all columns will be filled.
-Output:
-- A new table with missing values filled.
 
 ### Summarization Functions
 
@@ -164,8 +137,6 @@ Parameters:
 - axis (str or int, required):
     - 0 or "index": Applies the aggregate operations on rows, the keys in the functions dict is some row names.
     - 1 or "columns": Applies the aggregate operations on columns, the keys in the functions dict is some column names.
-Output:
-- A new table with aggregated values.
 
 2. test(table_name, label_a, label_b, strategy, axis): Returns a tuple (statistic, p_value) by comparing two labels using the specified strategy.
 Parameters:
@@ -189,8 +160,6 @@ Parameters:
 - axis (str or int, required):
     - 0 or "index": Indicates to concatenate rows.
     - 1 or "columns": Indicates to concatenate columns.
-Output:
-- A new table with the concatenated row/column.
 
 2. split(table, label, delimiter, axis, new_column=None): Separates rows by unnesting elements in a column or splits columns based on a delimiter within the column values, depending on the specified axis.
 Parameters:
@@ -211,5 +180,3 @@ Parameters:
 - axis (str or int, required):
     - 0 or "index": Indicates to format a row.
     - 1 or "columns": Indicates to format a column.
-Output:
-- A new table with the formatted row/column.
