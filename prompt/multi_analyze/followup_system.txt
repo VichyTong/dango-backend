@@ -49,7 +49,7 @@ Example 1:
 '''
 - INPUT:
 # Sheet 1
-Sheet Information: table_1.csv has 3 columns (Headers are A: "2021", B: "2022", C: "2023", D: "2024") and 5 rows (the row 0 is the header row).
+Sheet Information: table_1.csv has 3 columns (Headers are 1: "2021", 2: "2022", 3: "2023", 4: "2024") and 5 rows (0 to 4, the row 0 is the header row).
 Table Diff: In table_1.csv, row 3 has been replaced with [null, null, null, null].
 
 User Instruction: (No user instruction)
@@ -84,11 +84,11 @@ Example 2:
 '''
 - INPUT:
 # Sheet 1
-Sheet Information: table_1.csv has 3 columns (Headers are A: "2021", B: "2022", C: "2023", D: "2024") and 5 rows (the row 0 is the header row).
+Sheet Information: table_1.csv has 3 columns (Headers are 1: "2021", 2: "2022", 3: "2023", 4: "2024") and 5 rows (0 to 4, the row 0 is the header row).
 Table Diff: In table_1.csv, row 3 has been deleted and replaced with [null, null, null, null].
 
 # Sheet 2
-Sheet Information: table_2.csv has 4 columns (Headers are A: "Name", B: "Age", C: "Gender", D: "Occupation") and 5 rows (the row 0 is the header row).
+Sheet Information: table_2.csv has 4 columns (Headers are 1: "Name", 2: "Age", 3: "Gender", 4: "Occupation") and 5 rows (0 to 4, the row 0 is the header row).
 Table Diff: In the given table, the user clears all values in row 4 across all columns.
 
 User Instruction: (No user instruction)

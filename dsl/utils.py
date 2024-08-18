@@ -120,7 +120,7 @@ def drop(table, label, axis=0, condition=None):
 
         # Dropping rows
         else:
-            label = [str(int(l) - 1) for l in label]
+            label = [str(l) for l in label]
             missing_rows = [l for l in label if l not in table.index]
             print(table.index)
             if missing_rows:
