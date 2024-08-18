@@ -4,8 +4,11 @@ import pandas as pd
 
 from utils.db import (
     upload_sheet,
+    upload_sheet_buffer,
     get_sheet,
+    get_sheet_buffer,
     delete_sheet,
+    delete_sheet_buffer,
     get_same_sheet_version,
     find_next_version,
 )
@@ -45,7 +48,14 @@ def init_prompt():
         execute_user_template = f.read()
 
 
+def init_template():
+    global execution_template
+    with open("constant/execution_template.txt", "r") as f:
+        execution_template = f.read()
+
+
 init_prompt()
+init_template()
 
 
 def execute_dsl(sheet, function, arguments, target_sheet=None, condition=None):
@@ -89,6 +99,21 @@ def execute_dsl(sheet, function, arguments, target_sheet=None, condition=None):
         return "Invalid function"
 
 
+def split_sheet_name(sheet_name):
+    # Regular expression to find "v{int}" suffix
+    match = re.search(r"_v(\d+)\.csv$", sheet_name)
+    if match:
+        # Extract base name and version number
+        base_name = sheet_name[: match.start()] + ".csv"
+        version = int(match.group(1))
+    else:
+        # No version number present
+        base_name = sheet_name
+        version = 0
+
+    return base_name, version
+
+
 def execute_dsl_list(client_id, required_tables, dsl_list, DependenciesManager):
     # table-level operations
     table_function_list = [
@@ -122,20 +147,6 @@ def execute_dsl_list(client_id, required_tables, dsl_list, DependenciesManager):
     type_c_function_list = [
         "merge",
     ]
-
-    def split_sheet_name(sheet_name):
-        # Regular expression to find "v{int}" suffix
-        match = re.search(r"_v(\d+)\.csv$", sheet_name)
-        if match:
-            # Extract base name and version number
-            base_name = sheet_name[: match.start()] + ".csv"
-            version = int(match.group(1))
-        else:
-            # No version number present
-            base_name = sheet_name
-            version = 0
-
-        return base_name, version
 
     def get_sheet_info(sheet_name):
         sheet_id, version = split_sheet_name(sheet_name)
@@ -343,5 +354,66 @@ def new_execute_dsl_list(client_id, required_tables, dsl_list, step_by_step_plan
     response = generate_chat_completion(messages)
 
     pattern = r"```([^`]+)```"
-    matches = re.findall(pattern, response, re.DOTALL)
-    print(matches[0])
+    program = re.findall(pattern, response, re.DOTALL)[0]
+    print("-------------------------- PROGRAM --------------------------")
+    print(program)
+    print("-------------------------------------------------------------")
+
+    filled_program = execution_template.replace("{CLIENT_ID}", client_id).replace(
+        "{PROGRAM}", program
+    )
+
+    print("-------------------------- FILLED PROGRAM --------------------------")
+    print(filled_program)
+    print("--------------------------------------------------------------------")
+
+    exec(filled_program)
+
+    output = []
+    for table in required_tables:
+        sheet_id, sheet_version = split_sheet_name(table)
+        buffer_sheet_data = get_sheet_buffer(client_id, table)
+
+        # Delete table
+        if buffer_sheet_data is None:
+            output.append(
+                {
+                    "sheet_id": sheet_id,
+                    "version": sheet_version,
+                    "data": [],
+                    "is_delete": True,
+                }
+            )
+            continue
+
+        # Same table data
+        same_sheet_version = get_same_sheet_version(client_id, sheet_id, buffer_sheet_data)
+        sheet = pd.DataFrame(buffer_sheet_data)
+        if "Unnamed: 0" in sheet.columns:
+            sheet = pd.DataFrame(buffer_sheet_data, index_col=0)
+        if same_sheet_version is not None:
+            print(f"Sheet {sheet_id} already exists in version {same_sheet_version}")
+            output.append(
+                {
+                    "sheet_id": sheet_id,
+                    "version": same_sheet_version,
+                    "data": sheet.fillna("").to_dict(orient="list"),
+                    "is_delete": False,
+                }
+            )
+            continue
+
+        # New table data
+        sheet_version = find_next_version(client_id, sheet_id)
+        output.append(
+            {
+                "sheet_id": sheet_id,
+                "version": sheet_version,
+                "data": sheet.fillna("").to_dict(orient="list"),
+                "is_delete": False,
+            }
+        )
+        upload_sheet(client_id, sheet_id, sheet_version, buffer_sheet_data)
+        delete_sheet_buffer(client_id, table)
+    print(json.dumps(output, indent=4))
+    return output

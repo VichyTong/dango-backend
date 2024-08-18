@@ -29,12 +29,32 @@ CREATE TABLE IF NOT EXISTS sheets (
 """
 )
 
+cur.execute(
+    """
+CREATE TABLE IF NOT EXISTS sheets_buffer (
+    client_id TEXT,
+    sheet_id TEXT,
+    data TEXT,
+    PRIMARY KEY (client_id, sheet_id)
+)
+"""
+)
+
 
 def upload_sheet(client_id, sheet_id, version, data):
     data = json.dumps(data)
     cur.execute(
         "INSERT INTO sheets (client_id, sheet_id, version, data) VALUES (?, ?, ?, ?)",
         (client_id, sheet_id, version, data),
+    )
+    con.commit()
+
+
+def upload_sheet_buffer(client_id, sheet_id, data):
+    data = json.dumps(data)
+    cur.execute(
+        "INSERT OR REPLACE INTO sheets_buffer (client_id, sheet_id, data) VALUES (?, ?, ?)",
+        (client_id, sheet_id, data),
     )
     con.commit()
 
@@ -48,11 +68,27 @@ def get_sheet(client_id, sheet_id, version):
     return data
 
 
-def delete_sheet(client_id, sheet_id, version):
+def get_sheet_buffer(client_id, sheet_id):
+    cur.execute(
+        "SELECT data FROM sheets_buffer WHERE client_id = ? AND sheet_id = ?",
+        (client_id, sheet_id),
+    )
+    data = json.loads(cur.fetchone()[0])
+    return data
 
+
+def delete_sheet(client_id, sheet_id, version):
     cur.execute(
         "DELETE FROM sheets WHERE client_id = ? AND sheet_id = ? AND version = ?",
         (client_id, sheet_id, version),
+    )
+    con.commit()
+
+
+def delete_sheet_buffer(client_id, sheet_id):
+    cur.execute(
+        "DELETE FROM sheets_buffer WHERE client_id = ? AND sheet_id = ?",
+        (client_id, sheet_id),
     )
     con.commit()
 
