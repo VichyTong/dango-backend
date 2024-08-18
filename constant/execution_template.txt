@@ -2,17 +2,6 @@ import re
 import pandas as pd
 
 
-def split_sheet_name(sheet_name):
-    match = re.search(r"_v(\d+)\.csv$", sheet_name)
-    if match:
-        base_name = sheet_name[: match.start()] + ".csv"
-        version = int(match.group(1))
-    else:
-        base_name = sheet_name
-        version = 0
-    return base_name, version
-
-
 def load_table(sheet_name):
     sheet_id, version = split_sheet_name(sheet_name)
     sheet_data = get_sheet("{CLIENT_ID}", sheet_id, version)
@@ -23,6 +12,13 @@ def load_table(sheet_name):
 
 def save_table(sheet_data, sheet_name):
     sheet_data = sheet_data.fillna("").to_dict()
-    upload_sheet_buffer("{CLIENT_ID}", sheet_name, sheet_data)
+    buffer_data = {
+        "is_delete": False,
+        "data": sheet_data
+    }
+    upload_sheet_buffer("{CLIENT_ID}", sheet_name, buffer_data)
+
+def delete_table(sheet_name):
+    upload_sheet_buffer("{CLIENT_ID}", sheet_name, {"is_delete": True})
 
 {PROGRAM}

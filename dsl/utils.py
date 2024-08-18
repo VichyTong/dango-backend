@@ -24,6 +24,24 @@ def classify_axis(axis):
     return axis
 
 
+def create_table(table_name, row_number, column_number):
+    """
+    Creates a new table with the specified number of rows and columns.
+
+    Parameters:
+    - table_name: The name of the new table.
+    - row_number: The number of rows in the new table.
+    - column_number: The number of columns in the new table.
+    """
+    table = pd.DataFrame(
+        index=range(row_number), columns=range(column_number)
+    ).add_prefix("Column_")
+
+    table.columns = [f"Column_{i+1}" for i in range(column_number)]
+
+    return table
+
+
 def insert(table, index, index_name="new_column", axis=0):
     """
     Inserts an empty row or column at the specified index in the table.

@@ -18,7 +18,8 @@ from utils.db import (
     is_sheet_exists,
     get_all_sheets,
 )
-from utils.execute import execute_dsl_list, new_execute_dsl_list
+from utils.execute import execute_dsl_list
+from utils.execute_program import new_execute_dsl_list
 from utils.dependency import DependenciesManager
 from utils.edit import edit_dsl
 from config.config import config

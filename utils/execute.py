@@ -355,9 +355,6 @@ def new_execute_dsl_list(client_id, required_tables, dsl_list, step_by_step_plan
 
     pattern = r"```([^`]+)```"
     program = re.findall(pattern, response, re.DOTALL)[0]
-    print("-------------------------- PROGRAM --------------------------")
-    print(program)
-    print("-------------------------------------------------------------")
 
     filled_program = execution_template.replace("{CLIENT_ID}", client_id).replace(
         "{PROGRAM}", program
