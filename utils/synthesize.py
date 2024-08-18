@@ -7,27 +7,28 @@ from utils.llm import (
 )
 from utils.db import get_history, get_all_sheets, get_sheet
 from utils.log import log_messages
-from utils.format_text import get_history_text, format_information
+from utils.format_text import (
+    get_history_text,
+    format_information,
+    format_selected_dsl_grammar,
+    format_error_message,
+)
 from utils.verify_syntax import validate_dsls_format, validate_dsls_functions
 from utils.convert2NL import transfer_to_NL
-from dsl import function_map
 
 
 def init_prompt():
-    global dsl_grammar, selected_dsl_grammar_template
+    global dsl_grammar
     global summarize_system_prompt
     global plan_system_prompt, plan_user_prompt_template
     global generate_system_prompt_template, generate_user_prompt_template
     global verifier_semantic_system_prompt, verifier_semantic_user_prompt_template
-    global error_message_template
     global plan_with_error_message_system_prompt, plan_with_error_message_user_prompt_template
     global generate_with_error_message_system_prompt, generate_with_error_message_user_prompt_template
     global add_information_system_prompt, add_information_user_prompt_template
     global boolean_indexing_system_prompt, boolean_indexing_user_prompt_template
     with open("prompt/synthesize/dsl_grammar.txt", "r") as f:
         dsl_grammar = f.read()
-    with open("prompt/synthesize/dsl_grammar_selected.txt", "r") as f:
-        selected_dsl_grammar_template = f.read()
     with open("prompt/synthesize/summarize_system.txt", "r") as f:
         summarize_system_prompt = f.read()
     with open("prompt/synthesize/plan_system.txt", "r") as f:
@@ -42,8 +43,6 @@ def init_prompt():
         verifier_semantic_system_prompt = f.read().replace("{DSL_GRAMMAR}", dsl_grammar)
     with open("prompt/synthesize/verifier_user.txt", "r") as f:
         verifier_semantic_user_prompt_template = f.read()
-    with open("prompt/synthesize/error_message_template.txt", "r") as f:
-        error_message_template = f.read()
     with open("prompt/synthesize/plan_with_error_message_system.txt", "r") as f:
         plan_with_error_message_system_prompt = f.read()
     with open("prompt/synthesize/plan_with_error_message_user.txt", "r") as f:
@@ -118,76 +117,6 @@ def add_more_information(client_id, plan, information):
                 break
             result += f'"{data[label_name][keys]}", '
     return result
-
-
-def format_error_message(error_list):
-    error_message = "ERROR_LIST:\n"
-    for index, error in enumerate(error_list, start=1):
-        if "function_name" in error:
-            error_message += (
-                error_message_template.replace("{INDEX}", str(index))
-                .replace("{ERROR_TYPE}", error["error_type"])
-                .replace("{FUNCTION_NAME}", error["function_name"])
-                .replace("{MESSAGE}", error["error_message"])
-            )
-        else:
-            error_message += (
-                error_message_template.replace("{INDEX}", str(index))
-                .replace("{ERROR_TYPE}", error["error_type"])
-                .replace("{MESSAGE}", error["error_message"])
-            )
-    return error_message
-
-
-def format_selected_dsl_grammar(function_list):
-    table_level_functions = set()
-    column_row_level_functions = set()
-    string_operation_functions = set()
-    summarization_functions = set()
-
-    for function_name in function_list:
-        if function_name in function_map:
-            function_class = function_map[function_name]()
-            function_type = function_class.function_type
-            function_definition = function_class.definition()
-
-            if function_type == "table":
-                table_level_functions.add(function_definition)
-            elif function_type == "column_row":
-                column_row_level_functions.add(function_definition)
-            elif function_type == "summarization":
-                summarization_functions.add(function_definition)
-            elif function_type == "string_operation":
-                string_operation_functions.add(function_definition)
-
-    def format_definition_set(definition_set, prefix):
-        if len(definition_set) == 0:
-            return ""
-        text = prefix
-        for index, definition in enumerate(definition_set, start=1):
-            text += f"{index}. {definition}\n\n"
-        return text
-
-    table_level_text = format_definition_set(
-        table_level_functions, "### Table-level Functions\n\n"
-    )
-    column_row_level_text = format_definition_set(
-        column_row_level_functions, "### Column/Row-level Functions\n\n"
-    )
-    summarization_text = format_definition_set(
-        summarization_functions, "### Summarization Functions\n\n"
-    )
-    string_operation_functions = format_definition_set(
-        string_operation_functions, "### String Operation Functions\n\n"
-    )
-
-    return (
-        selected_dsl_grammar_template.replace("{TABLE-LEVEL FUNCTIONS}", table_level_text)
-        .replace("{CLOUMN/ROW-LEVEL FUNCTIONS}", column_row_level_text)
-        .replace("{SUMMARIZATION FUNCTIONS}", summarization_text)
-        .replace("{STRING OPERATION FUNCTIONS}", string_operation_functions)
-        .strip()
-    )
 
 
 def get_step_by_step_plan(

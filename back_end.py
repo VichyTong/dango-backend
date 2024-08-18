@@ -18,9 +18,10 @@ from utils.db import (
     is_sheet_exists,
     get_all_sheets,
 )
-from utils.execute import execute_dsl_list
+from utils.execute import execute_dsl_list, new_execute_dsl_list
 from utils.dependency import DependenciesManager
 from utils.edit import edit_dsl
+from config.config import config
 
 # Initialize FastAPI app
 app = FastAPI()
@@ -282,11 +283,14 @@ class Program(BaseModel):
     function_name: str
     arguments: List[Union[str, int, float, None, list, dict]]
     function: Optional[str]
+    condition: Optional[str]
+
 
 class DSL(BaseModel):
     required_tables: List[str]
     program: List[Program]
     step_by_step_plan: str
+
 
 class ExecuteDSLList(BaseModel):
     client_id: str
@@ -298,9 +302,17 @@ async def handle_execute_dsl_list(request_body: ExecuteDSLList):
     client_id = request_body.client_id
     dsl_list = request_body.dsl_list.program
     required_tables = request_body.dsl_list.required_tables
-    output = execute_dsl_list(client_id, required_tables, dsl_list, DependenciesManager)
-    print("output:", output)
-    print("dsl_list:", dsl_list)
+    step_by_step_plan = request_body.dsl_list.step_by_step_plan
+
+    if config["execute_mode"] == "legacy":
+        output = execute_dsl_list(
+            client_id, required_tables, dsl_list, DependenciesManager
+        )
+    elif config["execute_mode"] == "latest":
+        output = new_execute_dsl_list(
+            client_id, required_tables, dsl_list, step_by_step_plan
+        )
+
     return output
 
 

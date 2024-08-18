@@ -1,6 +1,7 @@
 import re
 import json
 import pandas as pd
+
 from utils.db import (
     upload_sheet,
     get_sheet,
@@ -9,7 +10,10 @@ from utils.db import (
     find_next_version,
 )
 from utils.log import log_text
-
+from utils.llm import (
+    append_message,
+    generate_chat_completion,
+)
 from dsl.utils import (
     insert,
     drop,
@@ -30,6 +34,18 @@ from dsl.utils import (
     fill,
     subtable,
 )
+from utils.format_text import format_selected_dsl_grammar
+
+
+def init_prompt():
+    global execute_system_template, execute_user_template
+    with open("prompt/execute/execute_system.txt", "r") as f:
+        execute_system_template = f.read()
+    with open("prompt/execute/execute_user.txt", "r") as f:
+        execute_user_template = f.read()
+
+
+init_prompt()
 
 
 def execute_dsl(sheet, function, arguments, target_sheet=None, condition=None):
@@ -71,6 +87,7 @@ def execute_dsl(sheet, function, arguments, target_sheet=None, condition=None):
         return subtable(sheet, *arguments)
     else:
         return "Invalid function"
+
 
 def execute_dsl_list(client_id, required_tables, dsl_list, DependenciesManager):
     # table-level operations
@@ -290,3 +307,41 @@ def execute_dsl_list(client_id, required_tables, dsl_list, DependenciesManager):
         )
     print(json.dumps(output, indent=4))
     return output
+
+
+def new_execute_dsl_list(client_id, required_tables, dsl_list, step_by_step_plan):
+    function_list = []
+    dsl_program_list = []
+    for dsl in dsl_list:
+        function_list.append(dsl.function_name)
+        dsl_program_list.append(
+            {
+                "function_name": dsl.function_name,
+                "arguments": dsl.arguments,
+                "condition": dsl.condition,
+            }
+        )
+
+    selected_dsl_grammar = format_selected_dsl_grammar(function_list)
+    execute_system_prompt = execute_system_template.replace(
+        "{SELECTED_DSL_GRAMMAR}", selected_dsl_grammar
+    )
+    execute_user_prompt = (
+        execute_user_template.replace("{REQUIRED_TABLES}", json.dumps(required_tables))
+        .replace(
+            "{DSL_PROGRAM}",
+            json.dumps(dsl_program_list, indent=4),
+        )
+        .replace(
+            "{STEP_BY_STEP_PLAN}",
+            step_by_step_plan,
+        )
+    )
+
+    messages = append_message(execute_system_prompt, "system", [])
+    messages = append_message(execute_user_prompt, "user", messages)
+    response = generate_chat_completion(messages)
+
+    pattern = r"```([^`]+)```"
+    matches = re.findall(pattern, response, re.DOTALL)
+    print(matches[0])
