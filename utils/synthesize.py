@@ -216,7 +216,6 @@ def get_dsls(
     print(json.dumps(generated_dsl, indent=4))
     messages = append_message(generated_dsl, "assistant", messages)
     log_messages(client_id, "generate_dsl", messages)
-    generated_dsl["step_by_step_plan"] = step_by_step_plan_string
     return generated_dsl
 
 
@@ -323,4 +322,5 @@ def dsl_synthesize(client_id: str) -> str:
     print(f"Total count: {count}")
     for dsl in dsls["program"]:
         dsl["natural_language"] = transfer_to_NL(dsl)
+    dsls["step_by_step_plan"] = summarization
     return dsls

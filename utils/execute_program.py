@@ -7,12 +7,13 @@ from utils.db import (
     upload_sheet_buffer,
     get_sheet,
     get_sheet_buffer,
+    get_all_sheet_buffer,
     delete_sheet,
     delete_sheet_buffer,
     get_same_sheet_version,
     find_next_version,
 )
-from utils.log import log_text
+from utils.log import log_messages
 from utils.llm import (
     append_message,
     generate_chat_completion,
@@ -98,7 +99,7 @@ def new_execute_dsl_list(client_id, required_tables, dsl_list, step_by_step_plan
             json.dumps(dsl_program_list, indent=4),
         )
         .replace(
-            "{STEP_BY_STEP_PLAN}",
+            "{USER_INTENTS}",
             step_by_step_plan,
         )
     )
@@ -106,6 +107,8 @@ def new_execute_dsl_list(client_id, required_tables, dsl_list, step_by_step_plan
     messages = append_message(execute_system_prompt, "system", [])
     messages = append_message(execute_user_prompt, "user", messages)
     response = generate_chat_completion(messages)
+    messages = append_message(response, "assistant", messages)
+    log_messages(client_id, "execute_dsl_list", messages)
 
     pattern = r"```([^`]+)```"
     program = re.findall(pattern, response, re.DOTALL)[0]
@@ -121,9 +124,11 @@ def new_execute_dsl_list(client_id, required_tables, dsl_list, step_by_step_plan
     exec(filled_program)
 
     output = []
-    for table in required_tables:
+    all_sheet_buffer = get_all_sheet_buffer(client_id)
+
+    for table, buffer in all_sheet_buffer:
+        buffer = json.loads(buffer)
         sheet_id, sheet_version = split_sheet_name(table)
-        buffer = get_sheet_buffer(client_id, table)
 
         # No data found
         if buffer is None:

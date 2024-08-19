@@ -52,6 +52,7 @@ Example:
         ]
     }
 ]
+2. This DSL script is not the final program. It does not include the load table operations and the save table operations. The focus is on the operations performed on the table. Please ignore the missing load and save table operations.
 
 #############
 
@@ -74,7 +75,7 @@ Generated DSL:
         "function_name": "drop",
         "arguments": [
             "Heart Disease Prediction dataset.csv",
-            [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19],
+            [0, 1, 2, 3, 4, 5],
             "index"
         ]
     }
@@ -153,6 +154,35 @@ Generated DSL:
             "Heart Disease Prediction dataset.csv",
             "age",
             "columns"
+        ]
+    }
+]
+
+- OUTPUT:
+{
+    "correctness": "Yes"
+}
+'''
+
+Example 4
+'''
+Input:
+# Sheet 1
+Sheet Information: Test_v1.csv has 5 columns (Headers are: 1: "name", 2: "brithday", 3: "gender", 4: "grade", the column 0 is the header column) and 15 rows (0 to 14, the row 0 is the header row).
+
+User Instruction: Divide the table based on the column "gender" into two tables, save them as "male.csv" and "female.csv".
+
+User Intents: The user wants to divide the table based on the column "gender" into two tables, named them as "male.csv" and "female.csv".
+
+Generated DSL:
+```
+[
+    {
+        "function_name": "divide",
+        "arguments": [
+            "Test_v1.csv",
+            "gender",
+            1
         ]
     }
 ]

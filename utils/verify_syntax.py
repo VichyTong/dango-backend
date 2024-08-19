@@ -30,22 +30,21 @@ def validate_dsls_format(function_calls: List[dict], error_list=[]):
         error = create_error_message("DSLs format is invalid", "The format should be a list of dictionaries with keys 'function_name' and 'arguments' where 'arguments' is a list.")
         error_list.append(error)
         return "Failed"
-# create_table(table_name, row_number, column_number): Creates a new empty table with the specified number of rows and columns.
+
+
+# blank_table(row_number, column_number): Returns a empty table with the specified number of rows and columns.
 # Parameters:
-# - table_name (str): The name of the new table to be created. The table name should end with ".csv".
-# - row_number (int): The number of rows in the table.
-# - column_number (int): The number of columns in the table.
+# - row_number (int, required): The number of rows in the table.
+# - column_number (int, required): The number of columns in the table.
+# Output:
+# - A pandas DataFrame.
 
-
-class CREATE_TABLE_PARAMS(BaseModel):
-    table_name: str
+class BLANK_TABLE_PARAMS(BaseModel):
     row_number: int
     column_number: int
 
-
-def create_table(params: CREATE_TABLE_PARAMS):
+def blank_table(params: BLANK_TABLE_PARAMS):
     return
-
 
 # delete_table(table_name): Deletes the specified table.
 # Parameters:
@@ -58,7 +57,7 @@ class DELETE_TABLE_PARAMS(BaseModel):
 def delete_table(params: DELETE_TABLE_PARAMS):
     return
 
-# 3. insert(table_name, index, index_name, axis): Inserts an empty row or column at the specified index in the table.
+# insert(table_name, index, index_name, axis): Inserts an empty row or column at the specified index in the table.
 # Parameters:
 # - table_name (str): The name of the table to insert the row/column into.
 # - index (int): The index at which the row/column will be inserted.
@@ -132,7 +131,7 @@ class MOVE_PARAMS(BaseModel):
 def move(params: MOVE_PARAMS):
     return
 
-# copy(origin_table_name, origin_index, target_table_name, target_index, target_label_name, axis): Copies a row or column from the origin table to the target table at the specified index.
+# copy(origin_table_name, origin_index, target_table_name, target_index, axis): Copies a row or column from the origin table to the target table at the specified index.
 # Parameters:
 # - origin_table_name (str): The name of the table from which the row/column will be copied.
 # - origin_index (int): The index of the row/column to be copied.
@@ -147,7 +146,7 @@ class COPY_PARAMS(BaseModel):
     origin_index: int
     target_table_name: str
     target_index: int
-    target_label_name: Optional[str]
+    target_label_name: str
     axis: Union[str, int]
 
 
@@ -173,7 +172,8 @@ class SWAP_PARAMS(BaseModel):
 
 def swap(params: SWAP_PARAMS):
     return
-# merge(table_a, table_b, how="outer", on=None, left_on=None, right_on=None, axis=0): Merges two tables based on a common column or along columns.
+
+# merge(table_a, table_b, how="outer", on=None, axis=0): Merges two tables based on a common column or along columns.
 # Parameters:
 # - table_a: First table
 # - table_b: Second table
@@ -231,7 +231,6 @@ class SPLIT_PARAMS(BaseModel):
     label: Union[str, int]
     delimiter: str
     axis: Union[str, int]
-    split_column: Optional[List[str]]
 
 def split(params: SPLIT_PARAMS):
     return
@@ -285,11 +284,12 @@ def test(params: TEST_PARAMS):
     return
 
 
-# format(table_name, label, pattern, axis): Formats the values in a row or column based on the specified pattern.
+# format(table_name, label, pattern, replace_with, axis): Formats the values in a row or column based on the specified pattern.
 # Parameters:
 # - table_name: table in which the row/column will be formatted.
 # - label: The label of the row/column to be formatted.
-# - pattern: The format regex pattern to apply to the values.
+# - pattern: The format regex pattern to apply to the values, You can use group syntax.
+# - replace_with: The string or backreference to replace the matched pattern with.
 # - axis:
 #     - 0 or "index": Indicates a row operation.
 #     - 1 or "columns": Indicates a column operation.
@@ -370,19 +370,16 @@ class FILL(BaseModel):
 def fill(params: FILL):
     pass
 
-# subtable(table_name, label_list, axis): Returns a new table with only the specified rows or columns.
+# subtable(table, row_list=None, column_list=None): Returns a subtable with only the specified rows or columns.
 # Parameters:
-# - table_name (str): The name of the table to extract the rows/columns from.
+# - table_name (str): The table to extract the rows or columns from.
+# - row_list (list[str/int]): The list of row labels to extract.
 # - label_list (list[str/int]): The list of row/column labels to extract.
-# - axis (str or int):
-#     - 0 or "index": Indicates to extract rows.
-#     - 1 or "columns": Indicates to extract columns.
 
 class SUBTABLE(BaseModel):
     table_name: str
+    row_list: List[Union[str, int]]
     label_list: List[Union[str, int]]
-    new_name: str
-    axis: Union[str, int]
 
 def subtable(params: SUBTABLE):
     pass
@@ -397,26 +394,26 @@ def get_sheet_names(all_sheets):
 
 def validate_dsls_functions(function_calls: List[dict], all_sheets, error_list=[]):
     valid_functions = [
-        "create_table",
-        "delete_table",
-        "pivot_table",
-        "merge",
-        "subtable",
-        "transpose",
-        "insert",
-        "drop",
-        "assign",
-        "move",
-        "copy",
-        "swap",
-        "rearrange",
-        "divide",
-        "fill",
         "aggregate",
-        "test",
+        "assign",
+        "blank_table",
         "concatenate",
-        "split",
+        "copy",
+        "delete_table",
+        "divide",
+        "drop",
+        "fill",
         "format",
+        "insert",
+        "merge",
+        "move",
+        "pivot_table",
+        "rearrange",
+        "split",
+        "subtable",
+        "swap",
+        "test",
+        "transpose",
     ]
     sheets_names = get_sheet_names(all_sheets)
     for call in function_calls:
@@ -424,62 +421,61 @@ def validate_dsls_functions(function_calls: List[dict], all_sheets, error_list=[
             error = create_error_message("Invalid function name", f"The function name '{call['function_name']}' is not a valid function. Please use one of the following functions: {', '.join(valid_functions)}.", call["function_name"])
             error_list.append(error)
         else:
-            if call["function_name"] == "create_table":
-                validate_create_table(call["arguments"], error_list, sheets_names)
-            elif call["function_name"] == "delete_table":
-                validate_delete_table(call["arguments"], error_list, sheets_names)
-            elif call["function_name"] == "pivot_table":
-                validate_pivot_table(call["arguments"], error_list, sheets_names)
-            elif call["function_name"] == "merge":
-                validate_merge(call["arguments"], error_list, sheets_names)
-            elif call["function_name"] == "subtable":
-                validate_subtable(call["arguments"], error_list, sheets_names)
-            elif call["function_name"] == "transpose":
-                validate_transpose(call["arguments"], error_list, sheets_names)
-            elif call["function_name"] == "insert":
-                validate_insert(call["arguments"], error_list, sheets_names)
-            elif call["function_name"] == "drop":
-                validate_drop(call["arguments"], error_list, sheets_names)
+            if call["function_name"] == "aggregate":
+                validate_aggregate(call["arguments"], error_list, sheets_names)
             elif call["function_name"] == "assign":
                 validate_assign(call["arguments"], error_list, sheets_names)
-            elif call["function_name"] == "move":
-                validate_move(call["arguments"], error_list, sheets_names)
-            elif call["function_name"] == "copy":
-                validate_copy(call["arguments"], error_list, sheets_names)
-            elif call["function_name"] == "swap":
-                validate_swap(call["arguments"], error_list, sheets_names)
-            elif call["function_name"] == "rearrange":
-                validate_rearrange(call["arguments"], error_list, sheets_names)
-            elif call["function_name"] == "divide":
-                validate_divide(call["arguments"], error_list, sheets_names)
-            elif call["function_name"] == "fill":
-                validate_fill(call["arguments"], error_list, sheets_names)
-            elif call["function_name"] == "aggregate":
-                validate_aggregate(call["arguments"], error_list, sheets_names)
-            elif call["function_name"] == "test":
-                validate_test(call["arguments"], error_list, sheets_names)
+            elif call["function_name"] == "blank_table":
+                validate_blank_table(call["arguments"], error_list, sheets_names)
             elif call["function_name"] == "concatenate":
                 validate_concatenate(call["arguments"], error_list, sheets_names)
-            elif call["function_name"] == "split":
-                validate_split(call["arguments"], error_list, sheets_names)
+            elif call["function_name"] == "copy":
+                validate_copy(call["arguments"], error_list, sheets_names)
+            elif call["function_name"] == "delete_table":
+                validate_delete_table(call["arguments"], error_list, sheets_names)
+            elif call["function_name"] == "divide":
+                validate_divide(call["arguments"], error_list, sheets_names)
+            elif call["function_name"] == "drop":
+                validate_drop(call["arguments"], error_list, sheets_names)
+            elif call["function_name"] == "fill":
+                validate_fill(call["arguments"], error_list, sheets_names)
             elif call["function_name"] == "format":
                 validate_format(call["arguments"], error_list, sheets_names)
+            elif call["function_name"] == "insert":
+                validate_insert(call["arguments"], error_list, sheets_names)
+            elif call["function_name"] == "merge":
+                validate_merge(call["arguments"], error_list, sheets_names)
+            elif call["function_name"] == "move":
+                validate_move(call["arguments"], error_list, sheets_names)
+            elif call["function_name"] == "pivot_table":
+                validate_pivot_table(call["arguments"], error_list, sheets_names)
+            elif call["function_name"] == "rearrange":
+                validate_rearrange(call["arguments"], error_list, sheets_names)
+            elif call["function_name"] == "split":
+                validate_split(call["arguments"], error_list, sheets_names)
+            elif call["function_name"] == "subtable":
+                validate_subtable(call["arguments"], error_list, sheets_names)
+            elif call["function_name"] == "swap":
+                validate_swap(call["arguments"], error_list, sheets_names)
+            elif call["function_name"] == "test":
+                validate_test(call["arguments"], error_list, sheets_names)
+            elif call["function_name"] == "transpose":
+                validate_transpose(call["arguments"], error_list, sheets_names)
     return "Success"
 
-
-def validate_create_table(arguments, error_list, sheets_names):
-    if len(arguments) != 3:
-        error = create_error_message("Invalid number of arguments", f"The function 'create_table' requires 3 arguments: 'table_name', 'row_number', 'column_number'.", "create_table")
+def validate_blank_table(arguments, error_list, sheets_names):
+    if len(arguments) != 2:
+        error = create_error_message("Invalid number of arguments", f"The function 'blank_table' requires 2 arguments: 'row_number', 'column_number'.", "blank_table")
         error_list.append(error)
         return "Failed"
     try:
-        params = CREATE_TABLE_PARAMS(table_name=arguments[0], row_number=arguments[1], column_number=arguments[2])
-        create_table(params)
+        params = BLANK_TABLE_PARAMS(row_number=arguments[0], column_number=arguments[1])
+        blank_table(params)
     except ValidationError as e:
-        error = create_error_message("Invalid argument format", f"The arguments for 'create_table' are not in the correct format. Please check the argument types and values.", "create_table")
+        error = create_error_message("Invalid argument format", f"The arguments for 'blank_table' are not in the correct format. Please check the argument types and values.", "blank_table")
         error_list.append(error)
     return "Success"
-
+    
 
 def validate_delete_table(arguments, error_list, sheets_names):
     if len(arguments) != 1:

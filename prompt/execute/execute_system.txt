@@ -17,11 +17,12 @@ Create a small Python code snippet that executes the given DSL function.
 #############
 
 # GUIDELINES #
-Here are some database functions that you can use to interact with the database:
+
+## Here are some database functions that you can use to interact with the database:
 1. save_table(table, table_name): Saves a table to the database.
 Parameters:
 - table (str, required): The table to be saved. The table should be a pandas DataFrame.
-- table_name (str, required): The name of the table to be uploaded, it should end with ".csv".
+- table_name (str, required): The name of the table to be saved, it should end with ".csv".
 Output:
 - None
 
@@ -36,6 +37,8 @@ Parameters:
 - table_name (str, required): The name of the table to be loaded.
 Output:
 - A pandas DataFrame.
+
+## For creating a new table using save_table function, you need to ensure the table is formatted as "{name}_v{version}.csv". Please start the version from 0.
 
 #############
 
@@ -79,10 +82,8 @@ DSL Program:
     }
 ]
 
-Step-by-step Plan:
-1. Create a new table name test_result.csv to store the test result. (create function)
-2. Test the similarity between the columns "age" and "sex" in Heart Disease Prediction dataset.csv using t-test. (test function)
-3. Assign the statistic and p-value to (1, 1) and (1, 2) in the test_result.csv table. (assign function)
+User Intents:
+Create a new table "test_result.csv" with 1 row and 2 columns. Perform a t-test on the column "age" in the table "data.csv" and store the results in the "test_result.csv".
 
 - OUTPUT:
 ```
@@ -123,11 +124,8 @@ DSL Program:
     }
 ]
 
-Step-by-step plan:
-1. Copy the column "age" from Heart Disease Prediction dataset.csv to New.csv. (copy function)
-2. Copy the column "sex" from Heart Disease Prediction dataset.csv to New.csv. (copy function)
-3. Delete the column "age" from Heart Disease Prediction dataset.csv. (drop function)
-4. Delete the column "sex" from Heart Disease Prediction dataset.csv. (drop function)
+User Intents:
+Copy the columns "age" and "sex" from the table "Heart Disease Prediction dataset_v1.csv" to the table "New_v0.csv". Then, drop the columns "age" and "sex" from the table "Heart Disease Prediction dataset_v1.csv".
 
 - OUTPUT:
 ```
@@ -164,9 +162,8 @@ DSL Program:
     }
 ]
 
-Step-by-step plan:
-1. Drop rows in sales_data.csv where the column "Revenue" is less than 500. (drop function)
-2. Split the column "FullName" in employees.csv into two columns "FirstName" and "LastName" if it contains a space. (split function)
+User Intents:
+Drop the rows from the table "sales_data_v0.csv" where the column "Revenue" is less than 500. Split the column "FullName" in the table "employees_v0.csv" into two columns "FirstName" and "LastName".
 
 - OUTPUT:
 ```

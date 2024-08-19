@@ -77,6 +77,14 @@ def get_sheet_buffer(client_id, sheet_id):
     return data
 
 
+def get_all_sheet_buffer(client_id):
+    cur.execute(
+        "SELECT sheet_id, data FROM sheets_buffer WHERE client_id = ?", (client_id,)
+    )
+    sheets = cur.fetchall()
+    return sheets
+
+
 def delete_sheet(client_id, sheet_id, version):
     cur.execute(
         "DELETE FROM sheets WHERE client_id = ? AND sheet_id = ? AND version = ?",

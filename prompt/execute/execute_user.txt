@@ -4,5 +4,5 @@ Required Tables:
 DSL Program:
 {DSL_PROGRAM}
 
-Step-by-step Plan:
-{STEP_BY_STEP_PLAN}
+User Intents:
+{USER_INTENTS}

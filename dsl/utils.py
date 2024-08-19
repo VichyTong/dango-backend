@@ -151,12 +151,7 @@ def divide(table, by, axis=0):
 
     result = []
     for group in groups:
-        result.append(
-            {
-                "unique_value": group[0],
-                "data": group[1].reset_index(drop=True),
-            }
-        )
+        result.append(group[1].reset_index(drop=True))
     return result
 
 

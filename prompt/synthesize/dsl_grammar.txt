@@ -1,9 +1,6 @@
 ## DSL Functions:
 Common Definitions:
 - label: Refers to a row or column in the table. If the label is the name of a row or column, it should be a string. If the label is the index of a row or column, it should be an integer.
-- axis: Refers to the direction of the operation.
-  - 0 or "index": Indicates a row operation.
-  - 1 or "columns": Indicates a column operation.
 
 ### Functions Usage Guidelines
 1. For column/row-level functions, our DSL supports a optional natural language string "condition", specifically used for handling if-type conditional statements to specify which rows or columns to operate on.
@@ -18,7 +15,13 @@ Parameters:
 Output:
 - A pandas DataFrame.
 
-2. pivot_table(table, index, columns, values, aggfunc): Reshapes the table so that each unique 'columns' value becomes a separate column, with the 'index' values as row headers, and the corresponding 'values' filled in their respective cells.
+2. delete_table(table_name): Deletes a table from the database.
+Parameters:
+- table_name (str, required): The name of the table to be deleted.
+Output:
+- None
+
+3. pivot_table(table, index, columns, values, aggfunc): Reshapes the table so that each unique 'columns' value becomes a separate column, with the 'index' values as row headers, and the corresponding 'values' filled in their respective cells.
 Parameters:
 - table (DataFrame, required): The table to pivot.
 - index (str, required): The column name to use as the new row headers.
@@ -28,7 +31,7 @@ Parameters:
 Output:
 - A pandas DataFrame.
 
-3. merge(table_a, table_b, how="outer", on=None, axis=0): Merges two tables based on a common column or along columns.
+4. merge(table_a, table_b, how="outer", on=None, axis): Merges two tables based on a common column or along columns.
 Parameters:
 - table_a (DataFrame, required): First table to merge.
 - table_b (DataFrame, required): Second table to merge.
@@ -38,7 +41,7 @@ Parameters:
 Output:
 - A pandas DataFrame.
 
-4. subtable(table, row_list=None, column_list=None): Returns a subtable with only the specified rows or columns.
+5. subtable(table, row_list=None, column_list=None): Returns a subtable with only the specified rows or columns.
 Parameters:
 - table (DataFrame, required): The table to extract the rows or columns from.
 - row_list (list[int], optional): The list of row indices to be extracted.
@@ -46,7 +49,7 @@ Parameters:
 Output:
 - A pandas DataFrame.
 
-5. transpose(table): Transposes the given table.
+6. transpose(table): Transposes the given table.
 Parameters:
 - table (DataFrame, required): The table to be transposed.
 Output:
@@ -97,12 +100,13 @@ Output:
 - A pandas DataFrame containing the origin table with the moved row/column.
 - A pandas DataFrame containing the target table with the moved row/column.
 
-5. copy(origin_table, origin_index, target_table, target_index, axis): Copies a row or column from the origin table to the target table at the specified index.
+5. copy(origin_table, origin_index, target_table, target_index, target_label_name, axis): Copies a row or column from the origin table to the target table at the specified index.
 Parameters:
 - origin_table (DataFrame, required): The table from which the row/column will be copied.
 - origin_index (int, required): The index of the row/column to be copied.
 - target_table (DataFrame, required): The table to which the row/column will be copied.
 - target_index (int, required): The index at which the row/column will be copied in the target table.
+- target_label_name (str, optional): The name of the new row/column in the target table.
 - axis (str or int, required):
     - 0 or "index": Indicates to copy a row.
     - 1 or "columns": Indicates to copy a column.
@@ -138,8 +142,8 @@ Parameters:
 - table (DataFrame, required): table to be divided.
 - by(int/str, required): The label of a row or column.
 - axis (str or int, required):
-    - 0 or "index": Indicates to divide the table by a row.
-    - 1 or "columns": Indicates to divide the table by a column.
+    - 0 or "index": Indicates to divide the table by a row. If the by is a row label, you should set axis to 0.
+    - 1 or "columns": Indicates to divide the table by a column. If the by is a column label, you should set axis to 1.
 Output:
 - A list of pandas DataFrames.
 
