@@ -102,14 +102,16 @@ def transfer_to_NL(dsl):
         axis = dsl["arguments"][2]
         return f"Aggregate the given table(s) with the functions {functions}"
     elif dsl["function_name"] == "test":
+        table_a = dsl["arguments"][0]
         label_a = dsl["arguments"][1]
-        label_b = dsl["arguments"][2]
-        strategy = dsl["arguments"][3]
-        axis = dsl["arguments"][4]
+        table_b = dsl["arguments"][2]
+        label_b = dsl["arguments"][3]
+        strategy = dsl["arguments"][4]
+        axis = dsl["arguments"][5]
         if axis == 0 or axis == "index" or axis == "0":
-            return f"Test the rows {label_a} and {label_b} in the given table(s) with the strategy {strategy}"
+            return f"Test the rows {label_a} in table {table_a} and {label_b} in table {table_b} using the {strategy}."
         elif axis == 1 or axis == "columns" or axis == "1":
-            return f"Test the columns {label_a} and {label_b} in the given table(s) with the strategy {strategy}"
+            return f"Test the columns {label_a} in table {table_a} and {label_b} in table {table_b} using the {strategy}."
         else:
             return "Invalid function"
     elif dsl["function_name"] == "rearrange":
