@@ -16,7 +16,7 @@ Summarize the user's intent.
 
 # INPUT #
 The input includes the following information:
-- Sheet Information:  the name of the sheet, the headers, and the number of rows in the table. 
+- Sheet Information: the name of the sheet, the headers, and the number of rows in the table. 
 - Table Diff: the changes made to the table.
 - User Instruction: the user's instruction that indicates the changes they want to make.
 

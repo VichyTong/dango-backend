@@ -12,13 +12,13 @@ Ask clarification questions to understand the user's intent.
 # GUIDELINES #
 1. Infer their intent through the table diff and user instruction. Do not infer beyond the information provided in the input.
 2. Avoid directly asking "what is your intent?" Instead, ask questions related to the changes made in the table and the instructions given.
-3. If the user's intent is clear, you can conclude the conversation.
+3. If the user's intent is clear, you can output the intent summary.
  
 #############
 
 # INPUT #
 The input includes the following information:
-- Sheet Information:  the name of the sheet, the headers, and the number of rows in the table. 
+- Sheet Information: the name of the sheet, the headers, and the number of rows in the table. 
 - Table Diff: the changes made to the table.
 - User Instruction: the user's instruction that indicates the changes they want to make.
 

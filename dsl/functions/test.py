@@ -7,15 +7,16 @@ class DangoTest(DangoFunction):
 
     def definition(self):
         return """\
-test(table_name, label_a, label_b, strategy, axis): Returns a tuple (statistic, p_value) by comparing two labels using the specified strategy.
+test(table_a, label_a, table_b, label_b, strategy, axis): Returns a tuple (statistic, p_value) by comparing two labels using the specified strategy.
 Parameters:
-- table_name (str, required): table on which the test will be performed.
+- table_a (DataFrame, required): table A on which the test will be performed.
 - label_a (str or int, required): The label of the first row/column to be tested.
+- table_b (DataFrame, required): table B on which the test will be performed.
 - label_b (str or int, required): The label of the second row/column to be tested.
 - strategy (str, required): The statistical test to perform ('t-test', 'z-test', 'chi-squared').
 - axis (str or int, required):
     - 0 or "index": Indicates to test rows.
     - 1 or "columns": Indicates to test columns.
 Output:
-- A tuple containing the test statistic and the p-value.\
+- A tuple (statistic, p_value).\
 """

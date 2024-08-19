@@ -11,148 +11,176 @@ Common Definitions:
 
 ### Table-level Functions
 
-1. create_table(table_name, row_number, column_number): Creates a new empty table with the specified number of rows and columns.
+1. blank_table(row_number, column_number): Returns a empty table with the specified number of rows and columns.
 Parameters:
-- table_name (str, required): The name of the new table to be created. The table name should end with ".csv".
 - row_number (int, required): The number of rows in the table.
 - column_number (int, required): The number of columns in the table.
+Output:
+- A pandas DataFrame.
 
-2. delete_table(table_name): Deletes the specified table.
+2. pivot_table(table, index, columns, values, aggfunc): Reshapes the table so that each unique 'columns' value becomes a separate column, with the 'index' values as row headers, and the corresponding 'values' filled in their respective cells.
 Parameters:
-- table_name (str, required): The name of the table to be deleted.
-
-3. pivot_table(table_name, index, columns, values, aggfunc): Reshapes the table so that each unique 'columns' value becomes a separate column, with the 'index' values as row headers, and the corresponding 'values' filled in their respective cells.
-Parameters:
-- table_name (str, required): The table to pivot.
+- table (DataFrame, required): The table to pivot.
 - index (str, required): The column name to use as the new row headers.
 - columns (str, required): The column name to use as the new column headers.
 - values (str, required): The column name whose values will fill the new table.
 - aggfunc (str, required): The aggregation function to apply to the values. Common options are 'first', 'sum', 'mean', etc.
+Output:
+- A pandas DataFrame.
 
-4. merge(table_name_a, table_name_b, how="outer", on=None, axis): Merges two tables based on a common column or along columns.
+3. merge(table_a, table_b, how="outer", on=None, axis=0): Merges two tables based on a common column or along columns.
 Parameters:
-- table_name_a (str, required): First table
-- table_name_b (str, required): Second table
+- table_a (DataFrame, required): First table to merge.
+- table_b (DataFrame, required): Second table to merge.
 - how(str, required): Type of merge to be performed. Options are 'left', 'right', 'outer', 'inner'. Default is 'outer'.
 - on(str, required): Column or index level names to join on. Must be found in both DataFrames. If not provided and the DataFrames have a common column, will default to the intersection of the columns in the DataFrames.
 - axis(str or int, required): Axis to merge along. 0 or "index" for row-wise, 1 or "column" for column-wise. Default is 0.
+Output:
+- A pandas DataFrame.
 
-5. subtable(table_name, row_list=None, column_list=None, subtable_name=None): Returns a new table with only the specified rows or columns.
+4. subtable(table, row_list=None, column_list=None): Returns a subtable with only the specified rows or columns.
 Parameters:
-- table_name (str, required): The name of the table to extract the rows/columns from.
+- table (DataFrame, required): The table to extract the rows or columns from.
 - row_list (list[int], optional): The list of row indices to be extracted.
 - column_list (list[str], optional): The list of column names to be extracted.
-- subtable_name (str, optional): The name of the new table. If not provided, the new table will be named "subtable.csv".
+Output:
+- A pandas DataFrame.
 
-6. transpose(table_name): Transposes the given table.
+5. transpose(table): Transposes the given table.
 Parameters:
-- table_name (str, required): table to be transposed.
+- table (DataFrame, required): The table to be transposed.
+Output:
+- A pandas DataFrame.
 
 ### Column/Row-level Functions
 
-1. insert(table_name, index, index_name, axis): Inserts an empty row or column at the specified index in the table. Other rows or columns will be move down or right.
+1. insert(table, index, index_name, axis): Inserts an empty row or column at the specified index in the table. Other rows or columns will be move down or right.
 Parameters:
-- table_name (str, required): The name of the table to insert the row/column into.
+- table (DataFrame, required): The table to insert the row/column into.
 - index (int, required): The final position at which the new row/column will be inserted. For example, if index = 1, the new row/column will be at position 1.
 - index_name (str, required): The name of the new row/column.
 - axis (str or int, required):
     - 0 or "index": Indicates to insert a row.
     - 1 or "columns": Indicates to insert a column.
+Output:
+- A pandas DataFrame.
 
-2. drop(table_name, label, axis): Drops one or more rows or columns in the table.
+2. drop(table, label, axis): Drops one or more rows or columns in the table.
 Parameters:
-- table_name (str, required): The name of the table to drop the row/column from.
+- table (DataFrame, required): The table to drop the row/column from.
 - label (str or int or list[str] or list[int], required): The label or list of labels of the row/column to be dropped.
 - axis (str or int, required):
     - 0 or "index": Indicates to drop one or more rows.
     - 1 or "columns": Indicates to drop one or more columns.
+Output:
+- A pandas DataFrame.
 
-3. assign(table_name, start_row_index, end_row_index, start_column_index, end_column_index, values): Assigns constant values to specific cells in the table.
+3. assign(table, start_row_index, end_row_index, start_column_index, end_column_index, values): Assigns constant values to specific cells in the table.
 Parameters:
-- table_name (str, required): The name of the table to assign the value to.
+- table (DataFrame, required): The table to assign the value to.
 - start_row_index, end_row_index (int, required): The range of row indices to assign the value to.
 - start_column_index, end_column_index (int, required): The range of column indices to assign the value to.
 - values (list[list[int/float/str]] or int/float/str, required): The const value(s) to assign to the specified cell(s). Can be a single int/float/str or a list of lists of int/float/str. The order of values is from top to bottom, left to right.
+Output:
+- A pandas DataFrame.
 
-4. move(origin_table_name, origin_index, target_table_name, target_index, axis): Moves a row or column from the origin table to the target table.
+4. move(origin_table, origin_index, target_table, target_index, axis): Moves a row or column from the origin table to the target table.
 Parameters:
-- origin_table_name (str, required): The name of the table from which the row/column will be moved.
+- origin_table (DataFrame, required): The table from which the row/column will be moved.
 - origin_index (int, required): The index of the row/column to be moved.
-- target_table_name (str, required): The name of the table to which the row/column will be moved.
+- target_table (DataFrame, required): The table to which the row/column will be moved.
 - target_index (int, required): The index at which the row/column will be moved in the target table.
 - axis (str or int, required):
     - 0 or "index": Indicates to move a row.
     - 1 or "columns": Indicates to move a column.
+Output:
+- A pandas DataFrame containing the origin table with the moved row/column.
+- A pandas DataFrame containing the target table with the moved row/column.
 
-5. copy(origin_table_name, origin_index, target_table_name, target_index, target_label_name, axis): Copies a row or column from the origin table to the target table at the specified index.
+5. copy(origin_table, origin_index, target_table, target_index, axis): Copies a row or column from the origin table to the target table at the specified index.
 Parameters:
-- origin_table_name (str, required): The name of the table from which the row/column will be copied.
+- origin_table (DataFrame, required): The table from which the row/column will be copied.
 - origin_index (int, required): The index of the row/column to be copied.
-- target_table_name (str, required): The name of the table to which the row/column will be copied.
+- target_table (DataFrame, required): The table to which the row/column will be copied.
 - target_index (int, required): The index at which the row/column will be copied in the target table.
-- target_label_name (str, required): The name of the new row/column in the target table.
 - axis (str or int, required):
     - 0 or "index": Indicates to copy a row.
     - 1 or "columns": Indicates to copy a column.
+Output:
+- A pandas DataFrame containing the target table with the copied row/column.
 
-6. swap(table_name_a, label_a, table_name_b, label_b, axis): Swaps rows or columns between two tables.
+6. swap(table_a, label_a, table_b, label_b, axis): Swaps rows or columns between two tables.
 Parameters:
-- table_name_a (str, required): The first table from which the row/column will be swapped.
+- table_a (DataFrame, required): The first table from which the row/column will be swapped.
 - label_a (str or int, required): The label of the row/column to be swapped in the first table.
-- table_name_b (str, required): The second table from which the row/column will be swapped.
+- table_b (DataFrame, required): The second table from which the row/column will be swapped.
 - label_b (str or int, required): The label of the row/column to be swapped in the second table.
 - axis (str or int, required):
     - 0 or "index": Indicates to swap rows.
     - 1 or "columns": Indicates to swap columns.
+Output:
+- A pandas DataFrame containing the first table with the swapped row/column.
+- A pandas DataFrame containing the second table with the swapped row/column.
 
-7. rearrange(table_name, by_values=None, by_array=None, axis): Rearranges the rows or columns of the table based on the specified order.
+7. rearrange(table, by_values=None, by_array=None, axis): Rearranges the rows or columns of the table based on the specified order.
 Parameters:
-- table_name (str, required): table to be rearranged.
+- table (DataFrame, required): table to be rearranged.
 - by_values (str, optional): If this parameter is set, the rows/columns will be rearranged based on the values in the specified row/column.
 - by_array (str or list[str/int], optional): If this parameter is set, the rows/columns will be rearranged based on the order of the values in the array.
 - axis (str or int, required):
     - 0 or "index": Indicates to rearrange rows. Rows will be rearranged based on the values in the specified row/column or the order in the array.
     - 1 or "columns": Indicates to rearrange columns. Columns will be rearranged based on the values in the specified row/column or the order in the array.
+Output:
+- A pandas DataFrame.
 
-8. divide(table_name, by, axis): Divides the table by the specific values of a row or column, return a list of tables.
+8. divide(table, by, axis): Divides the table by the specific values of a row or column, return a list of tables.
 Parameters:
-- table (str, required): table to be divided.
+- table (DataFrame, required): table to be divided.
 - by(int/str, required): The label of a row or column.
 - axis (str or int, required):
     - 0 or "index": Indicates to divide the table by a row.
     - 1 or "columns": Indicates to divide the table by a column.
+Output:
+- A list of pandas DataFrames.
 
-9. fill(table_name, method, column=None): Fills missing values in the table using the specified method.
+9. fill(table, method, column=None): Fills missing values in the table using the specified method.
 Parameters:
-- table (str, required): Table to fill missing values.
+- table (DataFrame, required): Table to fill missing values.
 - method (str, required): The method to use for filling missing values. Choose from 'value', 'mean', 'median', 'mode', 'ffill', 'bfill', 'interpolate'.
 - column (str or list[str], optional): The column or columns to fill missing values in. If None, missing values in all columns will be filled.
+Output:
+- A pandas DataFrame.
 
 ### Summarization Functions
 
-1. aggregate(table_name, functions, axis): Aggregates the table using the specified function.
+1. aggregate(table, functions, axis): Aggregates the table using the specified function.
 Parameters:
-- table_name (str, required): table to be aggregated.
+- table (DataFrame, required): table to be aggregated.
 - functions (dict, required): Keys are names of rows or columns, and values are lists of function names. Example: {'A': ['sum', 'mean'], 'B': ['min', 'max']}.
 - axis (str or int, required):
     - 0 or "index": Applies the aggregate operations on rows, the keys in the functions dict is some row names.
     - 1 or "columns": Applies the aggregate operations on columns, the keys in the functions dict is some column names.
+Output:
+- A pandas DataFrame.
 
-2. test(table_name, label_a, label_b, strategy, axis): Returns a tuple (statistic, p_value) by comparing two labels using the specified strategy.
+2. test(table_a, label_a, table_b, label_b, strategy, axis): Returns a tuple (statistic, p_value) by comparing two labels using the specified strategy.
 Parameters:
-- table_name (str, required): table on which the test will be performed.
+- table_a (DataFrame, required): table A on which the test will be performed.
 - label_a (str or int, required): The label of the first row/column to be tested.
+- table_b (DataFrame, required): table B on which the test will be performed.
 - label_b (str or int, required): The label of the second row/column to be tested.
 - strategy (str, required): The statistical test to perform ('t-test', 'z-test', 'chi-squared').
 - axis (str or int, required):
     - 0 or "index": Indicates to test rows.
     - 1 or "columns": Indicates to test columns.
+Output:
+- A tuple (statistic, p_value).
 
 ### String Operation Functions
 
-1. concatenate(table_name, label_a, label_b, glue, new_label, axis): Concatenates two rows or columns based on a string glue and appends the merged row or column to the table.
+1. concatenate(table, label_a, label_b, glue, new_label, axis): Concatenates two rows or columns based on a string glue and appends the merged row or column to the table.
 Parameters:
-- table_name (str, required): table in which the rows/columns will be concatenated.
+- table (DataFrame, required): table in which the rows/columns will be concatenated.
 - label_a (str or int, required): The label of the first row/column to be concatenated.
 - label_b (str or int, required): The label of the second row/column to be concatenated.
 - glue (str, required): The string to be used to concatenate the two rows/columns.
@@ -160,23 +188,29 @@ Parameters:
 - axis (str or int, required):
     - 0 or "index": Indicates to concatenate rows.
     - 1 or "columns": Indicates to concatenate columns.
+Output:
+- A pandas DataFrame.
 
-2. split(table, label, delimiter, axis, new_column=None): Separates rows by unnesting elements in a column or splits columns based on a delimiter within the column values, depending on the specified axis.
+2. split(table, label, delimiter, new_label_list, axis): Separates rows or columns based on a string delimiter within the values.
 Parameters:
-- table_name (str, required): The table in which the rows/columns will be split.
+- table (DataFrame, required): The table in which the rows/columns will be split.
 - label (str or int, required): The label of the row/column to be split.
 - delimiter (str, required): The delimiter to use for splitting the rows/columns.
+- new_label_list (list[str or int], required): The list of labels for the new rows/columns created by the split.
 - axis (str or int, required):
     - 0 or 'index' for row splitting
     - 1 or 'columns' for column splitting.
-- new_column (list of str, optional): The label of the column to split when mode is 'columns'. Required for 'columns' mode.
+Output:
+- A pandas DataFrame.
 
-3. format(table_name, label, pattern, replace_with, axis): Formats the values in a row or column based on the specified pattern and replace_with using re.sub().
+3. format(table, label, pattern, replace_with, axis): Formats the values in a row or column based on the specified pattern and replace_with using re.sub().
 Parameters:
-- table (str, required): DataFrame in which the row/column will be formatted.
+- table (DataFrame, required): DataFrame in which the row/column will be formatted.
 - label (str or int, required): The label of the row/column to be formatted.
 - pattern (str, required): The format regex pattern to apply to the values, You can use group syntax.
 - replace_with (str, required): The string or backreference to replace the matched pattern with.
 - axis (str or int, required):
     - 0 or "index": Indicates to format a row.
     - 1 or "columns": Indicates to format a column.
+Output:
+- A pandas DataFrame.

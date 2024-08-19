@@ -7,15 +7,15 @@ class DangoSplit(DangoFunction):
 
     def definition(self):
         return """\
-split(table, label, delimiter, axis, new_column=None): Separates rows by unnesting elements in a column or splits columns based on a delimiter within the column values, depending on the specified axis.
+split(table, label, delimiter, new_label_list, axis): Separates rows or columns based on a string delimiter within the values.
 Parameters:
-- table_name (str, required): The table in which the rows/columns will be split.
+- table (DataFrame, required): The table in which the rows/columns will be split.
 - label (str or int, required): The label of the row/column to be split.
 - delimiter (str, required): The delimiter to use for splitting the rows/columns.
+- new_label_list (list[str or int], required): The list of labels for the new rows/columns created by the split.
 - axis (str or int, required):
     - 0 or 'index' for row splitting
     - 1 or 'columns' for column splitting.
-- new_column (list of str, optional): The label of the column to split when mode is 'columns'. Required for 'columns' mode.
 Output:
-- A new table with the split rows/columns.\
+- A pandas DataFrame.\
 """

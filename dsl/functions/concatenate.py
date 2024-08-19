@@ -7,9 +7,9 @@ class DangoConcatenate(DangoFunction):
 
     def definition(self):
         return """\
-concatenate(table_name, label_a, label_b, glue, new_label, axis): Concatenates two rows or columns based on a string glue and appends the merged row or column to the table.
+concatenate(table, label_a, label_b, glue, new_label, axis): Concatenates two rows or columns based on a string glue and appends the merged row or column to the table.
 Parameters:
-- table_name (str, required): table in which the rows/columns will be concatenated.
+- table (DataFrame, required): table in which the rows/columns will be concatenated.
 - label_a (str or int, required): The label of the first row/column to be concatenated.
 - label_b (str or int, required): The label of the second row/column to be concatenated.
 - glue (str, required): The string to be used to concatenate the two rows/columns.
@@ -18,5 +18,5 @@ Parameters:
     - 0 or "index": Indicates to concatenate rows.
     - 1 or "columns": Indicates to concatenate columns.
 Output:
-- A new table with the concatenated row/column.\
+- A pandas DataFrame.\
 """

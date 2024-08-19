@@ -17,7 +17,25 @@ Create a small Python code snippet that executes the given DSL function.
 #############
 
 # GUIDELINES #
-1. You can use load_table(table_name) function to load the table and save_table(data, table_name) function to save the table.
+Here are some database functions that you can use to interact with the database:
+1. save_table(table, table_name): Saves a table to the database.
+Parameters:
+- table (str, required): The table to be saved. The table should be a pandas DataFrame.
+- table_name (str, required): The name of the table to be uploaded, it should end with ".csv".
+Output:
+- None
+
+2. delete_table(table_name): Deletes a table from the database.
+Parameters:
+- table_name (str, required): The name of the table to be deleted.
+Output:
+- None
+
+3. load_table(table_name): Loads a table from the database.
+Parameters:
+- table_name (str, required): The name of the table to be loaded.
+Output:
+- A pandas DataFrame.
 
 #############
 
@@ -159,7 +177,7 @@ for index, row in sales_data.iterrows():
     if row["Revenue"] < 500:
         sales_data = drop(sales_data, index, "index")
 
-employees = split(employees, "FullName", " ", "columns", ["FirstName", "LastName"])
+employees = split(employees, "FullName", " ", ["FirstName", "LastName"], "columns")
 
 save_table(sales_data, "sales_data_v0.csv")
 save_table(employees, "employees_v0.csv")

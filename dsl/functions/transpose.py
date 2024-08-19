@@ -8,9 +8,9 @@ class DangoTranspose(DangoFunction):
 
     def definition(self):
         return """\
-transpose(table_name): Transposes the given table.
+transpose(table): Transposes the given table.
 Parameters:
-- table_name (str, required): table to be transposed.
+- table (DataFrame, required): The table to be transposed.
 Output:
-- A new table with the transposed data.\
+- A pandas DataFrame.\
 """

@@ -18,7 +18,7 @@ from utils.llm import (
     generate_chat_completion,
 )
 from dsl.utils import (
-    create_table,
+    blank_table,
     pivot_table,
     merge,
     subtable,

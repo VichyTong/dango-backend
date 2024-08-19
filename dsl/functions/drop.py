@@ -7,13 +7,13 @@ class DangoDrop(DangoFunction):
 
     def definition(self):
         return """\
-drop(table_name, label, axis): Drops one or more rows or columns in the table.
+drop(table, label, axis): Drops one or more rows or columns in the table.
 Parameters:
-- table_name (str, required): The name of the table to drop the row/column from.
+- table (DataFrame, required): The table to drop the row/column from.
 - label (str or int or list[str] or list[int], required): The label or list of labels of the row/column to be dropped.
 - axis (str or int, required):
     - 0 or "index": Indicates to drop one or more rows.
     - 1 or "columns": Indicates to drop one or more columns.
 Output:
-- A new table with the dropped row/column.\
+- A pandas DataFrame.\
 """
