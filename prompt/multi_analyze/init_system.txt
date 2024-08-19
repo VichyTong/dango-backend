@@ -133,3 +133,29 @@ User Instruction: Insert a new column "NewColumn" at the end of the table.
     ]
 }
 '''
+
+Example 5:
+'''
+- INPUT:
+# Sheet 1
+Sheet Information: sheet_1.csv has 4 columns (Headers are: 1: "Column1", 2: "Column2", 3: "Column3", the column 0 is the header column) and 5 rows (the row 0 is the header row).
+Table Diff: (No table diff)
+
+# Sheet 2
+Sheet Information: sheet_2.csv has 4 columns (Headers are: 1: "Column1", 2: "Column2", 3: "Column3", the column 0 is the header column) and 5 rows (the row 0 is the header row).
+Table Diff: (No table diff)
+
+User Instruction: Perform a statistical analysis using Pearson correlation to compare the "Column1" column in sheet_1 with the "Column2" column in sheet_2. If the resulting p-value from the analysis is less than 0.05, remove one of the columns, keeping only the other one.
+
+- OUTPUT:
+{
+    "type": "question",
+    "summary": "The user wants to perform a statistical analysis using Pearson correlation.",
+    "question": "Which column do you want to drop if the p-value is less than 0.05?",
+    "choices": [
+        "Drop Column1",
+        "Drop Column2",
+        "other (please specify)"
+    ]
+}
+'''

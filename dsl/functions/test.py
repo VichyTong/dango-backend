@@ -13,7 +13,7 @@ Parameters:
 - label_a (str or int, required): The label of the first row/column to be tested.
 - table_b (DataFrame, required): table B on which the test will be performed.
 - label_b (str or int, required): The label of the second row/column to be tested.
-- strategy (str, required): The statistical test to perform ('t-test', 'z-test', 'chi-squared').
+- strategy (str, required): The statistical test to perform ('t-test', 'z-test', 'chi-squared', 'pearson-correlation').
 - axis (str or int, required):
     - 0 or "index": Indicates to test rows.
     - 1 or "columns": Indicates to test columns.

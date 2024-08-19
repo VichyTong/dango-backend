@@ -168,7 +168,6 @@ def drop(table, label, axis=0):
     """
 
     axis = classify_axis(axis)
-
     if not isinstance(label, list):
         label = [label]
 
@@ -182,7 +181,6 @@ def drop(table, label, axis=0):
     else:
         label = [str(l) for l in label]
         missing_rows = [l for l in label if l not in table.index]
-        print(table.index)
         if missing_rows:
             raise ValueError(
                 f"Row index(es) {missing_rows} do not exist in the DataFrame."
@@ -451,37 +449,37 @@ def swap(table_a, label_a, table_b, label_b, axis=0):
     return table_a, table_b
 
 
-def test(table, label_a, label_b, strategy, axis=0):
+def test(table_a, label_a, table_b, label_b, strategy, axis=0):
     axis = classify_axis(axis)
 
     # Validate strategy
-    supported_strategies = ["t-test", "z-test", "chi-squared"]
+    supported_strategies = ["t-test", "z-test", "chi-squared", "pearson-correlation"]
     if strategy not in supported_strategies:
         raise ValueError(
             f"Strategy '{strategy}' is not supported. Supported strategies are: {supported_strategies}"
         )
 
     # Perform the test between two columns
-    if axis == 0:
-        if label_a not in table.columns or label_b not in table.columns:
+    if axis == 1:
+        if label_a not in table_a.columns or label_b not in table_b.columns:
             raise ValueError(
                 "One or both specified labels do not exist in the DataFrame's columns."
             )
 
         # Extract the data for each column
-        data_1 = table[label_a]
-        data_2 = table[label_b]
+        data_1 = table_a[label_a]
+        data_2 = table_b[label_b]
 
     # Perform the test between two rows
     else:
-        if label_a not in table.index or label_b not in table.index:
+        if label_a not in table_a.index or label_b not in table_b.index:
             raise ValueError(
                 "One or both specified labels do not exist in the DataFrame's index."
             )
 
         # Extract the data for each row
-        data_1 = table.loc[label_a]
-        data_2 = table.loc[label_b]
+        data_1 = table_a.loc[label_a]
+        data_2 = table_b.loc[label_b]
 
     # Perform a t-test
     if strategy == "t-test":
@@ -499,6 +497,10 @@ def test(table, label_a, label_b, strategy, axis=0):
         chi2_stat, p_value, dof, expected = stats.chi2_contingency(data_crosstab)
 
         test_stat = chi2_stat
+
+    elif strategy == "pearson-correlation":
+        test_stat, p_value = stats.pearsonr(data_1, data_2)
+    
     return test_stat, p_value
 
 

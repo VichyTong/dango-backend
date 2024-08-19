@@ -273,8 +273,9 @@ def aggregate(params: AGGREGATE_PARAMS):
 
 
 class TEST_PARAMS(BaseModel):
-    table_name: str
+    table_name_a: str
     label_a: Union[str, int]
+    table_name_b: str
     label_b: Union[str, int]
     strategy: str
     axis: Union[str, int]
@@ -378,8 +379,8 @@ def fill(params: FILL):
 
 class SUBTABLE(BaseModel):
     table_name: str
-    row_list: List[Union[str, int]]
-    label_list: List[Union[str, int]]
+    row_list: Optional[List[Union[str, int]]]
+    label_list: Optional[List[Union[str, int]]]
 
 def subtable(params: SUBTABLE):
     pass
@@ -698,21 +699,20 @@ def validate_aggregate(arguments, error_list, sheets_names):
 
 
 def validate_test(arguments, error_list, sheets_names):
-    if len(arguments) != 5:
-        error = create_error_message("Invalid number of arguments", f"The function 'test' requires 5 arguments: 'table_name', 'label_a', 'label_b', 'strategy', 'axis'.", "test")
+    if len(arguments) != 6:
+        error = create_error_message("Invalid number of arguments", f"The function 'test' requires 6 arguments: 'table_name', 'label_a', 'label_b', 'strategy', 'axis'.", "test")
         error_list.append(error)
         return "Failed"
     try:
-        params = TEST_PARAMS(table_name=arguments[0], label_a=arguments[1], label_b=arguments[2], strategy=arguments[3], axis=arguments[4])
+        params = TEST_PARAMS(table_name_a=arguments[0], label_a=arguments[1], table_name_b=arguments[2], label_b=arguments[3], strategy=arguments[4], axis=arguments[5])
         test(params)
     except ValidationError as e:
         error = create_error_message("Invalid argument format", f"The arguments for 'test' are not in the correct format. Please check the argument types and values.", "test")
         error_list.append(error)
 
-    if arguments[0] not in sheets_names:
-        error = create_error_message("Table does not exist", f"The table '{arguments[0]}' does not exist. Please create the table before performing operations on it.", "test")
+    if arguments[0] not in sheets_names or arguments[2] not in sheets_names:
+        error = create_error_message("Table does not exist", f"The table '{arguments[0]}' or '{arguments[2]}' does not exist. Please create the table before performing operations on it.", "test")
         error_list.append(error)
-    return "Success"
 
 def validate_format(arguments, error_list, sheets_names):
     if len(arguments) != 5:
@@ -803,13 +803,18 @@ def validate_fill(arguments, error_list, sheets_names):
     return "Success"
 
 def validate_subtable(arguments, error_list, sheets_names):
-    if len(arguments) != 4:
-        error = create_error_message("Invalid number of arguments", f"The function 'subtable' requires 4 arguments: 'table_name', 'label_list', 'new_name', 'axis'.", "subtable")
+    if len(arguments) != 3:
+        error = create_error_message("Invalid number of arguments", f"The function 'subtable' requires 3 arguments: 'table_name', 'row_list', 'label_list'.", "subtable")
         error_list.append(error)
         return "Failed"
     try:
-        params = SUBTABLE(table_name=arguments[0], label_list=arguments[1], new_name=arguments[2], axis=arguments[3])
+        params = SUBTABLE(table_name=arguments[0], row_list=arguments[1], label_list=arguments[2])
         subtable(params)
     except ValidationError as e:
         error = create_error_message("Invalid argument format", f"The arguments for 'subtable' are not in the correct format. Please check the argument types and values.", "subtable")
         error_list.append(error)
+
+    if arguments[0] not in sheets_names:
+        error = create_error_message("Table does not exist", f"The table '{arguments[0]}' does not exist. Please create the table before performing operations on it.", "subtable")
+        error_list.append(error)
+    return "Success"

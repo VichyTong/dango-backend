@@ -14,31 +14,32 @@ Create a small Python code snippet that executes the given DSL function.
 
 {SELECTED_DSL_GRAMMAR}
 
-#############
-
-# GUIDELINES #
-
-## Here are some database functions that you can use to interact with the database:
-1. save_table(table, table_name): Saves a table to the database.
+save_table(table, table_name): Saves a table to the database.
 Parameters:
 - table (str, required): The table to be saved. The table should be a pandas DataFrame.
 - table_name (str, required): The name of the table to be saved, it should end with ".csv".
 Output:
 - None
 
-2. delete_table(table_name): Deletes a table from the database.
+delete_table(table_name): Deletes a table from the database.
 Parameters:
 - table_name (str, required): The name of the table to be deleted.
 Output:
 - None
 
-3. load_table(table_name): Loads a table from the database.
+load_table(table_name): Loads a table from the database.
 Parameters:
 - table_name (str, required): The name of the table to be loaded.
 Output:
 - A pandas DataFrame.
 
-## For creating a new table using save_table function, you need to ensure the table is formatted as "{name}_v{version}.csv". Please start the version from 0.
+#############
+
+# GUIDELINES #
+
+1. All output should include save_table functions.
+2. For creating a new table using save_table function, you need to ensure the table is formatted as "{name}_v{version}.csv". Please start the version from 0.
+3. All row indexes should plus 1 to match the row number in the table.
 
 #############
 
@@ -170,9 +171,13 @@ Drop the rows from the table "sales_data_v0.csv" where the column "Revenue" is l
 sales_data = load_table("sales_data_v0.csv")
 employees = load_table("employees_v0.csv")
 
+delete_index_list = []
 for index, row in sales_data.iterrows():
     if row["Revenue"] < 500:
-        sales_data = drop(sales_data, index, "index")
+        delete_index_list.append(index)
+
+for index in delete_index_list:
+    sales_data = drop(sales_data, index, "index")
 
 employees = split(employees, "FullName", " ", ["FirstName", "LastName"], "columns")
 

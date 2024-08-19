@@ -177,7 +177,6 @@ def get_dsls(
     step_by_step_plan,
     step_by_step_plan_string,
     error_list=[],
-    last_dsl=None,
 ):
     funtion_list = []
     print(step_by_step_plan)
@@ -205,7 +204,6 @@ def get_dsls(
                 format_information(history["information"], with_table_diff=False),
             )
             .replace("{ERROR_MESSAGE}", format_error_message(error_list))
-            .replace("{DSL}", json.dumps(last_dsl, indent=4))
         )
         messages = append_message(
             generate_with_error_message_system_prompt, "system", []
@@ -250,12 +248,12 @@ def verify(client_id, history, summarization, dsls):
     verify_syntax(client_id, dsls, error_list)
     print("syntax_end")
     print(f"Step 1:\n{json.dumps(error_list, indent=4)}")
-    print("semantic_start")
-    feedback = verify_semantics(client_id, history, summarization, dsls)
-    print("semantic_end")
-    print(f"Step 2:\n{json.dumps(error_list, indent=4)}")
-    if feedback["correctness"] == "No":
-        error_list.append(feedback["feedback"]["error"])
+    # print("semantic_start")
+    # feedback = verify_semantics(client_id, history, summarization, dsls)
+    # if feedback["correctness"] == "No":
+    #     error_list.append(feedback["feedback"]["error"])
+    # print("semantic_end")
+    # print(f"Step 2:\n{json.dumps(error_list, indent=4)}")
     return error_list
 
 
@@ -314,7 +312,6 @@ def dsl_synthesize(client_id: str) -> str:
             step_by_step_plan,
             step_by_step_plan_string,
             error_list,
-            dsls,
         )
         error_list = verify(client_id, history, summarization, dsls)
         dsls = fill_condition(client_id, dsls)

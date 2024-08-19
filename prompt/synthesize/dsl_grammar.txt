@@ -44,8 +44,8 @@ Output:
 5. subtable(table, row_list=None, column_list=None): Returns a subtable with only the specified rows or columns.
 Parameters:
 - table (DataFrame, required): The table to extract the rows or columns from.
-- row_list (list[int], optional): The list of row indices to be extracted.
-- column_list (list[str], optional): The list of column names to be extracted.
+- row_list (list[str], optional): The list of row labels to be extracted. If row_list is None, all rows are included.
+- column_list (list[str], optional): The list of column labels to be extracted. If column_list is None, all columns are included.
 Output:
 - A pandas DataFrame.
 
@@ -173,7 +173,7 @@ Parameters:
 - label_a (str or int, required): The label of the first row/column to be tested.
 - table_b (DataFrame, required): table B on which the test will be performed.
 - label_b (str or int, required): The label of the second row/column to be tested.
-- strategy (str, required): The statistical test to perform ('t-test', 'z-test', 'chi-squared').
+- strategy (str, required): The statistical test to perform ('t-test', 'z-test', 'chi-squared', 'pearson-correlation').
 - axis (str or int, required):
     - 0 or "index": Indicates to test rows.
     - 1 or "columns": Indicates to test columns.

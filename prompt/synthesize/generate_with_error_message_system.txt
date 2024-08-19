@@ -29,8 +29,7 @@ Create a DSL script to clean the data based on the description.
 # INPUT #
 1. Sheet information.
 2. Step-by-step plan of the data cleaning process.
-3. Last generated DSL script.
-4. Error message from the last generation.
+3. Error message from the last generation.
 
 #############
 
@@ -81,29 +80,6 @@ Step-by-step plan:
 3. Delete the column "age" from Heart Disease Prediction dataset.csv. (drop function)
 4. Delete the column "sex" from Heart Disease Prediction dataset.csv. (drop function)
 
-Last generated DSL:
-{
-    "required_tables": ["Heart Disease Prediction dataset.csv", "New.csv"],
-    "program": [
-        {
-            "function_name": "copy",
-            "arguments": ["Heart Disease Prediction dataset.csv", "age", "New.csv", "age", "index"]
-        },
-        {
-            "function_name": "copy",
-            "arguments": ["Heart Disease Prediction dataset.csv", "sex", "New.csv", "sex", "index"]
-        },
-        {
-            "function_name": "drop",
-            "arguments": ["Heart Disease Prediction dataset.csv", "age", "columns"]
-        },
-        {
-            "function_name": "drop",
-            "arguments": ["Heart Disease Prediction dataset.csv", "sex", "columns"]
-        }
-    ]
-}
-
 Error Message:
 Error 1:
 - Error Type: semantic error
@@ -145,17 +121,6 @@ Sheet Information: sales_data.csv has 5 columns (Headers are: 1: "Date", 2: "Ful
 Step-by-step plan:
 1. Split the column "FullName" in employees.csv into two columns "FirstName" and "LastName" if it contains a space. (split function)
 
-Last generated DSL:
-{
-    "required_tables": ["employees.csv"],
-    "program": [
-        {
-            "function_name": "split",
-            "arguments": ["employees.csv", "FullName", " ", ["FirstName", "LastName"]]
-        }
-    ]
-}
-
 Error Message:
 Error 1:
 - Error Type: semantic error
@@ -183,24 +148,6 @@ Sheet Information: Heart Disease Prediction dataset.csv has 15 columns (Headers 
 
 Step-by-step plan:
 1. Concatenate the columns "age" and "sex" in Heart Disease Prediction dataset.csv with a comma and space if there are no missing values.
-
-Last generated DSL:
-{
-    "required_tables": ["Heart Disease Prediction dataset.csv"],
-    "program": [
-        {
-            "function_name": "concatenate",
-            "arguments": [
-                "Heart Disease Prediction dataset.csv",
-                "age",
-                "sex",
-                ", ",
-                "age and sex",
-                "columns"
-            ]
-        }
-    ]
-}
 
 Error Message:
 Error 1:
