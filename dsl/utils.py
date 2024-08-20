@@ -83,9 +83,13 @@ def concatenate(table, label_a, label_b, glue, new_label, axis=0):
 
     # Merging rows
     else:
-        label_a = int(label_a) - 1
-        label_b = int(label_b) - 1
-        new_label = int(new_label) - 1
+        if isinstance(label_a, int):
+            label_a = str(label_a + 1)
+        if isinstance(label_b, int):
+            label_b = str(label_b + 1)
+        if isinstance(new_label, int):
+            new_label = str(new_label + 1)
+
         if label_a not in table.index or label_b not in table.index:
             raise ValueError("One or both row labels do not exist in the DataFrame.")
         if new_label in table.index:
@@ -256,6 +260,8 @@ def format(table, label, pattern, replace_with="", axis=0):
 
     # Format the values in a row
     else:
+        if isinstance(label, int):
+            label = str(label + 1)
         if label not in table.index:
             raise ValueError(f"Row {label} does not exist in the DataFrame.")
 
@@ -364,6 +370,8 @@ def split(table, label, delimiter, new_label_list, axis=0):
     axis = classify_axis(axis)
 
     def split_rows(df, label, delimiter, new_label_list):
+        if axis == 0 and isinstance(label, int):
+            label = str(label + 1)
         new_rows = []
         for _, row in df.iterrows():
             split_values = row[label].split(delimiter)
@@ -434,8 +442,10 @@ def swap(table_a, label_a, table_b, label_b, axis=0):
 
     # Swapping rows
     else:
-        label_a = int(label_a) - 1
-        label_b = int(label_b) - 1
+        if isinstance(label_a, int):
+            label_a = str(label_a + 1)
+        if isinstance(label_b, int):
+            label_b = str(label_b + 1)
 
         if label_a not in table_a.index or label_b not in table_b.index:
             raise ValueError(
@@ -473,6 +483,11 @@ def test(table_a, label_a, table_b, label_b, strategy, axis=0):
 
     # Perform the test between two rows
     else:
+        if isinstance(label_a, int):
+            label_a = str(label_a + 1)
+        if isinstance(label_b, int):
+            label_b = str(label_b + 1)
+
         if label_a not in table_a.index or label_b not in table_b.index:
             raise ValueError(
                 "One or both specified labels do not exist in the DataFrame's index."

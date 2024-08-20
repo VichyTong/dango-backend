@@ -14,6 +14,8 @@ Create a small Python code snippet that executes the given DSL function.
 
 {SELECTED_DSL_GRAMMAR}
 
+### Database Functions
+
 save_table(table, table_name): Saves a table to the database.
 Parameters:
 - table (str, required): The table to be saved. The table should be a pandas DataFrame.
