@@ -187,7 +187,6 @@ class MERGE_PARAMS(BaseModel):
     table_name_b: str
     how: str
     on: Optional[str]
-    axis: Union[str, int]
 
 
 def merge(params: MERGE_PARAMS):
@@ -606,12 +605,12 @@ def validate_swap(arguments, error_list, sheets_names):
 
 
 def validate_merge(arguments, error_list, sheets_names):
-    if len(arguments) != 5:
+    if len(arguments) != 4:
         error = create_error_message("Invalid number of arguments", f"The function 'merge' requires 6 arguments: 'table_name_a', 'table_name_b', 'how', 'on', 'left_on', 'right_on', 'axis'.", "merge")
         error_list.append(error)
         return "Failed"
     try:
-        params = MERGE_PARAMS(table_name_a=arguments[0], table_name_b=arguments[1], how=arguments[2], on=arguments[3], axis=arguments[4])
+        params = MERGE_PARAMS(table_name_a=arguments[0], table_name_b=arguments[1], how=arguments[2], on=arguments[3])
         merge(params)
     except ValidationError as e:
         error = create_error_message("Invalid argument format", f"The arguments for 'merge' are not in the correct format. Please check the argument types and values.", "merge")

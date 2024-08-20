@@ -44,7 +44,7 @@ def init_prompt():
     with open("prompt/synthesize/verifier_user.txt", "r") as f:
         verifier_semantic_user_prompt_template = f.read()
     with open("prompt/synthesize/plan_with_error_message_system.txt", "r") as f:
-        plan_with_error_message_system_prompt = f.read()
+        plan_with_error_message_system_prompt = f.read().replace("{DSL_GRAMMAR}", dsl_grammar)
     with open("prompt/synthesize/plan_with_error_message_user.txt", "r") as f:
         plan_with_error_message_user_prompt_template = f.read()
     with open("prompt/synthesize/generate_with_error_message_system.txt", "r") as f:

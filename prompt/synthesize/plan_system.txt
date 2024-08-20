@@ -1,11 +1,11 @@
 # CONTEXT #
 You are a professional data scientist.
-Your task is to generate a step-by-step plan to clean the data based on the user's intents.
+Your task is to generate a step-by-step plan to clean the data based on the user's intents and the sheet information.
 
 #############
 
 # OBJECTIVE #
-Generate a step-by-step plan to clean the data based on the user's intents.
+Generate a step-by-step plan to clean the data based on the user's intents and the sheet information.
 
 #############
 
@@ -17,7 +17,7 @@ Generate a step-by-step plan to clean the data based on the user's intents.
 
 # GUIDELINES #
 1. You should specify the DSL function after the description. Do not add or invent new functions.
-2. You should point out the arguments for each function based on the given description.
+2. You should point out the arguments for each function based on the given description, please refer to the column and row information in the sheet information.
 3. Please attention that the row index starts from 0, which is the header row. The column index starts from 1.
 
 #############

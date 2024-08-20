@@ -7,11 +7,11 @@ class DangoSubtable(DangoFunction):
 
     def definition(self):
         return """\
-subtable(table, row_list=None, column_list=None): Returns a subtable with only the specified rows or columns.
+subtable(table, rows=None, columns=None): Extracts a subtable from a DataFrame based on specified rows and/or columns.
 Parameters:
 - table (DataFrame, required): The table to extract the rows or columns from.
-- row_list (list[str], optional): The list of row labels to be extracted. If row_list is None, all rows are included.
-- column_list (list[str], optional): The list of column labels to be extracted. If column_list is None, all columns are included.
+- rows (list[int/str], optional): A list of row labels or indices to be extracted. If None, all rows are included. Defaults to None.
+- columns (list[str], optional): A list of column labels to be extracted. If None, all columns are included. Defaults to None.
 Output:
 - A pandas DataFrame.\
 """

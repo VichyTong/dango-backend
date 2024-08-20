@@ -293,13 +293,8 @@ def insert(table, index, index_name="new_column", axis=0):
     return table
 
 
-def merge(table_a, table_b, how="outer", on=None, axis=0):
-    axis = classify_axis(axis)
-
-    if axis == 0:
-        return pd.concat([table_a, table_b], ignore_index=True)
-    elif axis == 1:
-        return pd.merge(table_a, table_b, how=how, on=on)
+def merge(table_a, table_b, how="outer", on=None):
+    return pd.merge(table_a, table_b, how=how, on=on)
 
 
 def move(origin_table, origin_index, target_table, target_index, axis=0):
@@ -405,13 +400,16 @@ def split(table, label, delimiter, new_label_list, axis=0):
         raise ValueError("Invalid axis. Use 0 for rows or 1 for columns.")
 
 
-def subtable(table, row_list, column_list):
-    if row_list is None:
-        row_list = table.index.tolist()
-    if column_list is None:
-        column_list = table.columns.tolist()
+def subtable(table, rows, columns):
+    if rows is None:
+        rows = table.index.tolist()
+    else:
+        if isinstance(rows[0], int):
+            rows = [str(r + 1) for r in rows]
+    if columns is None:
+        columns = table.columns.tolist()
 
-    return table.loc[row_list, column_list]
+    return table.loc[rows, columns]
 
 
 def swap(table_a, label_a, table_b, label_b, axis=0):

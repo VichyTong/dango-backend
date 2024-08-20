@@ -64,14 +64,8 @@ def transfer_to_NL(dsl):
     elif dsl["function_name"] == "merge":
         table_b = dsl["arguments"][1]
         on = dsl["arguments"][3]
-        axis = dsl["arguments"][4]
-        if axis == 0 or axis == "index" or axis == "0":
-            return f"Merge the given table(s) with the table {table_b}"
-        elif axis == 1 or axis == "columns" or axis == "1":
-            if on is not None:
-                return f"Merge the given table(s) with the table {table_b} based on the values in the column {on}"
-            else:
-                return "Invalid function"
+        if on is not None:
+            return f"Merge the given table(s) with the table {table_b} based on the values in the column {on}"
         else:
             return "Invalid function"
     elif dsl["function_name"] == "concatenate":
