@@ -179,7 +179,8 @@ def drop(table, label, axis=0):
             )
         table.drop(labels=label, axis=axis, inplace=True)
     else:
-        label = [str(l) for l in label]
+        if isinstance(label[0], int):
+            label = [str(l + 1) for l in label]
         missing_rows = [l for l in label if l not in table.index]
         if missing_rows:
             raise ValueError(
