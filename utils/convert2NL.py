@@ -2,10 +2,10 @@ import json
 
 
 def transfer_to_NL(dsl):
-    if dsl["function_name"] == "create_table":
+    if dsl["function_name"] == "blank_table":
         row_number = dsl["arguments"][1]
         column_number = dsl["arguments"][2]
-        return f"Create a table with {row_number} rows and {column_number} columns"
+        return f"Create a blank table with {row_number} rows and {column_number} columns"
     elif dsl["function_name"] == "delete_table":
         table = dsl["arguments"][0]
         return f"Delete the table {table}"
@@ -88,7 +88,7 @@ def transfer_to_NL(dsl):
     elif dsl["function_name"] == "split":
         label = dsl["arguments"][1]
         delimiter = dsl["arguments"][2]
-        axis = dsl["arguments"][3]
+        axis = dsl["arguments"][4]
         if axis == 0 or axis == "index" or axis == "0":
             return f"Split the values in the row {label} in the given table(s) with the delimiter {delimiter}"
         elif axis == 1 or axis == "columns" or axis == "1":
@@ -157,7 +157,10 @@ def transfer_to_NL(dsl):
     elif dsl["function_name"] == "fill":
         method = dsl["arguments"][1]
         column = dsl["arguments"][2]
-        return f"Fill the missing values in the column {column} in the given table(s) with the method {method}"
+        if column is None:
+            return f"Fill the missing values in the given table(s) with the method {method}"
+        else:
+            return f"Fill the missing values in the column {column} in the given table(s) with the method {method}"
     elif dsl["function_name"] == "pivot_table":
         index = dsl["arguments"][1]
         columns = dsl["arguments"][2]
@@ -165,12 +168,14 @@ def transfer_to_NL(dsl):
         aggfunc = dsl["arguments"][4]
         return f"Create a pivot table in the given table(s) with the index {index}, columns {columns}, values {values}, and the aggregation function {aggfunc}"
     elif dsl["function_name"] == "subtable":
-        label_list = dsl["arguments"][1]
-        axis = dsl["arguments"][2]
-        if axis == 0 or axis == "index" or axis == "0":
-            return f"Create a sub-table in the given table(s) with the rows {label_list}"
-        elif axis == 1 or axis == "columns" or axis == "1":
-            return f"Create a sub-table in the given table(s) with the columns {label_list}"
+        row_list = dsl["arguments"][1]
+        column_list = dsl["arguments"][2]
+        if row_list is not None and column_list is not None:
+            return f"Create a subtable in the given table(s) with the rows {row_list} and the columns {column_list}"
+        elif row_list is not None:
+            return f"Create a subtable in the given table(s) with the rows {row_list}"
+        elif column_list is not None:
+            return f"Create a subtable in the given table(s) with the columns {column_list}"
         else:
             return "Invalid function"
     else:
