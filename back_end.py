@@ -44,7 +44,6 @@ DependenciesManager = DependenciesManager()
 @app.post("/login/")
 async def login():
     client_id = create_client()
-    print(f">>> New client created with id: {client_id}")
     return JSONResponse(status_code=200, content={"client_id": client_id})
 
 
@@ -208,8 +207,6 @@ async def handle_multi_analyze(request_body: MultiAnalyze):
         processed_tables.append(processed_table)
 
     response = multi_analyze(client_id, processed_tables, user_prompt)
-    print(">>> response")
-    print(response)
     if response["type"] == "question":
         response_question = response["question"]
         response_choices = response["choices"]

@@ -9,7 +9,8 @@ Summarize the user operations in natural language.
 ############
 
 # GUIDELINES #
-Please note that a value replaced with 'null' means deleted.
+1. Please note that values replaced with "null" indicates a delete operation.
+2. Please provide a concise summary for the user operations.
 
 #############
 
@@ -98,12 +99,12 @@ Example 5:
 ```
 Input:
 # Sheet 1
-Sheet Information: table_5.csv has 5 columns (Headers are 1: "Date", 2: "Sales", 3: "Region", 4: "Product", the column 0 is the header column) and 12 rows (0 to 11, the row 0 is the header row).
+Sheet Information: table_5.csv has 5 columns (Headers are 1: "Date", 2: "Sales", 3: "Time", 4: "Product", the column 0 is the header column) and 5 rows (0 to 4, the row 0 is the header row).
 User Operations:
-{"type": "change_entire_column", "column": 3, "old_values": ["1000", "1500", "1200", "1100", "1300"], "new_values": ["2000", "2500", "2200", "null", "2300"]}
+{"type": "change_entire_column", "column": 3, "old_values": ["Time", "1500", "1200", "1100", "1300"], "new_values": ["null", "null", "null", "null", "null"]}
 
 Output:
-In table_5.csv, the user updates column 3 ("Sales") by changing the values: "1000" to "2000", "1500" to "2500", "1200" to "2200", and "1100" is deleted.
+In table_5.csv, the user deletes column 3 (Time).
 ```
 
 Example 6:

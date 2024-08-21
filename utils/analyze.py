@@ -56,7 +56,7 @@ def extract_changes(client_id, data):
         if match_1:
             change = {
                 "type": "change_cell",
-                "row": int(match_1.group(1)) + 1,
+                "row": int(match_1.group(1)),
                 "col": int(match_1.group(2)) + 1,
                 "old_value": match_1.group(3),
                 "new_value": match_1.group(4),
@@ -68,7 +68,7 @@ def extract_changes(client_id, data):
         if match_2:
             change = {
                 "type": "insert_row",
-                "row": int(match_2.group(1)) + 1,
+                "row": int(match_2.group(1)),
             }
             changes.append(change)
             continue
@@ -87,9 +87,9 @@ def extract_changes(client_id, data):
             change = {
                 "type": "copy_data",
                 "start_col": int(match_4.group(1)) + 1,
-                "start_row": int(match_4.group(2)) + 1,
+                "start_row": int(match_4.group(2)),
                 "end_col": int(match_4.group(3)) + 1,
-                "end_row": int(match_4.group(4)) + 1,
+                "end_row": int(match_4.group(4)),
             }
             changes.append(change)
             continue
@@ -99,9 +99,9 @@ def extract_changes(client_id, data):
             change = {
                 "type": "paste_data",
                 "start_col": int(match_5.group(1)) + 1,
-                "start_row": int(match_5.group(2)) + 1,
+                "start_row": int(match_5.group(2)),
                 "end_col": int(match_5.group(3)) + 1,
-                "end_row": int(match_5.group(4)) + 1,
+                "end_row": int(match_5.group(4)),
             }
             changes.append(change)
             continue
@@ -113,7 +113,6 @@ def extract_changes(client_id, data):
 
 def find_batch_operation(client_id, changes, num_rows, num_cols):
     batch_operations = []
-    print(num_rows, num_cols)
     # 1. batch insert row operations
     next_index = num_rows + 1
 
@@ -157,7 +156,7 @@ def find_batch_operation(client_id, changes, num_rows, num_cols):
     # 3. batch change operations
     # Initialize dictionaries to track changes across rows and columns
     col_changes = {col: [] for col in range(1, num_cols + 1)}
-    row_changes = {row: [] for row in range(1, num_rows + 1)}
+    row_changes = {row: [] for row in range(0, num_rows + 1)}
 
     # Gather changes by rows and columns
     for change in changes:
@@ -185,7 +184,7 @@ def find_batch_operation(client_id, changes, num_rows, num_cols):
             ]
             batch_operations.append(
                 {
-                    "type": "change_entire_row",
+                    "type": "change_entire_column",
                     "col": col,
                     "old_values": old_values,
                     "new_values": new_values,
@@ -215,7 +214,7 @@ def find_batch_operation(client_id, changes, num_rows, num_cols):
             ]
             batch_operations.append(
                 {
-                    "type": "change_entire_column",
+                    "type": "change_entire_row",
                     "row": row,
                     "old_values": old_values,
                     "new_values": new_values,
@@ -333,6 +332,10 @@ def get_multi_analyze(client_id, table_list, user_prompt):
             }
         ]
         update_history(client_id, history)
+    else:
+        history = get_history(client_id)
+        history["summary"] = response["summary"]
+        update_history(client_id, history)
     log_messages(client_id, "analyze_init", messages)
     return response
 
@@ -405,5 +408,9 @@ def followup(client_id, response):
                 "choices": response["choices"],
             }
         ]
+        update_history(client_id, history)
+    else:
+        history = get_history(client_id)
+        history["summary"] = response["summary"]
         update_history(client_id, history)
     return response

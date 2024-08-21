@@ -50,7 +50,7 @@ User Instruction: (No user instruction)
 - OUTPUT:
 {
     "type": "finish",
-    "summary": "The user wants to replace row 3 with null values in table_1.csv."
+    "summary": "In table_1.csv, the user wants to delete row 3."
 }
 '''
 
