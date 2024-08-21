@@ -303,7 +303,7 @@ async def handle_execute_dsl_list(request_body: ExecuteDSLList):
         )
     elif config["execute_mode"] == "latest":
         output = new_execute_dsl_list(
-            client_id, required_tables, dsl_list, step_by_step_plan
+            client_id, required_tables, dsl_list, step_by_step_plan, DependenciesManager
         )
 
     return output

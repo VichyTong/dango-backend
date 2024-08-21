@@ -40,6 +40,7 @@ from dsl.utils import (
     format,
 )
 from utils.format_text import format_selected_dsl_grammar
+from utils.dependency import DependenciesManager
 
 
 def init_prompt():
@@ -75,7 +76,7 @@ def split_sheet_name(sheet_name):
     return base_name, version
 
 
-def new_execute_dsl_list(client_id, required_tables, dsl_list, step_by_step_plan):
+def new_execute_dsl_list(client_id, required_tables, dsl_list, step_by_step_plan, DependenciesManager):
     function_list = []
     dsl_program_list = []
     for dsl in dsl_list:
@@ -87,6 +88,9 @@ def new_execute_dsl_list(client_id, required_tables, dsl_list, step_by_step_plan
                 "condition": dsl.condition,
             }
         )
+        function = dsl.function_name
+        arguments = dsl.arguments
+        DependenciesManager.update_dependency(function, arguments)
 
     selected_dsl_grammar = format_selected_dsl_grammar(function_list)
     execute_system_prompt = execute_system_template.replace(
