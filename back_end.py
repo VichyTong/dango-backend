@@ -44,6 +44,7 @@ DependenciesManager = DependenciesManager()
 @app.post("/login/")
 async def login():
     client_id = create_client()
+    print(f">>> New client created with id: {client_id}")
     return JSONResponse(status_code=200, content={"client_id": client_id})
 
 
@@ -128,11 +129,6 @@ def get_sheet_info(client_id, sheet_id, version):
     sheet = get_sheet(client_id, sheet_id, version)
     df = pd.DataFrame(sheet)
     output = {}
-    if "Unnamed: 0" not in df.columns:
-        output["is_index_table"] = True
-    else:
-        output["is_index_table"] = False
-
     output["column_names"] = df.columns.tolist()
     output["row_names"] = df.index.tolist()
 
@@ -208,7 +204,6 @@ async def handle_multi_analyze(request_body: MultiAnalyze):
             "row_names": sheet_info["row_names"],
             "column_names": sheet_info["column_names"],
             "table_diff": table.table_diff,
-            "is_index_table": sheet_info["is_index_table"],
         }
         processed_tables.append(processed_table)
 

@@ -1,0 +1,134 @@
+# CONTEXT #
+You are a professional data scientist. You want to summarize the user operations. 
+
+#############
+
+# OBJECTIVE #
+Summarize the user operations in natural language.
+
+############
+
+# GUIDELINES #
+Please note that a value replaced with 'null' means deleted.
+
+#############
+
+# INPUT #
+The diff information contains:
+- Sheet information
+    contains the number of columns, the number of rows, and the headers of the columns.
+- User Operations
+    formatted as JSON objects in multiple lines.
+    There are 5 types of simple user operations:
+    1. Change cell: The user changes the value of a cell. 
+    - Arguments: row, column, old_value, new_value.
+    2. Insert row: The user inserts a new row.
+    - Arguments: row.
+    3. Insert column: The user inserts a new column.
+    - Arguments: column.
+    4. Copy data: The user copies some data from a sheet.
+    - Arguments: start_row, start_column, end_row, end_column, target_row.
+    5. Paste data: The user pastes some data to a sheet.
+    - Arguments: start_row, start_column, end_row, end_column, target_row.
+    There is also two batch change operations:
+    6. Change entire row: The user changes the values of a row.
+    - Arguments: row, old_values, new_values
+    7. Change entire column: The user changes the values of a column.
+    - Arguments: column, old_values, new_values
+    8. Insert multiple rows: The user inserts multiple rows.
+    - Arguments: start_row, end_row
+    9. Insert multiple columns: The user inserts multiple columns.
+    - Arguments: start_column, end_column
+
+#############
+
+# EXAMPLES #
+Example 1:
+```
+Input:
+# Sheet 1
+Sheet Information: table_1.csv has 5 columns (Headers are 1: "2021", 2: "2022", 3: "2023", 4: "2024", the column 0 is the header column) and 5 rows (0 to 4, the row 0 is the header row).
+User Operations:
+{"type": "change_cell", "row": 4, "col": 1, "old_value": "", "new_value": "1"}
+{"type": "change_cell", "row": 4, "col": 2, "old_value": "", "new_value": "2"}
+
+Output:
+In table_1.csv, the user adds value 1 to (row 4, column 1) and adds value 2 to (row 4, column 2).
+```
+
+Example 2:
+```
+Input:
+# Sheet 1
+Sheet Information: table_2.csv has 5 columns (Headers are 1: "Name", 2: "Birthday", 3: "Age", 4: "Gender", the column 0 is the header column) and 11 rows (0 to 10, the row 0 is the header row).
+User Operations:
+{"type": "insert_row", "row": 11}
+{"type": "insert_column", "col": 5}
+
+Output:
+In table_2.csv, the user first inserts a new row at row 11, and then adds a new column at column 5. The final table has 5 columns and 11 rows.\
+```
+
+Example 3:
+```
+Input:
+# Sheet 1
+Sheet Information: table_3.csv has 6 columns (Headers are 1: "Product", 2: "Price", 3: "Quantity", 4: "Total", the column 0 is the header column) and 10 rows (0 to 9, the row 0 is the header row).
+User Operations:
+{"type": "copy_data", "start_row": 2, "start_column": 1, "end_row": 2, "end_column": 3, "target_row": 5}
+{"type": "paste_data", "start_row": 5, "start_column": 1, "end_row": 5, "end_column": 3, "target_row": 7}
+
+Output:
+In table_3.csv, the user copies data from (row 2, columns 1 to 3) and pastes it to (row 7, columns 1 to 3).
+```
+
+Example 4:
+```
+Input:
+# Sheet 1
+Sheet Information: table_4.csv has 4 columns (Headers are 1: "Employee", 2: "Position", 3: "Salary", the column 0 is the header column) and 8 rows (0 to 7, the row 0 is the header row).
+User Operations:
+{"type": "change_entire_row", "row": 6, "old_values": ["John Doe", "Manager", "5000"], "new_values": ["John Doe", "Senior Manager", "null"]}
+
+Output:
+In table_4.csv, the user changes row 6 by updating the "Position" from "Manager" to "Senior Manager" and deleting the "Salary" value.
+```
+
+Example 5:
+```
+Input:
+# Sheet 1
+Sheet Information: table_5.csv has 5 columns (Headers are 1: "Date", 2: "Sales", 3: "Region", 4: "Product", the column 0 is the header column) and 12 rows (0 to 11, the row 0 is the header row).
+User Operations:
+{"type": "change_entire_column", "column": 3, "old_values": ["1000", "1500", "1200", "1100", "1300"], "new_values": ["2000", "2500", "2200", "null", "2300"]}
+
+Output:
+In table_5.csv, the user updates column 3 ("Sales") by changing the values: "1000" to "2000", "1500" to "2500", "1200" to "2200", and "1100" is deleted.
+```
+
+Example 6:
+```
+Input:
+# Sheet 1
+Sheet Information: table_6.csv has 3 columns (Headers are 1: "Item", 2: "Quantity", 3: "Price", the column 0 is the header column) and 7 rows (0 to 6, the row 0 is the header row).
+User Operations:
+{"type": "insert_row", "row": 7}
+{"type": "change_cell", "row": 7, "col": 1, "old_value": "", "new_value": "New Item"}
+{"type": "change_cell", "row": 7, "col": 2, "old_value": "", "new_value": "100"}
+
+Output:
+In table_6.csv, the user inserts a new row at row 7, adds "New Item" to (row 7, column 1), and sets the "Quantity" to 100 at (row 7, column 2).
+```
+
+Example 7:
+```
+Input:
+# Sheet 1
+Sheet Information: table_7.csv has 4 columns (Headers are 1: "Name", 2: "School", 3: "Nationality", the column 0 is the header column) and 7 rows (0 to 6, the row 0 is the header row).
+User Operations:
+{"type": "insert_column", "col": 4}
+{"type": "change_cell", "row": 3, "col": 4, "old_value": "", "new_value": "Grade"}
+
+Output:
+In table_7.csv, the user adds a new column at column 4 and then sets the value to "Grade" in (row 3, column 4).
+```

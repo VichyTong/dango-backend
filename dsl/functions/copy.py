@@ -7,16 +7,15 @@ class DangoCopy(DangoFunction):
 
     def definition(self):
         return """\
-copy(origin_table, origin_index, target_table, target_index, target_label_name, axis): Copies a row or column from the origin table to the target table at the specified index.
+copy(origin_table, origin_label, target_table, target_label, axis): Copies a row or column from the origin table to the target table at the specified label.
 Parameters:
 - origin_table (DataFrame, required): The table from which the row/column will be copied.
-- origin_index (int, required): The index of the row/column to be copied.
+- origin_label (str or int, required): The label of the row/column to be copied.
 - target_table (DataFrame, required): The table to which the row/column will be copied.
-- target_index (int, required): The index at which the row/column will be copied in the target table.
-- target_label_name (str, required): The name of the row/column to be copied in the target table.
-- axis (str or int, required):
-    - 0 or "index": Indicates to copy a row.
-    - 1 or "columns": Indicates to copy a column.
+- target_label (str or int, required): The label at which the row/column will be placed in the target table.
+- axis (str or int, required): Indicates the axis along which the copy operation is performed.
+    - 0 or "index": Copy a row.
+    - 1 or "columns": Copy a column.
 Output:
 - A pandas DataFrame containing the target table with the copied row/column.\
 """

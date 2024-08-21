@@ -102,45 +102,27 @@ def concatenate(table, label_a, label_b, glue, new_label, axis=0):
     return table
 
 
-def copy(
-    origin_table,
-    origin_index,
-    target_table,
-    target_index,
-    target_label_name=None,
-    axis=0,
-):
+def copy(origin_table, origin_label, target_table, target_label, axis):
     axis = classify_axis(axis)
-    origin_index -= 1
-    target_index -= 1
+    if axis == 1:
+        if isinstance(origin_label, str) and isinstance(target_label, str):
+            target_table[target_label] = origin_table[origin_label]
+        else:
+            raise ValueError(
+                "For axis=1, both origin_label and target_label must be strings."
+            )
+    elif axis == 0:
+        if isinstance(origin_label, int):
+            origin_label = str(origin_label + 1)
 
-    if axis == 0:  # Copy row
-        row = origin_table.iloc[origin_index]
-        if target_label_name is not None:
-            row.name = target_label_name
+        if isinstance(origin_label, int) or isinstance(origin_label, str):
+            row_data = origin_table.loc[origin_label]
+            target_table.loc[target_label] = row_data
         else:
-            row.name = target_index
-        target_table = pd.concat(
-            [
-                target_table.iloc[:target_index],
-                row.to_frame().T,
-                target_table.iloc[target_index:],
-            ]
-        ).reset_index(drop=True)
-    elif axis == 1:  # Copy column
-        col = origin_table.iloc[:, origin_index]
-        if target_label_name is not None:
-            col.name = target_label_name
-        else:
-            col.name = target_index
-        target_table = pd.concat(
-            [
-                target_table.iloc[:, :target_index],
-                col.to_frame(),
-                target_table.iloc[:, target_index:],
-            ],
-            axis=1,
-        )
+            raise ValueError("For axis=0, origin_label must be an int or str.")
+
+    else:
+        raise ValueError("Invalid axis. Use 0 for rows or 1 for columns.")
 
     return target_table
 
@@ -379,7 +361,6 @@ def split(table, label, delimiter, new_label_list, axis=0):
                 new_rows.append(new_row)
         return pd.DataFrame(new_rows)
 
-
     def split_columns(df, label, delimiter, new_label_list):
         new_columns = df[label].str.split(delimiter, expand=True)
         if new_label_list and len(new_label_list) == new_columns.shape[1]:
@@ -514,7 +495,7 @@ def test(table_a, label_a, table_b, label_b, strategy, axis=0):
 
     elif strategy == "pearson-correlation":
         test_stat, p_value = stats.pearsonr(data_1, data_2)
-    
+
     return test_stat, p_value
 
 

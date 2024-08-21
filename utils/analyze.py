@@ -14,11 +14,13 @@ from config.config import config
 
 
 def init_prompt():
-    global transfer_prompt
+    global transfer_system_prompt, transfer_user_template
     global init_system_prompt, init_system_prompt_without_CQ, followup_system_prompt
     global sheet_state_template, table_diff_template
-    with open("prompt/multi_analyze/transfer_meta_diff_to_NL.txt", "r") as f:
-        transfer_prompt = f.read()
+    with open("prompt/multi_analyze/transfer_meta_diff_to_NL_system.txt", "r") as f:
+        transfer_system_prompt = f.read()
+    with open("prompt/multi_analyze/transfer_meta_diff_to_NL_user.txt", "r") as f:
+        transfer_user_template = f.read()
     with open("prompt/multi_analyze/init_system.txt") as f:
         init_system_prompt = f.read()
     with open("prompt/multi_analyze/init_system_without_CQ.txt") as f:
@@ -45,17 +47,17 @@ def extract_changes(client_id, data):
     # create column pattern
     pattern_3 = r"Inserted column at index (\d+)"
     # copy data pattern
-    pattern_4 = r"Copied data from column (\d+), row (\d+), to column (\d+), row (\d+) in ([a-zA-Z]*).csv"
+    pattern_4 = r"Copied data from column (\d+), row (\d+), to column (\d+), row (\d+) in (.+)\.csv"
     # paste data pattern
-    pattern_5 = r"Pasted data from column (\d+), row (\d+), to column (\d+), row (\d+) in ([a-zA-Z]*).csv"
+    pattern_5 = r"Pasted data from column (\d+), row (\d+), to column (\d+), row (\d+) in (.+)\.csv"
 
     for line in lines:
         match_1 = re.match(pattern_1, line)
         if match_1:
             change = {
-                "type": "change",
-                "row": int(match_1.group(1)),
-                "col": int(match_1.group(2)),
+                "type": "change_cell",
+                "row": int(match_1.group(1)) + 1,
+                "col": int(match_1.group(2)) + 1,
                 "old_value": match_1.group(3),
                 "new_value": match_1.group(4),
             }
@@ -66,7 +68,7 @@ def extract_changes(client_id, data):
         if match_2:
             change = {
                 "type": "insert_row",
-                "row": int(match_2.group(1)),
+                "row": int(match_2.group(1)) + 1,
             }
             changes.append(change)
             continue
@@ -74,8 +76,8 @@ def extract_changes(client_id, data):
         match_3 = re.match(pattern_3, line)
         if match_3:
             change = {
-                "type": "insert_col",
-                "col": int(match_3.group(1)),
+                "type": "insert_column",
+                "col": int(match_3.group(1)) + 1,
             }
             changes.append(change)
             continue
@@ -83,11 +85,11 @@ def extract_changes(client_id, data):
         match_4 = re.match(pattern_4, line)
         if match_4:
             change = {
-                "type": "copy_col",
-                "start_col": int(match_4.group(1)),
-                "start_row": int(match_4.group(2)),
-                "end_col": int(match_4.group(3)),
-                "end_row": int(match_4.group(4)),
+                "type": "copy_data",
+                "start_col": int(match_4.group(1)) + 1,
+                "start_row": int(match_4.group(2)) + 1,
+                "end_col": int(match_4.group(3)) + 1,
+                "end_row": int(match_4.group(4)) + 1,
             }
             changes.append(change)
             continue
@@ -95,11 +97,11 @@ def extract_changes(client_id, data):
         match_5 = re.match(pattern_5, line)
         if match_5:
             change = {
-                "type": "paste_col",
-                "start_col": int(match_5.group(1)),
-                "start_row": int(match_5.group(2)),
-                "end_col": int(match_5.group(3)),
-                "end_row": int(match_5.group(4)),
+                "type": "paste_data",
+                "start_col": int(match_5.group(1)) + 1,
+                "start_row": int(match_5.group(2)) + 1,
+                "end_col": int(match_5.group(3)) + 1,
+                "end_row": int(match_5.group(4)) + 1,
             }
             changes.append(change)
             continue
@@ -110,78 +112,66 @@ def extract_changes(client_id, data):
 
 
 def find_batch_operation(client_id, changes, num_rows, num_cols):
-    original_changes = copy.deepcopy(changes)
-    # List to store detected batch operations
     batch_operations = []
-    # 1. batch create row operations
+    print(num_rows, num_cols)
+    # 1. batch insert row operations
     next_index = num_rows + 1
 
     for change in changes:
-        if change["type"] == "create_row":
+        if change["type"] == "insert_row":
             if change["row"] == next_index:
                 next_index += 1
 
     if next_index != num_rows + 1:
         batch_operations.append(
             {
-                "type": "create_multi_rows",
+                "type": "insert_multi_rows",
                 "start_row": num_rows + 1,
                 "end_row": next_index - 1,
             }
         )
 
-    changes = [change for change in changes if change["type"] != "create_row"]
+    changes = [change for change in changes if change["type"] != "insert_row"]
     num_rows = next_index - 1
 
-    # 2. batch create column operations
+    # 2. batch insert column operations
     next_index = num_cols + 1
 
     for change in changes:
-        if change["type"] == "create_col":
+        if change["type"] == "insert_col":
             if change["col"] == next_index:
                 next_index += 1
 
     if next_index != num_cols + 1:
         batch_operations.append(
             {
-                "type": "create_multi_cols",
+                "type": "insert_multi_cols",
                 "start_col": num_cols + 1,
                 "end_col": next_index - 1,
             }
         )
 
-    changes = [change for change in changes if change["type"] != "create_col"]
+    changes = [change for change in changes if change["type"] != "insert_col"]
     num_cols = next_index - 1
 
     # 3. batch change operations
     # Initialize dictionaries to track changes across rows and columns
-    col_changes = {col: [] for col in range(0, num_cols + 1)}
-    row_changes = {row: [] for row in range(0, num_rows + 1)}
+    col_changes = {col: [] for col in range(1, num_cols + 1)}
+    row_changes = {row: [] for row in range(1, num_rows + 1)}
 
     # Gather changes by rows and columns
     for change in changes:
-        if change["type"] != "change":
+        if change["type"] != "change_cell":
             continue
         col_changes[change["col"]].append(change)
         row_changes[change["row"]].append(change)
 
     # Check for column-wise batch operations
     for col, col_changes in col_changes.items():
-        if (
-            len(col_changes) == num_rows
-            and all(
-                change["row"] == i
-                for i, change in enumerate(
-                    sorted(col_changes, key=lambda x: x["row"]), start=1
-                )
-            )
-        ) or (
-            len(col_changes) == num_rows + 1
-            and all(
-                change["row"] == i
-                for i, change in enumerate(
-                    sorted(col_changes, key=lambda x: x["row"]), start=0
-                )
+        if len(col_changes) == num_rows and all(
+            change["row"] == i
+            for i, change in enumerate(
+                sorted(col_changes, key=lambda x: x["row"]), start=1
             )
         ):
             # All rows in this column have changes
@@ -195,7 +185,7 @@ def find_batch_operation(client_id, changes, num_rows, num_cols):
             ]
             batch_operations.append(
                 {
-                    "type": "all_row",
+                    "type": "change_entire_row",
                     "col": col,
                     "old_values": old_values,
                     "new_values": new_values,
@@ -204,24 +194,14 @@ def find_batch_operation(client_id, changes, num_rows, num_cols):
             # Remove individual changes from the main list
             for change in col_changes:
                 changes.remove(change)
+                row_changes[change["row"]].remove(change)
 
     # Check for row-wise batch operations
     for row, row_changes in row_changes.items():
-        if (
-            len(row_changes) == num_cols
-            and all(
-                change["col"] == i
-                for i, change in enumerate(
-                    sorted(row_changes, key=lambda x: x["col"]), start=1
-                )
-            )
-        ) or (
-            len(row_changes) == num_cols + 1
-            and all(
-                change["col"] == i
-                for i, change in enumerate(
-                    sorted(row_changes, key=lambda x: x["col"]), start=0
-                )
+        if len(row_changes) == num_cols and all(
+            change["col"] == i
+            for i, change in enumerate(
+                sorted(row_changes, key=lambda x: x["col"]), start=1
             )
         ):
             # All columns in this row have changes
@@ -235,7 +215,7 @@ def find_batch_operation(client_id, changes, num_rows, num_cols):
             ]
             batch_operations.append(
                 {
-                    "type": "all_col",
+                    "type": "change_entire_column",
                     "row": row,
                     "old_values": old_values,
                     "new_values": new_values,
@@ -249,27 +229,30 @@ def find_batch_operation(client_id, changes, num_rows, num_cols):
     changes.extend(batch_operations)
     log_text(
         client_id,
-        f">>> find_batch_operation\nChanges:\n{json.dumps(changes, indent=4)}\nBatch Operations:\n{json.dumps(batch_operations, indent=4)}",
+        f"Batch Operations:\n{json.dumps(batch_operations, indent=4)}",
     )
     return changes
 
 
 def mata_diff_to_NL(
-    client_id: str, diff: str, row_count: int, column_names: list, is_index_table: bool
+    client_id: str,
+    diff: str,
+    row_count: int,
+    column_names: list,
+    sheet_state_string: str,
 ) -> str:
     changes = extract_changes(client_id, diff)
-    if is_index_table:
-        for change in changes:
-            if "col" in change:
-                change["col"] += 1
     changes = find_batch_operation(client_id, changes, row_count, len(column_names))
 
     changes_text = ""
     for change in changes:
         changes_text += json.dumps(change) + "\n"
+    transfer_user_prompt = transfer_user_template.replace(
+        "{USER_OPERATIONS}", changes_text
+    ).replace("{INFORMATION}", sheet_state_string)
 
-    messages = append_message(transfer_prompt, "system", [])
-    messages = append_message(changes_text, "user", messages)
+    messages = append_message(transfer_system_prompt, "system", [])
+    messages = append_message(transfer_user_prompt, "user", messages)
     response = generate_chat_completion(messages)
     messages = append_message(response, "assistant", messages)
     log_messages(client_id, "mata_diff_to_NL", messages)
@@ -359,19 +342,38 @@ def multi_analyze(
     table_list: List[dict],
     user_promt: str,
 ) -> str:
-    for table in table_list:
+    for index, table in enumerate(table_list, start=1):
         sheet_id = table["sheet_id"]
         version = table["version"]
+        file_name = f"{sheet_id.split('.csv')[0]}_v{version}.csv"
         row_count = len(table["row_names"])
         column_names = table["column_names"]
+        column_count = len(column_names)
         table_diff = table["table_diff"]
-        is_index_table = table["is_index_table"]
+
+        column_string_list = []
+        for column_index, item in enumerate(column_names, start=1):
+            item = f'{column_index}: "{item}"'
+            column_string_list.append(item)
+        column_names = ", ".join(column_string_list)
+
+        sheet_state_string = (
+            sheet_state_template.replace("{index}", str(index))
+            .replace("{file_name}", file_name)
+            .replace("{column_count}", str(column_count + 1))
+            .replace("{column_names}", column_names)
+            .replace("{row_count}", str(row_count + 1))
+            .replace("{row_end}", str(row_count))
+        )
         if table_diff:
             NL_diff = mata_diff_to_NL(
-                client_id, table_diff, row_count, column_names, is_index_table
+                client_id,
+                table_diff,
+                row_count,
+                column_string_list,
+                sheet_state_string,
             )
             table["NL_diff"] = NL_diff
-
     response = get_multi_analyze(client_id, table_list, user_promt)
     return response
 

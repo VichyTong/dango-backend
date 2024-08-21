@@ -134,19 +134,17 @@ def move(params: MOVE_PARAMS):
 # copy(origin_table_name, origin_index, target_table_name, target_index, axis): Copies a row or column from the origin table to the target table at the specified index.
 # Parameters:
 # - origin_table_name (str): The name of the table from which the row/column will be copied.
-# - origin_index (int): The index of the row/column to be copied.
+# - origin_label (str or int): The index of the row/column to be copied.
 # - target_table_name (str): The name of the table to which the row/column will be copied.
-# - target_index (int): The index at which the row/column will be copied in the target table.
-# - target_label_name (str): The name of the new row/column in the target table.
+# - target_label (str or int): The index at which the row/column will be copied in the target table.
 # - axis (str or int): Refers to the direction of the operation.
 
 
 class COPY_PARAMS(BaseModel):
     origin_table_name: str
-    origin_index: int
+    origin_label: Union[str, int]
     target_table_name: str
-    target_index: int
-    target_label_name: str
+    target_label: Union[str, int]
     axis: Union[str, int]
 
 
@@ -569,12 +567,12 @@ def validate_move(arguments, error_list, sheets_names):
 
 
 def validate_copy(arguments, error_list, sheets_names):
-    if len(arguments) != 6:
-        error = create_error_message("Invalid number of arguments", f"The function 'copy' requires 5 or 6 arguments: 'origin_table_name', 'origin_index', 'target_table_name', 'target_index', 'target_label_name', 'axis'.", "copy")
+    if len(arguments) != 5:
+        error = create_error_message("Invalid number of arguments", f"The function 'copy' requires 5 arguments: 'origin_table_name', 'origin_label', 'target_table_name', 'target_label', 'axis'.", "copy")
         error_list.append(error)
         return "Failed"
     try:
-        params = COPY_PARAMS(origin_table_name=arguments[0], origin_index=arguments[1], target_table_name=arguments[2], target_index=arguments[3], target_label_name=arguments[4], axis=arguments[5])
+        params = COPY_PARAMS(origin_table_name=arguments[0], origin_label=arguments[1], target_table_name=arguments[2], target_label=arguments[3], axis=arguments[4])
         copy(params)
     except ValidationError as e:
         error = create_error_message("Invalid argument format", f"The arguments for 'copy' are not in the correct format. Please check the argument types and values.", "copy")
