@@ -2,8 +2,6 @@ import sqlite3
 import json
 import uuid
 
-from utils.format_text import convert_history_to_text, convert_history_to_dumped_text
-
 con = sqlite3.connect("clean.db")
 
 cur = con.cursor()
@@ -53,7 +51,7 @@ def upload_sheet(client_id, sheet_id, version, data):
 def upload_sheet_buffer(client_id, sheet_id, data):
     data = json.dumps(data)
     cur.execute(
-        "INSERT OR REPLACE INTO sheets_buffer (client_id, sheet_id, data) VALUES (?, ?, ?)",
+        "INSERT INTO sheets_buffer (client_id, sheet_id, data) VALUES (?, ?, ?)",
         (client_id, sheet_id, data),
     )
     con.commit()
@@ -118,13 +116,11 @@ def get_all_sheets(client_id):
 
 
 def get_same_sheet_version(client_id, sheet_id, data):
-    print(data)
     cur.execute(
         "SELECT version, data FROM sheets WHERE client_id = ? AND sheet_id = ?",
         (client_id, sheet_id),
     )
     versions = cur.fetchall()
-    print(versions)
     for version, sheet_data in versions:
         if sheet_data == json.dumps(data):
             return version

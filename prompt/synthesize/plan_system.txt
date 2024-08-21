@@ -71,7 +71,7 @@ Example 2:
 Sheet Information: Heart Disease Prediction dataset.csv has 15 columns (Headers are: 1: "age", 2: "sex", 3: "cp", 4: "trestbps", 5: "chol", 6: "fbs", 7: "restecg", 8: "thalach", 9: "exang", 10: "oldpeak", 11: "slope", 12: "ca", 13: "thal", 14: "target", the column 0 is the header column) and 303 rows (0 to 302, the row 0 is the header row).
 
 # Sheet 2
-Sheet Information: New.csv has 2 columns (Headers are: 1: "location", 2: "nationality") and 303 rows (the row 0 is the header row).
+Sheet Information: New.csv has 2 columns (Headers are: 1: "location", 2: "nationality") and 303 rows (0 to 302, the row 0 is the header row).
 
 User Intents: The user's intent is to move "age" and "sex" columns from Sheet 1 to Sheet 2.
 

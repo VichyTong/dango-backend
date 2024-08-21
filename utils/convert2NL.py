@@ -42,13 +42,13 @@ def transfer_to_NL(dsl):
         else:
             return "Invalid function"
     elif dsl["function_name"] == "copy":
-        origin_index = dsl["arguments"][1]
-        target_index = dsl["arguments"][3]
-        axis = dsl["arguments"][5]
+        origin_label = dsl["arguments"][1]
+        target_label = dsl["arguments"][3]
+        axis = dsl["arguments"][4]
         if axis == 0 or axis == "index" or axis == "0":
-            return f"Copy the row {origin_index} to row {target_index} in the given table(s)"
+            return f"Copy the row {origin_label} to row {target_label} in the given table(s)"
         elif axis == 1 or axis == "columns" or axis == "1":
-            return f"Copy the column {origin_index} to column {target_index} in the given table(s)"
+            return f"Copy the column {origin_label} to column {target_label} in the given table(s)"
         else:
             return "Invalid function"
     elif dsl["function_name"] == "swap":

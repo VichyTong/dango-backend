@@ -128,11 +128,6 @@ def get_sheet_info(client_id, sheet_id, version):
     sheet = get_sheet(client_id, sheet_id, version)
     df = pd.DataFrame(sheet)
     output = {}
-    if "Unnamed: 0" not in df.columns:
-        output["is_index_table"] = True
-    else:
-        output["is_index_table"] = False
-
     output["column_names"] = df.columns.tolist()
     output["row_names"] = df.index.tolist()
 
@@ -208,13 +203,10 @@ async def handle_multi_analyze(request_body: MultiAnalyze):
             "row_names": sheet_info["row_names"],
             "column_names": sheet_info["column_names"],
             "table_diff": table.table_diff,
-            "is_index_table": sheet_info["is_index_table"],
         }
         processed_tables.append(processed_table)
 
     response = multi_analyze(client_id, processed_tables, user_prompt)
-    print(">>> response")
-    print(response)
     if response["type"] == "question":
         response_question = response["question"]
         response_choices = response["choices"]

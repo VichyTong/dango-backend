@@ -44,7 +44,9 @@ def init_prompt():
     with open("prompt/synthesize/verifier_user.txt", "r") as f:
         verifier_semantic_user_prompt_template = f.read()
     with open("prompt/synthesize/plan_with_error_message_system.txt", "r") as f:
-        plan_with_error_message_system_prompt = f.read().replace("{DSL_GRAMMAR}", dsl_grammar)
+        plan_with_error_message_system_prompt = f.read().replace(
+            "{DSL_GRAMMAR}", dsl_grammar
+        )
     with open("prompt/synthesize/plan_with_error_message_user.txt", "r") as f:
         plan_with_error_message_user_prompt_template = f.read()
     with open("prompt/synthesize/generate_with_error_message_system.txt", "r") as f:
@@ -62,18 +64,6 @@ def init_prompt():
 
 
 init_prompt()
-
-
-def get_summarization(client_id, history):
-    summarize_user_prompt = get_history_text(history)
-
-    messages = append_message(summarize_system_prompt, "system", [])
-    messages = append_message(summarize_user_prompt, "user", messages)
-    summarization = generate_chat_completion(messages)
-    messages = append_message(summarization, "assistant", messages)
-    log_messages(client_id, "generate_summarization", messages)
-
-    return summarization
 
 
 def add_more_information(client_id, plan, information):
@@ -243,17 +233,8 @@ def verify_semantics(client_id, history, summarization, dsls):
 
 def verify(client_id, history, summarization, dsls):
     error_list = []
-    print(f"Step 0:\n{json.dumps(error_list, indent=4)}")
-    print("syntax_start")
     verify_syntax(client_id, dsls, error_list)
-    print("syntax_end")
-    print(f"Step 1:\n{json.dumps(error_list, indent=4)}")
-    # print("semantic_start")
-    # feedback = verify_semantics(client_id, history, summarization, dsls)
-    # if feedback["correctness"] == "No":
-    #     error_list.append(feedback["feedback"]["error"])
-    # print("semantic_end")
-    # print(f"Step 2:\n{json.dumps(error_list, indent=4)}")
+    print(f"Error list:\n{json.dumps(error_list, indent=4)}")
     return error_list
 
 
@@ -291,7 +272,7 @@ def fill_condition(client_id, dsls):
 
 def dsl_synthesize(client_id: str) -> str:
     history = get_history(client_id)
-    summarization = get_summarization(client_id, history)
+    summarization = history["summary"]
     step_by_step_plan, step_by_step_plan_string = get_step_by_step_plan(
         client_id, history, summarization
     )
