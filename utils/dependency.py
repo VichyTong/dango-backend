@@ -66,7 +66,14 @@ class DependenciesManager:
             'fill': self.handle_fill_statement,
             'concatenate': self.handle_concatenate_statement,
             'split': self.handle_split_statement,
-            'format': self.handle_format_statement
+            'format': self.handle_format_statement,
+            'blank_table': self.handle_blank_table_statement,
+            'delete_table': self.handle_delete_table_statement,
+            'pivot_table': self.handle_pivot_table_statement,
+            'merge': self.handle_merge_statement,
+            'subtable': self.handle_subtable_statement,
+            'aggregate': self.handle_aggregate_statement,
+            'test': self.handle_test_statement,
         }
         handler = handlers.get(function)
         return handler(arguments) if handler else False
@@ -340,6 +347,124 @@ class DependenciesManager:
             self.add_dependency(new_table_name, dependency)
         else:
             self.add_node(new_table_name, [dependency])
+
+        self.display_nodes()
+        return True
+
+    def handle_blank_table_statement(self, arguments):
+        row_number, column_number = arguments
+        new_table_name = f"blank_table_v0.csv"
+
+        action = f"create blank table with {row_number} rows and {column_number} columns"
+
+        self.add_node(new_table_name, [{'sheet_id': 'new', 'action': action}])
+
+        self.display_nodes()
+        return True
+
+    def handle_delete_table_statement(self, arguments):
+        table_name, = arguments
+
+        action = f"delete table"
+
+        self.remove_node(table_name)
+
+        self.display_nodes()
+        return True
+
+    def handle_pivot_table_statement(self, arguments):
+        table, index, columns, values, aggfunc = arguments
+        new_version = self.get_new_version(table)
+        new_table_name = f"{table.split('_')[0]}_v{new_version}.csv"
+
+        action = f"pivot table with index={index}, columns={columns}, values={values}, aggfunc={aggfunc}"
+
+        dependency = {
+            'sheet_id': table,
+            'action': action
+        }
+
+        self.add_node(new_table_name, [dependency])
+
+        self.display_nodes()
+        return True
+
+    def handle_merge_statement(self, arguments):
+        table_a, table_b, how, on = arguments
+        new_version = max(self.get_new_version(table_a), self.get_new_version(table_b))
+        new_table_name = f"merged_v{new_version}.csv"
+
+        action = f"merge tables {table_a} and {table_b} with how={how} and on={on}"
+
+        dependency_a = {
+            'sheet_id': table_a,
+            'action': action
+        }
+        dependency_b = {
+            'sheet_id': table_b,
+            'action': action
+        }
+
+        self.add_node(new_table_name, [dependency_a, dependency_b])
+
+        self.display_nodes()
+        return True
+
+    def handle_subtable_statement(self, arguments):
+        table, rows, columns = arguments
+        new_version = self.get_new_version(table)
+        new_table_name = f"{table.split('_')[0]}_subtable_v{new_version}.csv"
+
+        action = f"create subtable"
+        if rows:
+            action += f" with rows {rows}"
+        if columns:
+            action += f" with columns {columns}"
+
+        dependency = {
+            'sheet_id': table,
+            'action': action
+        }
+
+        self.add_node(new_table_name, [dependency])
+
+        self.display_nodes()
+        return True
+
+    def handle_aggregate_statement(self, arguments):
+        table, functions, axis = arguments
+        new_version = self.get_new_version(table)
+        new_table_name = f"{table.split('_')[0]}_aggregated_v{new_version}.csv"
+
+        action = f"aggregate {'rows' if axis in (0, 'index') else 'columns'} with functions {functions}"
+
+        dependency = {
+            'sheet_id': table,
+            'action': action
+        }
+
+        self.add_node(new_table_name, [dependency])
+
+        self.display_nodes()
+        return True
+
+    def handle_test_statement(self, arguments):
+        table_a, label_a, table_b, label_b, strategy, axis = arguments
+        new_version = max(self.get_new_version(table_a), self.get_new_version(table_b))
+        new_table_name = f"test_result_v{new_version}.csv"
+
+        action = f"perform {strategy} test on {'rows' if axis in (0, 'index') else 'columns'} {label_a} from {table_a} and {label_b} from {table_b}"
+
+        dependency_a = {
+            'sheet_id': table_a,
+            'action': action
+        }
+        dependency_b = {
+            'sheet_id': table_b,
+            'action': action
+        }
+
+        self.add_node(new_table_name, [dependency_a, dependency_b])
 
         self.display_nodes()
         return True
