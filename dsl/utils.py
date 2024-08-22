@@ -2,6 +2,7 @@ import re
 import pandas as pd
 import scipy.stats as stats
 import statsmodels.api as sm
+from thefuzz import process
 
 
 def classify_axis(axis):
@@ -112,9 +113,7 @@ def copy(origin_table, origin_label, target_table, target_label, axis):
         if isinstance(origin_label, str) and isinstance(target_label, str):
             target_table[target_label] = origin_table[origin_label]
         else:
-            raise ValueError(
-                "Invalid column labels."
-            )
+            raise ValueError("Invalid column labels.")
     elif axis == 0:
         if isinstance(origin_label, int):
             origin_label = str(origin_label + 1)
@@ -197,7 +196,9 @@ def fill(table, method, labels, axis=0):
             elif method == "interpolate":
                 df.loc[label].interpolate(inplace=True)
             else:
-                raise ValueError("Invalid method. Choose from 'mean', 'median', 'mode', 'ffill', 'bfill', 'interpolate'.")
+                raise ValueError(
+                    "Invalid method. Choose from 'mean', 'median', 'mode', 'ffill', 'bfill', 'interpolate'."
+                )
     elif axis == 1:
         for label in labels:
             if should_skip(df[label]):
@@ -213,10 +214,12 @@ def fill(table, method, labels, axis=0):
             elif method == "interpolate":
                 df[label].interpolate(inplace=True)
             else:
-                raise ValueError("Invalid method. Choose from 'mean', 'median', 'mode', 'ffill', 'bfill', 'interpolate'.")
+                raise ValueError(
+                    "Invalid method. Choose from 'mean', 'median', 'mode', 'ffill', 'bfill', 'interpolate'."
+                )
     else:
         raise ValueError("Invalid axis. Use 0 for rows or 1 for columns.")
-    
+
     return df
 
 
@@ -269,7 +272,23 @@ def insert(table, index, index_name="new_column", axis=0):
 
 
 def merge(table_a, table_b, how="outer", on=None):
-    return pd.merge(table_a, table_b, how=how, on=on)
+    if how == "fuzzy":
+
+        def find_best_match(name, names, threshold=70):
+            print(name)
+            print(names)
+            print(process.extractOne(name, names))
+            match, score = process.extractOne(name, names)
+            return match if score >= threshold else None
+
+        table_a["matched_name"] = table_b[on].apply(find_best_match, names=table_b[on].to_list())
+        merged_df = pd.merge(table_a, table_b, left_on="matched_name", right_on=on)
+        merged_df = merged_df.drop(columns=["matched_name", f"{on}_y"]).rename(
+            columns={f"{on}_x": on}
+        )
+        return merged_df
+    else:
+        return pd.merge(table_a, table_b, how=how, on=on)
 
 
 def move(origin_table, origin_index, target_table, target_index, axis=0):
