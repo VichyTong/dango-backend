@@ -105,11 +105,15 @@ def concatenate(table, label_a, label_b, glue, new_label, axis=0):
 def copy(origin_table, origin_label, target_table, target_label, axis):
     axis = classify_axis(axis)
     if axis == 1:
+        if isinstance(origin_label, int):
+            origin_label = origin_table.columns[origin_label]
+        if isinstance(target_label, int):
+            target_label = target_table.columns[target_label]
         if isinstance(origin_label, str) and isinstance(target_label, str):
             target_table[target_label] = origin_table[origin_label]
         else:
             raise ValueError(
-                "For axis=1, both origin_label and target_label must be strings."
+                "Invalid column labels."
             )
     elif axis == 0:
         if isinstance(origin_label, int):
@@ -142,17 +146,6 @@ def divide(table, by, axis=0):
 
 
 def drop(table, label, axis=0):
-    """
-    Drops rows or columns in the table.
-
-    Parameters:
-    - table: DataFrame from which the row(s)/column(s) will be dropped.
-    - label: The label(s) of the row(s)/column(s) to be dropped. For rows, this is the index label; for columns, this is the column name. It can be a single label or a list of labels.
-    - axis:
-      - 0 or "index": Indicates a row operation.
-      - 1 or "columns": Indicates a column operation.
-    """
-
     axis = classify_axis(axis)
     if not isinstance(label, list):
         label = [label]
@@ -177,53 +170,53 @@ def drop(table, label, axis=0):
     return table
 
 
-def fill(table, method, column=None):
+def fill(table, method, labels, axis=0):
+    axis = classify_axis(axis)
     df = table.copy()
-    if not isinstance(column, list):
-        columns = [column]
-    else:
-        columns = None
+    if isinstance(labels, (int, str)):
+        labels = [labels]
 
-    if method == "mean":
-        if columns:
-            for column in columns:
-                df[column].fillna(df[column].mean(), inplace=True)
-        else:
-            for col in df.columns:
-                if df[col].dtype != "O":  # Skip non-numeric columns
-                    df[col].fillna(df[col].mean(), inplace=True)
-    elif method == "median":
-        if columns:
-            for column in columns:
-                df[column].fillna(df[column].median(), inplace=True)
-        else:
-            for col in df.columns:
-                if df[col].dtype != "O":  # Skip non-numeric columns
-                    df[col].fillna(df[col].median(), inplace=True)
-    elif method == "mode":
-        if columns:
-            for column in columns:
-                df[column].fillna(df[column].mode()[0], inplace=True)
-        else:
-            for col in df.columns:
-                df[col].fillna(df[col].mode()[0], inplace=True)
-    elif method in ["ffill", "bfill"]:
-        if columns:
-            for column in columns:
-                df[column].fillna(method=method, inplace=True)
-        else:
-            df.fillna(method=method, inplace=True)
-    elif method == "interpolate":
-        if columns:
-            for column in columns:
-                df[column].interpolate(inplace=True)
-        else:
-            df.interpolate(inplace=True)
-    else:
-        raise ValueError(
-            "Invalid method. Choose from 'value', 'mean', 'median', 'mode', 'ffill', 'bfill', 'interpolate'."
-        )
+    def should_skip(series):
+        """Check if the first value of the series is a string."""
+        return isinstance(series.iloc[0], str)
 
+    if axis == 0:
+        for label in labels:
+            if isinstance(label, int):
+                label = str(label + 1)
+            if should_skip(df.loc[label]):
+                continue
+            if method == "mean":
+                df.loc[label].fillna(df.loc[label].mean(), inplace=True)
+            elif method == "median":
+                df.loc[label].fillna(df.loc[label].median(), inplace=True)
+            elif method == "mode":
+                df.loc[label].fillna(df.loc[label].mode()[0], inplace=True)
+            elif method in ["ffill", "bfill"]:
+                df.loc[label].fillna(method=method, inplace=True)
+            elif method == "interpolate":
+                df.loc[label].interpolate(inplace=True)
+            else:
+                raise ValueError("Invalid method. Choose from 'mean', 'median', 'mode', 'ffill', 'bfill', 'interpolate'.")
+    elif axis == 1:
+        for label in labels:
+            if should_skip(df[label]):
+                continue
+            if method == "mean":
+                df[label].fillna(df[label].mean(), inplace=True)
+            elif method == "median":
+                df[label].fillna(df[label].median(), inplace=True)
+            elif method == "mode":
+                df[label].fillna(df[label].mode()[0], inplace=True)
+            elif method in ["ffill", "bfill"]:
+                df[label].fillna(method=method, inplace=True)
+            elif method == "interpolate":
+                df[label].interpolate(inplace=True)
+            else:
+                raise ValueError("Invalid method. Choose from 'mean', 'median', 'mode', 'ffill', 'bfill', 'interpolate'.")
+    else:
+        raise ValueError("Invalid axis. Use 0 for rows or 1 for columns.")
+    
     return df
 
 

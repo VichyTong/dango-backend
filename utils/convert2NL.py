@@ -150,11 +150,12 @@ def transfer_to_NL(dsl):
             return "Invalid function"
     elif dsl["function_name"] == "fill":
         method = dsl["arguments"][1]
-        column = dsl["arguments"][2]
-        if column is None:
-            return f"Fill the missing values in the given table(s) with the method {method}"
-        else:
-            return f"Fill the missing values in the column {column} in the given table(s) with the method {method}"
+        labels = dsl["arguments"][2]
+        axis = dsl["arguments"][3]
+        if axis == 0 or axis == "index" or axis == "0":
+            return f"Fill the missing values in the row {labels} in the given table(s) with the method {method}"
+        elif axis == 1 or axis == "columns" or axis == "1":
+            return f"Fill the missing values in the column {labels} in the given table(s) with the method {method}"
     elif dsl["function_name"] == "pivot_table":
         index = dsl["arguments"][1]
         columns = dsl["arguments"][2]
@@ -174,3 +175,4 @@ def transfer_to_NL(dsl):
             return "Invalid function"
     else:
         return "Invalid function"
+    

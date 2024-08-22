@@ -354,16 +354,20 @@ class PIVOT_TABLE_PARAMS(BaseModel):
 def pivot_table(params: PIVOT_TABLE_PARAMS):
     pass
 
-# fill(table_name, method, column=None): Fills missing values in the table using the specified method.
+# fill(table, method, labels, axis): Fills missing values in the table using the specified method.
 # Parameters:
-# - table: Table to fill missing values.
-# - method: The method to use for filling missing values. Choose from 'value', 'mean', 'median', 'mode', 'ffill', 'bfill', 'interpolate'.
-# - column: The column to fill missing values in. If None, missing values in all columns will be filled.
+# - table (DataFrame, required): Table to fill missing values.
+# - method (str, required): The method to use for filling missing values. Choose from 'value', 'mean', 'median', 'mode', 'ffill', 'bfill', 'interpolate'.
+# - labels (list[str or int] or int or str, required): The label of labels list of the row(s)/column(s) to fill missing values.
+# - axis (str or int, required):
+#     - 0 or "index": Indicates to fill missing values in rows.
+#     - 1 or "columns": Indicates to fill missing values in columns.
 
 class FILL(BaseModel):
     table_name: str
     method: str
-    column: Optional[str]
+    label: Union[List[str], List[int], int, str]
+    axis: Union[str, int]
 
 def fill(params: FILL):
     pass
@@ -780,15 +784,12 @@ def validate_pivot_table(arguments, error_list, sheets_names):
     return "Success"
 
 def validate_fill(arguments, error_list, sheets_names):
-    if len(arguments) not in [2, 3]:
-        error = create_error_message("Invalid number of arguments", f"The function 'fill' requires 3 arguments: 'table_name', 'method', 'column'.", "fill")
+    if len(arguments) != 4:
+        error = create_error_message("Invalid number of arguments", f"The function 'fill' requires 4 arguments: 'table_name', 'method', 'labels', 'axis'.", "fill")
         error_list.append(error)
         return "Failed"
     try:
-        if len(arguments) == 2:
-            params = FILL(table_name=arguments[0], method=arguments[1], column=None)
-        elif len(arguments) == 3:
-            params = FILL(table_name=arguments[0], method=arguments[1], column=arguments[2])
+        params = FILL(table_name=arguments[0], method=arguments[1], label=arguments[2], axis=arguments[3])
         fill(params)
     except ValidationError as e:
         error = create_error_message("Invalid argument format", f"The arguments for 'fill' are not in the correct format. Please check the argument types and values.", "fill")

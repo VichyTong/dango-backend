@@ -76,8 +76,8 @@ Input:
 # Sheet 1
 Sheet Information: table_3.csv has 6 columns (Headers are 1: "Product", 2: "Price", 3: "Quantity", 4: "Total", the column 0 is the header column) and 10 rows (0 to 9, the row 0 is the header row).
 User Operations:
-{"type": "copy_data", "start_row": 2, "start_column": 1, "end_row": 2, "end_column": 3, "target_row": 5}
-{"type": "paste_data", "start_row": 5, "start_column": 1, "end_row": 5, "end_column": 3, "target_row": 7}
+{"type": "copy_data", "start_row": 2, "end_row": 2, "start_col": 1, "end_col": 3}
+{"type": "paste_data", "start_row": 5, "end_row": 5, "start_col": 1, "end_col": 3}
 
 Output:
 In table_3.csv, the user copies data from (row 2, columns 1 to 3) and pastes it to (row 7, columns 1 to 3).
@@ -132,4 +132,21 @@ User Operations:
 
 Output:
 In table_7.csv, the user adds a new column at column 4 and then sets the value to "Grade" in (row 3, column 4).
+```
+
+Example 8:
+```
+Input:
+# Sheet 1
+Sheet Information: table_8.csv has 4 columns (Headers are 1: "Name", 2: "School", 3: "Nationality", the column 0 is the header column) and 5 rows (0 to 4, the row 0 is the header row).
+User Operations:
+{"type": "paste_data", "start_row": 1, "end_row": 1, "start_col": 1, "end_col": 3}
+{"type": "change_entire_row", "row": 1, "old_values": ["null", "null", "null"], "new_values": ["John", "Harvard", "US"]}
+{"type": "paste_data", "start_row": 2, "end_row": 2, "start_col": 1, "end_col": 3}
+{"type": "change_entire_row", "row": 2, "old_values": ["null", "null", "null"], "new_values": ["Alice", "Harvard", "Canada"]}
+{"type": "paste_data", "start_row": 3, "end_row": 3, "start_col": 1, "end_col": 3}
+{"type": "change_entire_row", "row": 3, "old_values": ["null", "null", "null"], "new_values": ["Bob", "Harvard", "UK"]}
+
+Output:
+In table_8.csv, the user pastes three rows of data to the table. The common value for the "School" column is "Harvard".
 ```

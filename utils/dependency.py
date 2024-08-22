@@ -172,11 +172,11 @@ class DependenciesManager:
         return True
 
     def handle_copy_statement(self, arguments):
-        origin_table, origin_index, target_table, target_index, target_label_name, axis = arguments
+        origin_table, origin_index, target_table, target_index, axis = arguments
         new_version = self.get_new_version(target_table)
         new_target_table = f"{target_table.split('_')[0]}_v{new_version}.csv"
 
-        action = f"copy {'row' if axis in (0, 'index') else 'column'} {origin_index} from {origin_table} to {target_index} as {target_label_name}"
+        action = f"copy {'row' if axis in (0, 'index') else 'column'} {origin_index} from {origin_table} to {target_index}"
 
         dependency = {
             'sheet_id': origin_table,
@@ -271,13 +271,11 @@ class DependenciesManager:
         return True
 
     def handle_fill_statement(self, arguments):
-        table_name, method, column = arguments
+        table_name, method, labels, axis = arguments
         new_version = self.get_new_version(table_name)
         new_table_name = f"{table_name.split('_')[0]}_v{new_version}.csv"
 
-        action = f"fill missing values using {method}"
-        if column:
-            action += f" in column(s) {column}"
+        action = f"fill {'row' if axis in (0, 'index') else 'column'} {labels} with method {method}"
 
         dependency = {
             'sheet_id': table_name,

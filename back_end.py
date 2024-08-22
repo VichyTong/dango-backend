@@ -18,8 +18,7 @@ from utils.db import (
     is_sheet_exists,
     get_all_sheets,
 )
-from utils.execute import execute_dsl_list
-from utils.execute_program import new_execute_dsl_list
+from utils.execute_program import execute_dsl_list
 from utils.dependency import DependenciesManager
 from utils.edit import edit_dsl
 from config.config import config
@@ -275,7 +274,6 @@ async def handle_generate_dsl(request_body: GenerateDSL):
 class Program(BaseModel):
     function_name: str
     arguments: List[Union[str, int, float, None, list, dict]]
-    function: Optional[str]
     condition: Optional[str]
 
 
@@ -297,14 +295,9 @@ async def handle_execute_dsl_list(request_body: ExecuteDSLList):
     required_tables = request_body.dsl_list.required_tables
     step_by_step_plan = request_body.dsl_list.step_by_step_plan
 
-    if config["execute_mode"] == "legacy":
-        output = execute_dsl_list(
-            client_id, required_tables, dsl_list, DependenciesManager
-        )
-    elif config["execute_mode"] == "latest":
-        output = new_execute_dsl_list(
-            client_id, required_tables, dsl_list, step_by_step_plan, DependenciesManager
-        )
+    output = execute_dsl_list(
+        client_id, required_tables, dsl_list, step_by_step_plan, DependenciesManager
+    )
 
     return output
 
@@ -317,13 +310,12 @@ async def get_dependencies():
 
 class EditDSL(BaseModel):
     client_id: str
-    dsl: DSL
+    dsl: Program
     new_instruction: str
 
 
 @app.post("/edit_dsl")
 async def handle_edit_dsl(request_body: EditDSL):
-    print("Received request_body:", request_body)
     client_id = request_body.client_id
     dsl = request_body.dsl
     new_instruction = request_body.new_instruction
