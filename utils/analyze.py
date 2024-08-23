@@ -167,10 +167,10 @@ def find_batch_operation(client_id, changes, num_rows, num_cols):
 
     # Check for column-wise batch operations
     for col, col_changes in col_changes.items():
-        if len(col_changes) == num_rows and all(
+        if len(col_changes) == num_rows + 1 and all(
             change["row"] == i
             for i, change in enumerate(
-                sorted(col_changes, key=lambda x: x["row"]), start=1
+                sorted(col_changes, key=lambda x: x["row"]), start=0
             )
         ):
             # All rows in this column have changes
@@ -401,13 +401,13 @@ def followup(client_id, response):
         history = get_history(client_id)
         if "choices" not in response:
             response["choices"] = ["other (please specify)"]
-        history["question_answer_pairs"] = [
+        history["question_answer_pairs"].append(
             {
                 "summary": response["summary"],
                 "question": response["question"],
                 "choices": response["choices"],
             }
-        ]
+        )
         update_history(client_id, history)
     else:
         history = get_history(client_id)

@@ -159,3 +159,29 @@ User Instruction: Perform a statistical analysis using Pearson correlation to co
     ]
 }
 '''
+
+Example 6:
+'''
+- INPUT:
+# Sheet 1
+Sheet Information: table_1.csv has 5 columns (Headers are 1: "2021", 2: "2022", 3: "2023", 4: "2024", the column 0 is the header column) and 5 rows (0 to 4, the row 0 is the header row).
+Table Diff: In table_1.csv, the user copies column "2021" and "2022" from row 0 to 4.
+
+# Sheet 2
+Sheet Information: table_2.csv has 5 columns (Headers are 1: "Column1", 2: "Column2", 3: "Column3", 4: "Column4", the column 0 is the header column) and 5 rows (0 to 4, the row 0 is the header row).
+Table Diff: In table_2.csv, the user pastes "Column1" and "Column2" from row 0 to 4.
+
+User Instruction: (No user instruction)
+
+- OUTPUT:
+{
+    "type": "question",
+    "summary": "The user has copied columns '2021' and '2022' from table_1.csv and pasted them in table_2.csv.",
+    "question": "Do you want to copy only columns '2021' and '2022' or all columns from table_1.csv to table_2.csv?",
+    "choices": [
+        "Copy only columns '2021' and '2022'",
+        "Copy all columns",
+        "other (please specify)"
+    ]
+}
+'''

@@ -130,6 +130,7 @@ def execute_dsl_list(client_id, required_tables, dsl_list, step_by_step_plan, De
     all_sheet_buffer = get_all_sheet_buffer(client_id)
 
     for table, buffer in all_sheet_buffer:
+        delete_sheet_buffer(client_id, table)
         buffer = json.loads(buffer)
         sheet_id, sheet_version = split_sheet_name(table)
 
@@ -183,6 +184,5 @@ def execute_dsl_list(client_id, required_tables, dsl_list, step_by_step_plan, De
             }
         )
         upload_sheet(client_id, sheet_id, sheet_version, buffer_sheet_data)
-        delete_sheet_buffer(client_id, table)
     print(json.dumps(output, indent=4))
     return output

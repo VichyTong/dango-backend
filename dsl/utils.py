@@ -111,7 +111,9 @@ def copy(origin_table, origin_label, target_table, target_label, axis):
         if isinstance(target_label, int):
             target_label = target_table.columns[target_label]
         if isinstance(origin_label, str) and isinstance(target_label, str):
-            target_table[target_label] = origin_table[origin_label]
+            target_table[origin_label] = origin_table[origin_label]
+            if target_label != origin_label and target_label in target_table.columns:
+                target_table.drop(columns=[target_label], inplace=True)
         else:
             raise ValueError("Invalid column labels.")
     elif axis == 0:
@@ -121,6 +123,8 @@ def copy(origin_table, origin_label, target_table, target_label, axis):
         if isinstance(origin_label, int) or isinstance(origin_label, str):
             row_data = origin_table.loc[origin_label]
             target_table.loc[target_label] = row_data
+            if target_label != origin_label and target_label in target_table.index:
+                target_table.rename(index={target_label: origin_label}, inplace=True)
         else:
             raise ValueError("For axis=0, origin_label must be an int or str.")
 
@@ -172,6 +176,7 @@ def drop(table, label, axis=0):
 def fill(table, method, labels, axis=0):
     axis = classify_axis(axis)
     df = table.copy()
+    df.replace("", None, inplace=True)
     if isinstance(labels, (int, str)):
         labels = [labels]
 
