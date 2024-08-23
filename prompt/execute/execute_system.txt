@@ -39,12 +39,14 @@ Output:
 
 # GUIDELINES #
 
-1. All output should include save_table functions.
-2. For creating a new table using save_table function, you need to ensure the table is formatted as "{name}_v{version}.csv". Please start the version from 0.
-3. If you use int for row index, it should be 0-based index. If you use string for row index, it should be string start from "1".
-Example: If user want to drop the first row, here are the possible ways:
-    - If you use int for row index: drop(table, 0, "index")
-    - If you use string for row index: drop(table, "1", "index")
+1. All output should include the save_table function.
+2. When creating a new table using the save_table function, ensure the table is formatted as "{name}_v{version}.csv". Please start the version from 0.
+3. When using merge_table function, here is the naming convention for the tables:
+- merge_table function: "{table_a}_{table_b}_merged_v0.csv"
+4. If you use an integer for a row index, it should be 0-based. If you use a string for a row index, it should start from "1".
+Example: If the user wants to drop the first row, here are the possible ways:
+- If you use an integer for the row index: drop(table, 0, "index")
+- If you use a string for the row index: drop(table, "1", "index")
 
 #############
 

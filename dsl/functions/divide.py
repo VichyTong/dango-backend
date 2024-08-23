@@ -7,13 +7,13 @@ class DangoDivide(DangoFunction):
 
     def definition(self):
         return """\
-divide(table, by, axis): Divides the table by the specific values of a row or column, return a list of tables.
+divide(table, by, axis): Divides the table by the specified row or column, returning a list of tables.
 Parameters:
-- table (DataFrame, required): table to be divided.
-- by(int/str, required): The label of a row or column.
+- table (DataFrame, required): The table to be divided.
+- by(int/str, required): The label of the row or column by which the table will be divided.
 - axis (str or int, required):
-    - 0 or "index": Indicates to divide the table by a row. If the by is a row label, you should set axis to 0.
-    - 1 or "columns": Indicates to divide the table by a column. If the by is a column label, you should set axis to 1.
+    - 0 or "index": Indicates that the table will be divided by a row. Set axis to 0 if by is a row label.
+    - 1 or "columns": Indicates that the table will be divided by a column. Set axis to 1 if by is a column label.
 Output:
 - A list of pandas DataFrames.\
 """

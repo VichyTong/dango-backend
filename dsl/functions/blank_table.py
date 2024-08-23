@@ -7,7 +7,7 @@ class DangoBlankTable(DangoFunction):
 
     def definition(self):
         return """\
-blank_table(row_number, column_number): Returns a empty table with the specified number of rows and columns.
+blank_table(row_number, column_number): Returns an empty table with the specified number of rows and columns.
 Parameters:
 - row_number (int, required): The number of rows in the table.
 - column_number (int, required): The number of columns in the table.

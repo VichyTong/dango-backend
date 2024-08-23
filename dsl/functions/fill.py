@@ -9,12 +9,12 @@ class DangoFill(DangoFunction):
         return """\
 fill(table, method, labels, axis): Fills missing values in the table using the specified method.
 Parameters:
-- table (DataFrame, required): Table to fill missing values.
+- table (DataFrame, required): The table in which missing values will be filled.
 - method (str, required): The method to use for filling missing values. Choose from 'value', 'mean', 'median', 'mode', 'ffill', 'bfill', 'interpolate'.
-- labels (list[str or int] or int or str, required): The label of labels list of the row(s)/column(s) to fill missing values.
+- labels (list[str or int] or int or str, required): The label or list of labels of the row(s) or column(s) where missing values will be filled.
 - axis (str or int, required):
-    - 0 or "index": Indicates to fill missing values by rows.
-    - 1 or "columns": Indicates to fill missing values by columns.
+    - 0 or "index": Indicates that missing values will be filled by rows.
+    - 1 or "columns": Indicates that missing values will be filled by columns.
 Output:
 - A pandas DataFrame.\
 """

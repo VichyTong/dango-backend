@@ -7,16 +7,16 @@ class DangoConcatenate(DangoFunction):
 
     def definition(self):
         return """\
-concatenate(table, label_a, label_b, glue, new_label, axis): Concatenates two rows or columns based on a string glue and appends the merged row or column to the table.
+concatenate(table, label_a, label_b, glue, new_label, axis): Concatenates two rows or columns using a string as glue and appends the merged row or column to the table.
 Parameters:
-- table (DataFrame, required): table in which the rows/columns will be concatenated.
-- label_a (str or int, required): The label of the first row/column to be concatenated.
-- label_b (str or int, required): The label of the second row/column to be concatenated.
-- glue (str, required): The string to be used to concatenate the two rows/columns.
-- new_label (str or int, required): The label of the new row/column created by the concatenation.
+- table (DataFrame, required): The table in which the rows or columns will be concatenated.
+- label_a (str or int, required): The label of the first row or column to be concatenated.
+- label_b (str or int, required): The label of the second row or column to be concatenated.
+- glue (str, required): The string used to concatenate the two rows or columns.
+- new_label (str or int, required): The label of the new row or column created by the concatenation.
 - axis (str or int, required):
-    - 0 or "index": Indicates to concatenate rows.
-    - 1 or "columns": Indicates to concatenate columns.
+    - 0 or "index": Indicates that rows will be concatenated.
+    - 1 or "columns": Indicates that columns will be concatenated.
 Output:
 - A pandas DataFrame.\
 """

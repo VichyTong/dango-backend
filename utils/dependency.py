@@ -390,7 +390,7 @@ class DependenciesManager:
     def handle_merge_statement(self, arguments):
         table_a, table_b, how, on = arguments
         new_version = max(self.get_new_version(table_a), self.get_new_version(table_b))
-        new_table_name = f"merged_v{new_version}.csv"
+        new_table_name = f"{table_a.split('_')[0]}_{table_b.split('_')[0]}_merged_v{new_version}.csv"
 
         action = f"merge tables {table_a} and {table_b} with how={how} and on={on}"
 
@@ -411,7 +411,7 @@ class DependenciesManager:
     def handle_subtable_statement(self, arguments):
         table, rows, columns = arguments
         new_version = self.get_new_version(table)
-        new_table_name = f"{table.split('_')[0]}_subtable_v{new_version}.csv"
+        new_table_name = f"{table.split('_')[0]}_v{new_version}.csv"
 
         action = f"create subtable"
         if rows:

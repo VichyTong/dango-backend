@@ -6,7 +6,7 @@ class DangoPivotTable(DangoFunction):
 
     def definition(self):
         return """\
-pivot_table(table, index, columns, values, aggfunc): Reshapes the table so that each unique 'columns' value becomes a separate column, with the 'index' values as row headers, and the corresponding 'values' filled in their respective cells.
+pivot_table(table, index, columns, values, aggfunc): Reshapes the table so that each unique value in columns becomes a separate column, with index values as row headers, and the corresponding values filled in their respective cells.
 Parameters:
 - table (DataFrame, required): The table to pivot.
 - index (str, required): The column name to use as the new row headers.
