@@ -38,6 +38,17 @@ CREATE TABLE IF NOT EXISTS sheets_buffer (
 """
 )
 
+cur.execute(
+    """
+CREATE TABLE IF NOT EXISTS client_statistics (
+    client_id TEXT PRIMARY KEY,
+    start_timestamp TEXT,
+    end_timestamp TEXT,
+    verification_attempts INTEGER
+);
+"""
+)
+
 
 def upload_sheet(client_id, sheet_id, version, data):
     data = json.dumps(data)
@@ -139,6 +150,23 @@ def find_next_version(client_id, sheet_id):
         return max([version[0] for version in versions]) + 1
 
 
+"""
+Organization of "history"
+{
+    "infomation": <string>,
+    "question_answer_list": [
+        {
+            "summary": <string>,
+            "question": <string>,
+            "choices": [<string>, <string>, ...],
+            "answer": <string>,
+        },
+        ...
+    ]
+}
+"""
+
+
 def create_history(client_id):
     cur.execute(
         "INSERT INTO histories (client_id, history) VALUES (?, ?)", (client_id, "{}")
@@ -166,18 +194,34 @@ def create_client():
     return client_id
 
 
-"""
-Organization of "history"
-{
-    "infomation": <string>,
-    "question_answer_list": [
-        {
-            "summary": <string>,
-            "question": <string>,
-            "choices": [<string>, <string>, ...],
-            "answer": <string>,
-        },
-        ...
-    ]
-}
-"""
+def get_client_statistics(client_id):
+    cur.execute(
+        "SELECT start_timestamp, end_timestamp, verification_attempts FROM client_statistics WHERE client_id = ?",
+        (client_id,),
+    )
+    statistics = cur.fetchone()
+    return statistics
+
+
+def update_client_start_timestamp(client_id, start_timestamp):
+    cur.execute(
+        "INSERT INTO client_statistics (client_id, start_timestamp) VALUES (?, ?)",
+        (client_id, start_timestamp),
+    )
+    con.commit()
+
+
+def update_client_end_timestamp(client_id, end_timestamp):
+    cur.execute(
+        "UPDATE client_statistics SET end_timestamp = ? WHERE client_id = ?",
+        (end_timestamp, client_id),
+    )
+    con.commit()
+
+
+def update_client_verification_attempts(client_id, verification_attempts):
+    cur.execute(
+        "UPDATE client_statistics SET verification_attempts = ? WHERE client_id = ?",
+        (verification_attempts, client_id),
+    )
+    con.commit()

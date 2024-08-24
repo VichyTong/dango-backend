@@ -5,10 +5,14 @@ from utils.llm import (
     append_message,
     generate_chat_completion,
 )
-from utils.db import get_history, get_all_sheets, get_sheet
+from utils.db import (
+    get_history,
+    get_all_sheets,
+    get_sheet,
+    update_client_verification_attempts,
+)
 from utils.log import log_messages
 from utils.format_text import (
-    get_history_text,
     format_information,
     format_selected_dsl_grammar,
     format_error_message,
@@ -19,7 +23,6 @@ from utils.convert2NL import transfer_to_NL
 
 def init_prompt():
     global dsl_grammar
-    global summarize_system_prompt
     global plan_system_prompt, plan_user_prompt_template
     global generate_system_prompt_template, generate_user_prompt_template
     global verifier_semantic_system_prompt, verifier_semantic_user_prompt_template
@@ -29,8 +32,6 @@ def init_prompt():
     global boolean_indexing_system_prompt, boolean_indexing_user_prompt_template
     with open("prompt/synthesize/dsl_grammar.txt", "r") as f:
         dsl_grammar = f.read()
-    with open("prompt/synthesize/summarize_system.txt", "r") as f:
-        summarize_system_prompt = f.read()
     with open("prompt/synthesize/plan_system.txt", "r") as f:
         plan_system_prompt = f.read().replace("{DSL_GRAMMAR}", dsl_grammar)
     with open("prompt/synthesize/plan_user.txt", "r") as f:
@@ -298,6 +299,8 @@ def dsl_synthesize(client_id: str) -> str:
         dsls = fill_condition(client_id, dsls)
         print(f"{count} run")
     print(f"Total count: {count}")
+    update_client_verification_attempts(client_id, count)
+
     for dsl in dsls["program"]:
         dsl["natural_language"] = transfer_to_NL(dsl)
     dsls["step_by_step_plan"] = summarization

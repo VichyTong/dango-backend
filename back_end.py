@@ -6,6 +6,7 @@ from typing import List, Optional, Union
 from io import StringIO
 import json
 import pandas as pd
+import time
 
 
 from utils.analyze import multi_analyze, followup
@@ -17,33 +18,42 @@ from utils.db import (
     delete_sheet,
     is_sheet_exists,
     get_all_sheets,
+    update_client_start_timestamp,
+    update_client_end_timestamp,
+    get_client_statistics,
 )
 from utils.execute_program import execute_dsl_list
 from utils.dependency import DependenciesManager
 from utils.edit import edit_dsl
 from config.config import config
 
-# Initialize FastAPI app
+
 app = FastAPI()
 
-# Allow CORS
 origins = ["http://localhost:3000"]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Adjust this to match your frontend URL for security
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Initialize dependencies manager
 DependenciesManager = DependenciesManager()
 
 
 @app.post("/login/")
 async def login():
     client_id = create_client()
+    print(f"Client {client_id} created")
+    update_client_start_timestamp(client_id, str(time.time()))
     return JSONResponse(status_code=200, content={"client_id": client_id})
+
+
+@app.get("/get_statistics/")
+async def get_statistics(client_id: str):
+    statistics = get_client_statistics(client_id)
+    return JSONResponse(status_code=200, content=statistics)
 
 
 @app.post("/upload/")
@@ -53,16 +63,20 @@ async def upload_file(client_id: str = Form(...), file: UploadFile = File(...)):
             status_code=400, content={"message": "Unsupported file type"}
         )
     sheet_id = file.filename
-    version = 0
-    # read the sheet to json
+
     data = await file.read()
     data = data.decode("utf-8")
     csv_data = StringIO(data)
     data = pd.read_csv(csv_data)
+
+    # Convert the index to string
     data.index = [str(i) for i in range(1, len(data) + 1)]
     data = data.to_dict()
-    upload_sheet(client_id, sheet_id, 0, data)
 
+    version = 0
+    upload_sheet(client_id, sheet_id, version, data)
+
+    update_client_end_timestamp(client_id, str(time.time()))
     return JSONResponse(
         status_code=200, content={"message": f"{file.filename} uploaded successfully"}
     )
@@ -82,6 +96,7 @@ async def is_file_exists(request_body: FileExists):
 
     is_exists = is_sheet_exists(client_id, file_name, version)
 
+    update_client_end_timestamp(client_id, str(time.time()))
     if not is_exists:
         return JSONResponse(status_code=200, content={"message": "NO"})
     return JSONResponse(status_code=200, content={"message": "YES"})
@@ -100,6 +115,7 @@ async def delete_file(
     # Delete the file
     delete_sheet(client_id, sheet_id, version)
 
+    update_client_end_timestamp(client_id, str(time.time()))
     return JSONResponse(
         status_code=200, content={"message": f"{sheet_id} deleted successfully"}
     )
@@ -111,12 +127,12 @@ async def get_file(
     sheet_id: str = Form(...),
     version: Optional[int] = Form(0),
 ):
-    # Check if file exists
     if not is_sheet_exists(client_id, sheet_id, version):
         raise HTTPException(status_code=404, content={"message": "File not found"})
 
     sheet = json.dumps(get_sheet(client_id, sheet_id, version), indent=4)
-    # return the file
+
+    update_client_end_timestamp(client_id, str(time.time()))
     return JSONResponse(
         status_code=200,
         content={"data": sheet},
@@ -222,6 +238,8 @@ async def handle_multi_analyze(request_body: MultiAnalyze):
             "type": "finish",
             "status": "generate_dsl",
         }
+
+    update_client_end_timestamp(client_id, str(time.time()))
     return return_message
 
 
@@ -254,6 +272,7 @@ async def handle_response(request_body: Response):
             "status": "generate_dsl",
         }
 
+    update_client_end_timestamp(client_id, str(time.time()))
     return return_message
 
 
@@ -268,6 +287,8 @@ async def handle_generate_dsl(request_body: GenerateDSL):
     response = dsl_synthesize(client_id)
     return_message = {"dsl": response, "status": "finish"}
     print(return_message)
+
+    update_client_end_timestamp(client_id, str(time.time()))
     return return_message
 
 
@@ -299,6 +320,7 @@ async def handle_execute_dsl_list(request_body: ExecuteDSLList):
         client_id, required_tables, dsl_list, step_by_step_plan, DependenciesManager
     )
 
+    update_client_end_timestamp(client_id, str(time.time()))
     return output
 
 
@@ -319,4 +341,6 @@ async def handle_edit_dsl(request_body: EditDSL):
     client_id = request_body.client_id
     dsl = request_body.dsl
     new_instruction = request_body.new_instruction
+
+    update_client_end_timestamp(client_id, str(time.time()))
     return edit_dsl(client_id, dsl, new_instruction)
