@@ -189,7 +189,7 @@ def fill(table, method, labels, axis=0):
             # Adjust label if it's an integer (assuming labels are strings)
             if isinstance(label, int):
                 label = str(label + 1)
-            
+
             if label not in df.index:
                 continue  # Skip if label does not exist
 
@@ -197,23 +197,49 @@ def fill(table, method, labels, axis=0):
             if should_skip(series):
                 series_slice = series.iloc[1:]
                 filled_series = series_slice.fillna(
-                    series_slice.mean() if method == "mean" else
-                    series_slice.median() if method == "median" else
-                    series_slice.mode()[0] if method == "mode" else
-                    series_slice.fillna(method=method) if method in ["ffill", "bfill"] else
-                    series_slice.interpolate() if method == "interpolate" else
-                    series_slice  # No action if the method is not recognized
+                    series_slice.mean()
+                    if method == "mean"
+                    else (
+                        series_slice.median()
+                        if method == "median"
+                        else (
+                            series_slice.mode()[0]
+                            if method == "mode"
+                            else (
+                                series_slice.fillna(method=method)
+                                if method in ["ffill", "bfill"]
+                                else (
+                                    series_slice.interpolate()
+                                    if method == "interpolate"
+                                    else series_slice
+                                )
+                            )
+                        )
+                    )  # No action if the method is not recognized
                 )
                 filled_series = filled_series.infer_objects(copy=False)
                 df.loc[label, series.index[1:]] = filled_series
             else:
                 df.loc[label] = series.fillna(
-                    series.mean() if method == "mean" else
-                    series.median() if method == "median" else
-                    series.mode()[0] if method == "mode" else
-                    series.fillna(method=method) if method in ["ffill", "bfill"] else
-                    series.interpolate() if method == "interpolate" else
-                    series  # No action if the method is not recognized
+                    series.mean()
+                    if method == "mean"
+                    else (
+                        series.median()
+                        if method == "median"
+                        else (
+                            series.mode()[0]
+                            if method == "mode"
+                            else (
+                                series.fillna(method=method)
+                                if method in ["ffill", "bfill"]
+                                else (
+                                    series.interpolate()
+                                    if method == "interpolate"
+                                    else series
+                                )
+                            )
+                        )
+                    )  # No action if the method is not recognized
                 )
     elif axis == 1:
         for label in labels:
@@ -224,23 +250,49 @@ def fill(table, method, labels, axis=0):
             if should_skip(series):
                 series_slice = series.iloc[1:]
                 filled_series = series_slice.fillna(
-                    series_slice.mean() if method == "mean" else
-                    series_slice.median() if method == "median" else
-                    series_slice.mode()[0] if method == "mode" else
-                    series_slice.fillna(method=method) if method in ["ffill", "bfill"] else
-                    series_slice.interpolate() if method == "interpolate" else
-                    series_slice  # No action if the method is not recognized
+                    series_slice.mean()
+                    if method == "mean"
+                    else (
+                        series_slice.median()
+                        if method == "median"
+                        else (
+                            series_slice.mode()[0]
+                            if method == "mode"
+                            else (
+                                series_slice.fillna(method=method)
+                                if method in ["ffill", "bfill"]
+                                else (
+                                    series_slice.interpolate()
+                                    if method == "interpolate"
+                                    else series_slice
+                                )
+                            )
+                        )
+                    )  # No action if the method is not recognized
                 )
                 filled_series = filled_series.infer_objects(copy=False)
                 df.loc[series.index[1:], label] = filled_series
             else:
                 df[label] = series.fillna(
-                    series.mean() if method == "mean" else
-                    series.median() if method == "median" else
-                    series.mode()[0] if method == "mode" else
-                    series.fillna(method=method) if method in ["ffill", "bfill"] else
-                    series.interpolate() if method == "interpolate" else
-                    series  # No action if the method is not recognized
+                    series.mean()
+                    if method == "mean"
+                    else (
+                        series.median()
+                        if method == "median"
+                        else (
+                            series.mode()[0]
+                            if method == "mode"
+                            else (
+                                series.fillna(method=method)
+                                if method in ["ffill", "bfill"]
+                                else (
+                                    series.interpolate()
+                                    if method == "interpolate"
+                                    else series
+                                )
+                            )
+                        )
+                    )  # No action if the method is not recognized
                 )
     else:
         raise ValueError("Invalid axis. Use 0 for rows or 1 for columns.")
@@ -303,7 +355,9 @@ def merge(table_a, table_b, how="outer", on=None):
             match, score = process.extractOne(name, names)
             return match if score >= threshold else None
 
-        table_a["matched_name"] = table_b[on].apply(find_best_match, names=table_b[on].to_list())
+        table_a["matched_name"] = table_b[on].apply(
+            find_best_match, names=table_b[on].to_list()
+        )
         merged_df = pd.merge(table_a, table_b, left_on="matched_name", right_on=on)
         merged_df = merged_df.drop(columns=["matched_name", f"{on}_y"]).rename(
             columns={f"{on}_x": on}
@@ -415,16 +469,19 @@ def split(table, label, delimiter, new_label_list, axis=0):
         raise ValueError("Invalid axis. Use 0 for rows or 1 for columns.")
 
 
-def subtable(table, rows, columns):
-    if rows is None:
-        rows = table.index.tolist()
-    else:
-        if isinstance(rows[0], int):
-            rows = [str(r + 1) for r in rows]
-    if columns is None:
-        columns = table.columns.tolist()
+def subtable(table, labels, axis=0):
+    axis = classify_axis(axis)
+    if not isinstance(labels, list):
+        labels = [labels]
 
-    return table.loc[rows, columns]
+    if axis == 1:
+        if isinstance(labels[0], int):
+            labels = [table.columns[l] for l in labels]
+        return table[labels]
+    else:
+        if isinstance(labels[0], int):
+            labels = [str(l + 1) for l in labels]
+        return table.loc[labels]
 
 
 def swap(table_a, label_a, table_b, label_b, axis=0):

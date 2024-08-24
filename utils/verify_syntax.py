@@ -372,16 +372,19 @@ class FILL(BaseModel):
 def fill(params: FILL):
     pass
 
-# subtable(table, row_list=None, column_list=None): Returns a subtable with only the specified rows or columns.
+# subtable(table, labels, axis): Extracts a subtable from a DataFrame based on specified rows or columns.
 # Parameters:
-# - table_name (str): The table to extract the rows or columns from.
-# - row_list (list[str/int]): The list of row labels to extract.
-# - label_list (list[str/int]): The list of row/column labels to extract.
+# - table (DataFrame, required): The table from which rows or columns will be extracted.
+# - labels (list[int/str], required): A list of row or column labels to be extracted.
+# - axis (str or int, required):
+#     - 0 or "index": Indicates that the labels are row labels.
+#     - 1 or "columns": Indicates that the labels are column labels.
+
 
 class SUBTABLE(BaseModel):
     table_name: str
-    row_list: Optional[List[Union[str, int]]]
-    label_list: Optional[List[Union[str, int]]]
+    labels: List[Union[int, str]]
+    axis: Union[str, int]
 
 def subtable(params: SUBTABLE):
     pass
@@ -802,11 +805,11 @@ def validate_fill(arguments, error_list, sheets_names):
 
 def validate_subtable(arguments, error_list, sheets_names):
     if len(arguments) != 3:
-        error = create_error_message("Invalid number of arguments", f"The function 'subtable' requires 3 arguments: 'table_name', 'row_list', 'label_list'.", "subtable")
+        error = create_error_message("Invalid number of arguments", f"The function 'subtable' requires 3 arguments: 'table_name', 'labels', 'axis'.", "subtable")
         error_list.append(error)
         return "Failed"
     try:
-        params = SUBTABLE(table_name=arguments[0], row_list=arguments[1], label_list=arguments[2])
+        params = SUBTABLE(table_name=arguments[0], labels=arguments[1], axis=arguments[2])
         subtable(params)
     except ValidationError as e:
         error = create_error_message("Invalid argument format", f"The arguments for 'subtable' are not in the correct format. Please check the argument types and values.", "subtable")
