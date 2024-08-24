@@ -355,7 +355,7 @@ def merge(table_a, table_b, how="outer", on=None):
             match, score = process.extractOne(name, names)
             return match if score >= threshold else None
 
-        table_a["matched_name"] = table_b[on].apply(
+        table_a["matched_name"] = table_a[on].apply(
             find_best_match, names=table_b[on].to_list()
         )
         merged_df = pd.merge(table_a, table_b, left_on="matched_name", right_on=on)
