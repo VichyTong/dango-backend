@@ -45,7 +45,6 @@ DependenciesManager = DependenciesManager()
 @app.post("/login/")
 async def login():
     client_id = create_client()
-    print(f"Client {client_id} created")
     update_client_start_timestamp(client_id, str(time.time()))
     return JSONResponse(status_code=200, content={"client_id": client_id})
 

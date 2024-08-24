@@ -20,7 +20,10 @@ Create a DSL script to clean the data based on the description.
 1. You should only use the DSL functions provided in the DSL Grammar. Do not add or invent new functions.
 2. For every step, you need to find the best function from the DSL Grammar to perform the described action.
 3. Table names should end with ".csv" to indicate that they are CSV files.
-4. For data, the row index and column index starts from 1. Row 0 and Column 0 are reserved for the row and column names.
+4. If you use an integer for a row index, it should be 0-based. If you use a string for a row index, it should start from "1".
+    Example: If the user wants to drop the row 4, here are the possible ways:
+    - If you use an integer for the row index, please minus one: drop(table, 3, "index")
+    - If you use a string for the row index: drop(table, "4", "index")
 5. For None values, you can use "null" in the output.
 6. This DSL script is not the final program. Please use the table names instead of real pandas DataFrames in the arguments.
 
@@ -68,6 +71,7 @@ Example 1:
 Step-by-step plan:
 1. Create a new table name test_result.csv to store the test result. (create function)
 2. Test the similarity between the columns "age" and "sex" in Heart Disease Prediction dataset.csv using t-test. (test function)
+3. Delete the row 4 in data.csv. (drop function)
 
 - OUTPUT:
 {
@@ -81,6 +85,10 @@ Step-by-step plan:
             "function_name": "test",
             "arguments": ["data.csv", "age", "t-test", "columns"]
         },
+        {
+            "function_name": "drop",
+            "arguments": ["data.csv", 3, "index"]
+        }
     ]
 }
 '''

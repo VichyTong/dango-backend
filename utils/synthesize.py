@@ -25,11 +25,9 @@ def init_prompt():
     global dsl_grammar
     global plan_system_prompt, plan_user_prompt_template
     global generate_system_prompt_template, generate_user_prompt_template
-    global verifier_semantic_system_prompt, verifier_semantic_user_prompt_template
     global plan_with_error_message_system_prompt, plan_with_error_message_user_prompt_template
     global generate_with_error_message_system_prompt, generate_with_error_message_user_prompt_template
     global add_information_system_prompt, add_information_user_prompt_template
-    global boolean_indexing_system_prompt, boolean_indexing_user_prompt_template
     with open("prompt/synthesize/dsl_grammar.txt", "r") as f:
         dsl_grammar = f.read()
     with open("prompt/synthesize/plan_system.txt", "r") as f:
@@ -40,10 +38,6 @@ def init_prompt():
         generate_system_prompt_template = f.read().replace("{DSL_GRAMMAR}", dsl_grammar)
     with open("prompt/synthesize/generate_user.txt", "r") as f:
         generate_user_prompt_template = f.read()
-    with open("prompt/synthesize/verifier_system.txt", "r") as f:
-        verifier_semantic_system_prompt = f.read().replace("{DSL_GRAMMAR}", dsl_grammar)
-    with open("prompt/synthesize/verifier_user.txt", "r") as f:
-        verifier_semantic_user_prompt_template = f.read()
     with open("prompt/synthesize/plan_with_error_message_system.txt", "r") as f:
         plan_with_error_message_system_prompt = f.read().replace(
             "{DSL_GRAMMAR}", dsl_grammar
@@ -58,10 +52,6 @@ def init_prompt():
         add_information_system_prompt = f.read()
     with open("prompt/synthesize/add_information_user.txt", "r") as f:
         add_information_user_prompt_template = f.read()
-    with open("prompt/synthesize/boolean_indexing_system.txt", "r") as f:
-        boolean_indexing_system_prompt = f.read()
-    with open("prompt/synthesize/boolean_indexing_user.txt", "r") as f:
-        boolean_indexing_user_prompt_template = f.read()
 
 
 init_prompt()
@@ -215,60 +205,11 @@ def verify_syntax(client_id, dsls, error_list):
     return True
 
 
-def verify_semantics(client_id, history, summarization, dsls):
-    verifier_semantic_user_prompt = (
-        verifier_semantic_user_prompt_template.replace(
-            "{INFORMATION}",
-            format_information(history["information"], with_table_diff=False),
-        )
-        .replace("{USER_INTENTS}", summarization)
-        .replace("{GENERATED_DSLS}", json.dumps(dsls["program"], indent=4))
-    )
-    messages = append_message(verifier_semantic_system_prompt, "system", [])
-    messages = append_message(verifier_semantic_user_prompt, "user", messages)
-    feedback = json.loads(generate_chat_completion(messages))
-    messages = append_message(feedback, "assistant", messages)
-    log_messages(client_id, "generate_feedback", messages)
-    return feedback
-
-
-def verify(client_id, history, summarization, dsls):
+def verify(client_id, dsls):
     error_list = []
     verify_syntax(client_id, dsls, error_list)
     print(f"Error list:\n{json.dumps(error_list, indent=4)}")
     return error_list
-
-
-def fill_condition(client_id, dsls):
-    def extract_to_dict(s):
-        type_pattern = r"Type: (\w+)"
-        function_pattern = r"```(.*?)```"
-
-        type_match = re.search(type_pattern, s, re.DOTALL)
-        function_match = re.search(function_pattern, s, re.DOTALL)
-
-        result = {
-            "type": type_match.group(1) if type_match else None,
-            "function": function_match.group(1).strip() if function_match else None,
-        }
-        return result
-
-    for dsl in dsls["program"]:
-        if "condition" in dsl:
-            boolean_indexing_user_prompt = (
-                boolean_indexing_user_prompt_template.replace(
-                    "CONDITION", dsl["condition"]
-                )
-            )
-            messages = append_message(boolean_indexing_system_prompt, "system", [])
-            messages = append_message(boolean_indexing_user_prompt, "user", messages)
-            response = generate_chat_completion(messages)
-            messages = append_message(response, "assistant", messages)
-            log_messages(client_id, "generate_boolean_indexing", messages)
-            response = extract_to_dict(response)
-            dsl["type"] = response["type"]
-            dsl["function"] = response["function"]
-    return dsls
 
 
 def dsl_synthesize(client_id: str) -> str:
@@ -278,9 +219,8 @@ def dsl_synthesize(client_id: str) -> str:
         client_id, history, summarization
     )
     dsls = get_dsls(client_id, history, step_by_step_plan, step_by_step_plan_string)
-    error_list = verify(client_id, history, summarization, dsls)
+    error_list = verify(client_id, dsls)
     print(error_list)
-    dsls = fill_condition(client_id, dsls)
     print("1 run")
     count = 1
     while len(error_list) > 0 and count < 5:
@@ -295,8 +235,7 @@ def dsl_synthesize(client_id: str) -> str:
             step_by_step_plan_string,
             error_list,
         )
-        error_list = verify(client_id, history, summarization, dsls)
-        dsls = fill_condition(client_id, dsls)
+        error_list = verify(client_id, dsls)
         print(f"{count} run")
     print(f"Total count: {count}")
     update_client_verification_attempts(client_id, count)
