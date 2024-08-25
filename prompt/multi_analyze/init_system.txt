@@ -156,23 +156,15 @@ Table Diff: In new.csv, the user pastes data into columns 1 and 2 from rows 0 to
 
 User Instruction: (No user instruction)
 
-Question & Answering History:
+Chat History:
 ASSISTANT:
-{
-    "type": "question",
-    "summary": "The user has copied data from 'name' and 'age' columns in table_2.csv and pasted it into new.csv, updating columns accordingly.",
-    "question": "Do you want to continue transferring data from the 'geneder' column in table_2.csv to the next column in test_v0.csv?",
-    "choices": [
-        "Yes, transfer data from 'geneder'",
-        "No, do not transfer data from 'geneder'",
-        "other (please specify)"
-    ]
-}
+Do you want to continue transferring data from the 'geneder' column in table_2.csv to the next column in test_v0.csv?
+1. Yes, transfer data from 'geneder'
+2. No, do not transfer data from 'geneder'
+3. other (please specify)
 
 USER:
-{
-    "choice": "Yes, transfer data from 'geneder'"
-}
+Yes, transfer data from 'geneder'
 
 - OUTPUT:
 {
