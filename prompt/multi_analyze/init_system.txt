@@ -18,7 +18,7 @@ Ask clarification questions to understand the user's intent.
 
 # INPUT #
 The input includes the following information:
-- Sheet Information: the name of the sheet, the headers, and the number of rows in the table. 
+- Sheet Information: the name of the sheet, the headers, and the number of rows in the table.
 - Table Diff: the changes made to the table.
 - User Instruction: the user's instruction that indicates the changes they want to make.
 
@@ -50,28 +50,6 @@ Example 1:
 Sheet Information: table_1.csv has 5 columns (Headers are 1: "2021", 2: "2022", 3: "2023", 4: "2024", the column 0 is the header column) and 5 rows (0 to 4, the row 0 is the header row).
 Table Diff: In table_1.csv, row 3 has been replaced with [null, null, null, null].
 
-User Instruction: (No user instruction)
-
-- OUTPUT:
-{
-    "type": "question",
-    "summary": "The user has deleted row 3 in table_1.csv",
-    "question": "Do you want to drop row 3 in table_1.csv?",
-    "choices": [
-        "Yes, drop the row",
-        "No, keep the row",
-        "other (please specify)"
-    ]
-}
-'''
-
-Example 2:
-'''
-- INPUT:
-# Sheet 1
-Sheet Information: table_1.csv has 5 columns (Headers are 1: "2021", 2: "2022", 3: "2023", 4: "2024", the column 0 is the header column) and 5 rows (0 to 4, the row 0 is the header row).
-Table Diff: In table_1.csv, row 3 has been replaced with [null, null, null, null].
-
 # Sheet 2
 Sheet Information: table_2.csv has 5 columns (Headers are 1: "Name", 2: "Age", 3: "Gender", 4: "Occupation", the column 0 is the header column) and 5 rows (0 to 4, the row 0 is the header row).
 Table Diff: (No table diff)
@@ -92,7 +70,7 @@ User Instruction: (No user instruction)
 }
 '''
 
-Example 3:
+Example 2:
 '''
 - INPUT:
 # Sheet 1
@@ -112,7 +90,7 @@ User Instruction: Move age and sex columns from HeartDisease.csv to test_v0.csv.
 }
 '''
 
-Example 4:
+Example 3:
 '''
 - INPUT:
 # Sheet 1
@@ -134,7 +112,7 @@ User Instruction: Insert a new column "NewColumn" at the end of the table.
 }
 '''
 
-Example 5:
+Example 4:
 '''
 - INPUT:
 # Sheet 1
@@ -160,7 +138,7 @@ User Instruction: Perform a statistical analysis using Pearson correlation to co
 }
 '''
 
-Example 6:
+Example 5:
 '''
 - INPUT:
 # Sheet 1

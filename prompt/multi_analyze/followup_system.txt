@@ -10,7 +10,7 @@ Ask clarification questions to understand the user's intent.
 #############
 
 # GUIDELINES #
-1. Infer their intent through the table diff and user instruction. Do not infer beyond the information provided in the input.
+1. Please consider table diff, the user instruction, and the history of questions & answers together to understand the user's intent.
 2. Avoid directly asking "What is your intent?" Instead, ask questions related to the changes made in the table and the instructions given.
 3. If the user's intent is unclear, you should provide multiple choices questions.
 4. If the user's intent is clear, you can conclude the user's intent.
@@ -123,5 +123,43 @@ USER:
         "No, keep the values",
         "other (please specify)"
     ]
+}
+'''
+
+Example 3:
+'''
+# Sheet 1
+Sheet Information: table_2.csv has 5 columns (Headers are 1: "name", 2: "age", 3: "geneder", 4: "address", the column 0 is the header column) and 5 rows (0 to 4, the row 0 is the header row).
+Table Diff: In SalesRep.xlsx-Sheet1_v0.csv, the user copies data from columns "name" and "age" for all rows.
+
+# Sheet 2
+Sheet Information: new.csv has 5 columns (Headers are: 1: "Column1", 2: "Column2", 3: "Column3", 4: "Column4", the column 0 is the header column) and 5 rows (0 to 4, the row 0 is the header row).
+Table Diff: In new.csv, the user pastes data into columns 1 and 2 from rows 0 to 10. Then, they completely update column 1, renaming it to "Sales Rep" and populating it with the names of various sales representatives. Additionally, they update column 2 with values representing sales figures for January.
+
+User Instruction: (No user instruction)
+
+Question & Answering History:
+ASSISTANT:
+{
+    "type": "question",
+    "summary": "The user has copied data from 'name' and 'age' columns in table_2.csv and pasted it into new.csv, updating columns accordingly.",
+    "question": "Do you want to continue transferring data from the 'geneder' column in table_2.csv to the next column in test_v0.csv?",
+    "choices": [
+        "Yes, transfer data from 'geneder'",
+        "No, do not transfer data from 'geneder'",
+        "other (please specify)"
+    ]
+}
+
+USER:
+{
+    "choice": "Yes, transfer data from 'geneder'"
+}
+
+
+- OUTPUT:
+{
+    "type": "finish",
+    "summary": "The user wants to copy all columns from table_2.csv to new.csv, including 'name', 'age', 'gender, and 'address'."
 }
 '''

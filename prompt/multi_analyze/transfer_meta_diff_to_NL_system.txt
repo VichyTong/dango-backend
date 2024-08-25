@@ -32,7 +32,7 @@ The diff information contains:
     - Arguments: start_row, start_column, end_row, end_column, target_row.
     5. Paste data: The user pastes some data to a sheet.
     - Arguments: start_row, start_column, end_row, end_column, target_row.
-    There is also two batch change operations:
+    There are also 4 batch change operations:
     6. Change entire row: The user changes the values of a row.
     - Arguments: row, old_values, new_values
     7. Change entire column: The user changes the values of a column.
@@ -141,5 +141,5 @@ User Operations:
 {"type": "change_entire_row", "row": 3, "old_values": ["null", "null", "null"], "new_values": ["Bob", "Harvard", "UK"]}
 
 Output:
-In table_7.csv, the user pastes three rows of data to the table. The common value for the "School" column is "Harvard".
+In table_7.csv, the user pastes three rows of data into rows 1, 2, and 3 of the table. The common value for the "School" column is "Harvard".
 ```
