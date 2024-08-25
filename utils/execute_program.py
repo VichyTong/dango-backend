@@ -75,7 +75,9 @@ def split_sheet_name(sheet_name):
     return base_name, version
 
 
-def execute_dsl_list(client_id, required_tables, dsl_list, step_by_step_plan, DependenciesManager):
+def execute_dsl_list(
+    client_id, required_tables, dsl_list, step_by_step_plan, DependenciesManager
+):
     function_list = []
     dsl_program_list = []
     for dsl in dsl_list:
@@ -87,9 +89,6 @@ def execute_dsl_list(client_id, required_tables, dsl_list, step_by_step_plan, De
                 "condition": dsl.condition,
             }
         )
-        function = dsl.function_name
-        arguments = dsl.arguments
-        DependenciesManager.update_dependency(function, arguments)
 
     selected_dsl_grammar = format_selected_dsl_grammar(function_list)
     execute_system_prompt = execute_system_template.replace(
@@ -140,7 +139,7 @@ def execute_dsl_list(client_id, required_tables, dsl_list, step_by_step_plan, De
             continue
 
         buffer_is_delete = buffer["is_delete"]
-            
+
         # Delete table data
         if buffer_is_delete:
             output.append(
@@ -184,5 +183,15 @@ def execute_dsl_list(client_id, required_tables, dsl_list, step_by_step_plan, De
             }
         )
         upload_sheet(client_id, sheet_id, sheet_version, buffer_sheet_data)
-    print(json.dumps(output, indent=4))
+
+    for dsl in dsl_list:
+        function = dsl.function_name
+        arguments = dsl.arguments
+
+        # Handle divide statement
+        if function == "divide" and len(dsl_list) == 1:
+            DependenciesManager.handle_divide_statement(arguments, output_tables=output)
+            continue
+
+        DependenciesManager.update_dependency(function, arguments)
     return output

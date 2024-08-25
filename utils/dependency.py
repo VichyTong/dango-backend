@@ -1,3 +1,6 @@
+import re
+
+
 class DependenciesManager:
     def __init__(self):
         self.nodes = []
@@ -5,15 +8,12 @@ class DependenciesManager:
     def add_node(self, sheet_id, dependencies=None):
         if dependencies is None:
             dependencies = []
-        node = {
-            'sheet_id': sheet_id,
-            'dependency': dependencies
-        }
+        node = {"sheet_id": sheet_id, "dependency": dependencies}
         self.nodes.append(node)
 
     def get_node(self, sheet_id):
         for node in self.nodes:
-            if node['sheet_id'] == sheet_id:
+            if node["sheet_id"] == sheet_id:
                 return node
         return None
 
@@ -24,26 +24,31 @@ class DependenciesManager:
         self.nodes = []
 
     def remove_node(self, sheet_id):
-        self.nodes = [node for node in self.nodes if node['sheet_id'] != sheet_id]
+        self.nodes = [node for node in self.nodes if node["sheet_id"] != sheet_id]
 
     def add_dependency(self, sheet_id, dependency):
         for node in self.nodes:
-            if node['sheet_id'] == sheet_id and not self.is_dependency_exists(sheet_id, dependency):
-                node['dependency'].append(dependency)
+            if node["sheet_id"] == sheet_id and not self.is_dependency_exists(
+                sheet_id, dependency
+            ):
+                node["dependency"].append(dependency)
                 return True
         return False
 
     def is_dependency_exists(self, sheet_id, dependency):
         for node in self.nodes:
-            if node['sheet_id'] == sheet_id:
-                for dep in node['dependency']:
-                    if dep['sheet_id'] == dependency['sheet_id'] and dep['action'] == dependency['action']:
+            if node["sheet_id"] == sheet_id:
+                for dep in node["dependency"]:
+                    if (
+                        dep["sheet_id"] == dependency["sheet_id"]
+                        and dep["action"] == dependency["action"]
+                    ):
                         return True
         return False
 
     def is_exists(self, sheet_id):
         for node in self.nodes:
-            if node['sheet_id'] == sheet_id:
+            if node["sheet_id"] == sheet_id:
                 return True
         return False
 
@@ -54,41 +59,53 @@ class DependenciesManager:
     def update_dependency(self, function, arguments):
         print(f"&&&& Function: {function}, Arguments: {arguments}")
         handlers = {
-            'insert': self.handle_insert_statement,
-            'drop': self.handle_drop_statement,
-            'assign': self.handle_assign_statement,
-            'move': self.handle_move_statement,
-            'copy': self.handle_copy_statement,
-            'swap': self.handle_swap_statement,
-            'transpose': self.handle_transpose_statement,
-            'rearrange': self.handle_rearrange_statement,
-            'divide': self.handle_divide_statement,
-            'fill': self.handle_fill_statement,
-            'concatenate': self.handle_concatenate_statement,
-            'split': self.handle_split_statement,
-            'format': self.handle_format_statement,
-            'blank_table': self.handle_blank_table_statement,
-            'delete_table': self.handle_delete_table_statement,
-            'pivot_table': self.handle_pivot_table_statement,
-            'merge': self.handle_merge_statement,
-            'subtable': self.handle_subtable_statement,
-            'aggregate': self.handle_aggregate_statement,
-            'test': self.handle_test_statement,
+            "insert": self.handle_insert_statement,
+            "drop": self.handle_drop_statement,
+            "assign": self.handle_assign_statement,
+            "move": self.handle_move_statement,
+            "copy": self.handle_copy_statement,
+            "swap": self.handle_swap_statement,
+            "transpose": self.handle_transpose_statement,
+            "rearrange": self.handle_rearrange_statement,
+            "divide": self.handle_divide_statement,
+            "fill": self.handle_fill_statement,
+            "concatenate": self.handle_concatenate_statement,
+            "split": self.handle_split_statement,
+            "format": self.handle_format_statement,
+            "blank_table": self.handle_blank_table_statement,
+            "delete_table": self.handle_delete_table_statement,
+            "pivot_table": self.handle_pivot_table_statement,
+            "merge": self.handle_merge_statement,
+            "subtable": self.handle_subtable_statement,
+            "aggregate": self.handle_aggregate_statement,
+            "test": self.handle_test_statement,
         }
         handler = handlers.get(function)
         return handler(arguments) if handler else False
 
+    def split_sheet_name(self, sheet_name):
+        # Regular expression to find "v{int}" suffix
+        match = re.search(r"_v(\d+)\.csv$", sheet_name)
+        if match:
+            # Extract base name and version number
+            base_name = sheet_name[: match.start()] + ".csv"
+            version = int(match.group(1))
+        else:
+            # No version number present
+            base_name = sheet_name
+            version = 0
+
+        return base_name, version
+
     def handle_insert_statement(self, arguments):
         table_name, index, index_name, axis = arguments
         new_version = self.get_new_version(table_name)
-        new_table_name = f"{table_name.split('_')[0]}_v{new_version}.csv"
+        base_name, _ = self.split_sheet_name(table_name)
+        new_table_name = f"{base_name}_v{new_version}.csv"
 
         action = f"insert {'row' if axis in (0, 'index') else 'column'} {index_name} at position {index}"
 
-        dependency = {
-            'sheet_id': table_name,
-            'action': action
-        }
+        dependency = {"sheet_id": table_name, "action": action}
 
         if self.is_exists(new_table_name):
             self.add_dependency(new_table_name, dependency)
@@ -101,20 +118,17 @@ class DependenciesManager:
     def handle_drop_statement(self, arguments):
         sheet_id = arguments[0]
         # Heart Disease Prediction dataset_v0.csv
-        file_name = sheet_id.split('_')[0]
-        version = int(sheet_id.split('_')[-1].split('.')[0].replace('v', ''))
+        file_name = sheet_id.split("_")[0]
+        version = int(sheet_id.split("_")[-1].split(".")[0].replace("v", ""))
         new_version = version + 1
         new_sheet_id = f"{file_name}_v{new_version}.csv"
         index = arguments[1]
-        action = 'drop'
-        if arguments[2] == 'index':
+        action = "drop"
+        if arguments[2] == "index":
             action += " row " + str(index)
         else:
             action += " column " + str(index)
-        dependency = {
-            'sheet_id': sheet_id,
-            'action': action
-        }
+        dependency = {"sheet_id": sheet_id, "action": action}
         if self.is_exists(new_sheet_id):
             self.add_dependency(new_sheet_id, dependency)
         else:
@@ -125,7 +139,8 @@ class DependenciesManager:
     def handle_assign_statement(self, arguments):
         table_name, start_row, end_row, start_col, end_col, values = arguments
         new_version = self.get_new_version(table_name)
-        new_table_name = f"{table_name.split('_')[0]}_v{new_version}.csv"
+        base_name, _ = self.split_sheet_name(table_name)
+        new_table_name = f"{base_name}_v{new_version}.csv"
 
         action = f"assign to cells [{start_row}:{end_row}, {start_col}:{end_col}]"
         if isinstance(values, (int, float, str)):
@@ -133,10 +148,7 @@ class DependenciesManager:
         else:
             action += " multiple values"
 
-        dependency = {
-            'sheet_id': table_name,
-            'action': action
-        }
+        dependency = {"sheet_id": table_name, "action": action}
 
         if self.is_exists(new_table_name):
             self.add_dependency(new_table_name, dependency)
@@ -149,19 +161,19 @@ class DependenciesManager:
     def handle_move_statement(self, arguments):
         origin_table, origin_index, target_table, target_index, axis = arguments
         new_version = self.get_new_version(target_table)
-        new_target_table = f"{target_table.split('_')[0]}_v{new_version}.csv"
+        base_name, _ = self.split_sheet_name(target_table)
+        new_target_table = f"{base_name}_v{new_version}.csv"
 
         if axis in (0, "index"):
-            action = f"move row {origin_index} from {origin_table} to row {target_index}"
+            action = (
+                f"move row {origin_index} from {origin_table} to row {target_index}"
+            )
         elif axis in (1, "columns"):
             action = f"move column {origin_index} from {origin_table} to column {target_index}"
         else:
             return False  # Invalid axis
 
-        dependency = {
-            'sheet_id': origin_table,
-            'action': action
-        }
+        dependency = {"sheet_id": origin_table, "action": action}
 
         if self.is_exists(new_target_table):
             self.add_dependency(new_target_table, dependency)
@@ -174,14 +186,12 @@ class DependenciesManager:
     def handle_copy_statement(self, arguments):
         origin_table, origin_index, target_table, target_index, axis = arguments
         new_version = self.get_new_version(target_table)
-        new_target_table = f"{target_table.split('_')[0]}_v{new_version}.csv"
+        base_name, _ = self.split_sheet_name(target_table)
+        new_target_table = f"{base_name}_v{new_version}.csv"
 
         action = f"copy {'row' if axis in (0, 'index') else 'column'} {origin_index} from {origin_table} to {target_index}"
 
-        dependency = {
-            'sheet_id': origin_table,
-            'action': action
-        }
+        dependency = {"sheet_id": origin_table, "action": action}
 
         if self.is_exists(new_target_table):
             self.add_dependency(new_target_table, dependency)
@@ -195,19 +205,16 @@ class DependenciesManager:
         table_a, label_a, table_b, label_b, axis = arguments
         new_version_a = self.get_new_version(table_a)
         new_version_b = self.get_new_version(table_b)
-        new_table_a = f"{table_a.split('_')[0]}_v{new_version_a}.csv"
-        new_table_b = f"{table_b.split('_')[0]}_v{new_version_b}.csv"
+
+        base_name_a, _ = self.split_sheet_name(table_a)
+        base_name_b, _ = self.split_sheet_name(table_b)
+        new_table_a = f"{base_name_a}_v{new_version_a}.csv"
+        new_table_b = f"{base_name_b}_v{new_version_b}.csv"
 
         action = f"swap {'row' if axis in (0, 'index') else 'column'} {label_a} with {label_b}"
 
-        dependency_a = {
-            'sheet_id': table_b,
-            'action': action
-        }
-        dependency_b = {
-            'sheet_id': table_a,
-            'action': action
-        }
+        dependency_a = {"sheet_id": table_b, "action": action}
+        dependency_b = {"sheet_id": table_a, "action": action}
 
         self.add_node(new_table_a, [dependency_a])
         self.add_node(new_table_b, [dependency_b])
@@ -216,16 +223,14 @@ class DependenciesManager:
         return True
 
     def handle_transpose_statement(self, arguments):
-        table_name, = arguments
+        (table_name,) = arguments
         new_version = self.get_new_version(table_name)
-        new_table_name = f"{table_name.split('_')[0]}_v{new_version}.csv"
+        base_name, _ = self.split_sheet_name(table_name)
+        new_table_name = f"{base_name}_v{new_version}.csv"
 
         action = "transpose"
 
-        dependency = {
-            'sheet_id': table_name,
-            'action': action
-        }
+        dependency = {"sheet_id": table_name, "action": action}
 
         self.add_node(new_table_name, [dependency])
 
@@ -235,7 +240,8 @@ class DependenciesManager:
     def handle_rearrange_statement(self, arguments):
         table_name, by_values, by_array, axis = arguments
         new_version = self.get_new_version(table_name)
-        new_table_name = f"{table_name.split('_')[0]}_v{new_version}.csv"
+        base_name, _ = self.split_sheet_name(table_name)
+        new_table_name = f"{base_name}_v{new_version}.csv"
 
         action = f"rearrange {'rows' if axis in (0, 'index') else 'columns'}"
         if by_values:
@@ -243,29 +249,30 @@ class DependenciesManager:
         elif by_array:
             action += f" by array {by_array}"
 
-        dependency = {
-            'sheet_id': table_name,
-            'action': action
-        }
+        dependency = {"sheet_id": table_name, "action": action}
 
         self.add_node(new_table_name, [dependency])
 
         self.display_nodes()
         return True
 
-    def handle_divide_statement(self, arguments):
+    def handle_divide_statement(self, arguments, output_tables=None):
         table_name, by, axis = arguments
         new_version = self.get_new_version(table_name)
-        new_table_name = f"{table_name.split('_')[0]}_v{new_version}.csv"
+        base_name, _ = self.split_sheet_name(table_name)
+        new_table_name = f"{base_name}_v{new_version}.csv"
 
         action = f"divide by {'row' if axis in (0, 'index') else 'column'} {by}"
 
-        dependency = {
-            'sheet_id': table_name,
-            'action': action
-        }
+        dependency = {"sheet_id": table_name, "action": action}
 
-        self.add_node(new_table_name, [dependency])
+        if output_tables is not None:
+            for table in output_tables:
+                base_name, _ = self.split_sheet_name(table["sheet_id"])
+                name = f"{base_name}_v{table['version']}.csv"
+                self.add_node(name, [dependency])
+        else:
+            self.add_node(new_table_name, [dependency])
 
         self.display_nodes()
         return True
@@ -273,14 +280,12 @@ class DependenciesManager:
     def handle_fill_statement(self, arguments):
         table_name, method, labels, axis = arguments
         new_version = self.get_new_version(table_name)
-        new_table_name = f"{table_name.split('_')[0]}_v{new_version}.csv"
+        base_name, _ = self.split_sheet_name(table_name)
+        new_table_name = f"{base_name}_v{new_version}.csv"
 
         action = f"fill {'row' if axis in (0, 'index') else 'column'} {labels} with method {method}"
 
-        dependency = {
-            'sheet_id': table_name,
-            'action': action
-        }
+        dependency = {"sheet_id": table_name, "action": action}
 
         self.add_node(new_table_name, [dependency])
 
@@ -290,14 +295,12 @@ class DependenciesManager:
     def handle_concatenate_statement(self, arguments):
         table_name, label_a, label_b, glue, new_label, axis = arguments
         new_version = self.get_new_version(table_name)
-        new_table_name = f"{table_name.split('_')[0]}_v{new_version}.csv"
+        base_name, _ = self.split_sheet_name(table_name)
+        new_table_name = f"{base_name}_v{new_version}.csv"
 
         action = f"concatenate {'rows' if axis in (0, 'index') else 'columns'} {label_a} and {label_b} with glue '{glue}' as {new_label}"
 
-        dependency = {
-            'sheet_id': table_name,
-            'action': action
-        }
+        dependency = {"sheet_id": table_name, "action": action}
 
         if self.is_exists(new_table_name):
             self.add_dependency(new_table_name, dependency)
@@ -310,16 +313,14 @@ class DependenciesManager:
     def handle_split_statement(self, arguments):
         table_name, label, delimiter, axis, new_column = arguments
         new_version = self.get_new_version(table_name)
-        new_table_name = f"{table_name.split('_')[0]}_v{new_version}.csv"
+        base_name, _ = self.split_sheet_name(table_name)
+        new_table_name = f"{base_name}_v{new_version}.csv"
 
         action = f"split {'row' if axis in (0, 'index') else 'column'} {label} by delimiter '{delimiter}'"
-        if axis in (1, 'columns') and new_column:
+        if axis in (1, "columns") and new_column:
             action += f" into new columns {new_column}"
 
-        dependency = {
-            'sheet_id': table_name,
-            'action': action
-        }
+        dependency = {"sheet_id": table_name, "action": action}
 
         if self.is_exists(new_table_name):
             self.add_dependency(new_table_name, dependency)
@@ -332,14 +333,12 @@ class DependenciesManager:
     def handle_format_statement(self, arguments):
         table_name, label, pattern, replace_with, axis = arguments
         new_version = self.get_new_version(table_name)
-        new_table_name = f"{table_name.split('_')[0]}_v{new_version}.csv"
+        base_name, _ = self.split_sheet_name(table_name)
+        new_table_name = f"{base_name}_v{new_version}.csv"
 
         action = f"format {'row' if axis in (0, 'index') else 'column'} {label} using pattern '{pattern}' and replace with '{replace_with}'"
 
-        dependency = {
-            'sheet_id': table_name,
-            'action': action
-        }
+        dependency = {"sheet_id": table_name, "action": action}
 
         if self.is_exists(new_table_name):
             self.add_dependency(new_table_name, dependency)
@@ -353,15 +352,17 @@ class DependenciesManager:
         row_number, column_number = arguments
         new_table_name = f"blank_table_v0.csv"
 
-        action = f"create blank table with {row_number} rows and {column_number} columns"
+        action = (
+            f"create blank table with {row_number} rows and {column_number} columns"
+        )
 
-        self.add_node(new_table_name, [{'sheet_id': 'new', 'action': action}])
+        self.add_node(new_table_name, [{"sheet_id": "new", "action": action}])
 
         self.display_nodes()
         return True
 
     def handle_delete_table_statement(self, arguments):
-        table_name, = arguments
+        (table_name,) = arguments
 
         action = f"delete table"
 
@@ -373,14 +374,12 @@ class DependenciesManager:
     def handle_pivot_table_statement(self, arguments):
         table, index, columns, values, aggfunc = arguments
         new_version = self.get_new_version(table)
-        new_table_name = f"{table.split('_')[0]}_v{new_version}.csv"
+        base_name, _ = self.split_sheet_name(table)
+        new_table_name = f"{base_name}_v{new_version}.csv"
 
         action = f"pivot table with index={index}, columns={columns}, values={values}, aggfunc={aggfunc}"
 
-        dependency = {
-            'sheet_id': table,
-            'action': action
-        }
+        dependency = {"sheet_id": table, "action": action}
 
         self.add_node(new_table_name, [dependency])
 
@@ -390,18 +389,14 @@ class DependenciesManager:
     def handle_merge_statement(self, arguments):
         table_a, table_b, how, on = arguments
         new_version = max(self.get_new_version(table_a), self.get_new_version(table_b))
-        new_table_name = f"{table_a.split('_')[0]}_{table_b.split('_')[0]}_merged_v{new_version}.csv"
+        base_name_a, _ = self.split_sheet_name(table_a)
+        base_name_b, _ = self.split_sheet_name(table_b)
+        new_table_name = f"{base_name_a}_{base_name_b}_merged_v{new_version}.csv"
 
         action = f"merge tables {table_a} and {table_b} with how={how} and on={on}"
 
-        dependency_a = {
-            'sheet_id': table_a,
-            'action': action
-        }
-        dependency_b = {
-            'sheet_id': table_b,
-            'action': action
-        }
+        dependency_a = {"sheet_id": table_a, "action": action}
+        dependency_b = {"sheet_id": table_b, "action": action}
 
         self.add_node(new_table_name, [dependency_a, dependency_b])
 
@@ -411,7 +406,8 @@ class DependenciesManager:
     def handle_subtable_statement(self, arguments):
         table, rows, columns = arguments
         new_version = self.get_new_version(table)
-        new_table_name = f"{table.split('_')[0]}_v{new_version}.csv"
+        base_name, _ = self.split_sheet_name(table)
+        new_table_name = f"{base_name}_v{new_version}.csv"
 
         action = f"create subtable"
         if rows:
@@ -419,10 +415,7 @@ class DependenciesManager:
         if columns:
             action += f" with columns {columns}"
 
-        dependency = {
-            'sheet_id': table,
-            'action': action
-        }
+        dependency = {"sheet_id": table, "action": action}
 
         self.add_node(new_table_name, [dependency])
 
@@ -432,14 +425,12 @@ class DependenciesManager:
     def handle_aggregate_statement(self, arguments):
         table, functions, axis = arguments
         new_version = self.get_new_version(table)
-        new_table_name = f"{table.split('_')[0]}_aggregated_v{new_version}.csv"
+        base_name, _ = self.split_sheet_name(table)
+        new_table_name = f"{base_name}_aggregated_v{new_version}.csv"
 
         action = f"aggregate {'rows' if axis in (0, 'index') else 'columns'} with functions {functions}"
 
-        dependency = {
-            'sheet_id': table,
-            'action': action
-        }
+        dependency = {"sheet_id": table, "action": action}
 
         self.add_node(new_table_name, [dependency])
 
@@ -453,14 +444,8 @@ class DependenciesManager:
 
         action = f"perform {strategy} test on {'rows' if axis in (0, 'index') else 'columns'} {label_a} from {table_a} and {label_b} from {table_b}"
 
-        dependency_a = {
-            'sheet_id': table_a,
-            'action': action
-        }
-        dependency_b = {
-            'sheet_id': table_b,
-            'action': action
-        }
+        dependency_a = {"sheet_id": table_a, "action": action}
+        dependency_b = {"sheet_id": table_b, "action": action}
 
         self.add_node(new_table_name, [dependency_a, dependency_b])
 
@@ -468,5 +453,5 @@ class DependenciesManager:
         return True
 
     def get_new_version(self, table_name):
-        version = int(table_name.split('_')[-1].split('.')[0].replace('v', ''))
+        version = int(table_name.split("_")[-1].split(".")[0].replace("v", ""))
         return version + 1
