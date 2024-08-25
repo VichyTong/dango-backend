@@ -20,7 +20,10 @@ Create a DSL script to clean the data based on the description.
 1. You should only use the DSL functions provided in the DSL Grammar. Do not add or invent new functions.
 2. For every step, you need to find the best function from the DSL Grammar to perform the described action.
 3. Table names should end with ".csv" to indicate that they are CSV files.
-4. For data, the row index and column index starts from 1. Row 0 and Column 0 are reserved for the row and column names.
+4. If you use an integer for a row index, it should be 0-based. If you use a string for a row index, it should start from "1".
+    Example: If the user wants to drop the row 4, here are the possible ways:
+    - If you use an integer for the row index, please minus one: drop(table, 3, "index")
+    - If you use a string for the row index: drop(table, "4", "index")
 5. For None values, you can use "null" in the output.
 6. This DSL script is not the final code. Please use the table names instead of real pandas DataFrames in the arguments.
 
@@ -75,8 +78,8 @@ Sheet Information: Heart Disease Prediction dataset.csv has 15 columns (Headers 
 Sheet Information: New.csv has 3 columns (Headers are: 1: "location", 2: "nationality", the column 0 is the header column) and 303 rows (0 to 302, the row 0 is the header row).
 
 Step-by-step plan:
-1. Copy the column "age" from Heart Disease Prediction dataset.csv to New.csv. (copy function)
-2. Copy the column "sex" from Heart Disease Prediction dataset.csv to New.csv. (copy function)
+1. Copy the column "age" from Heart Disease Prediction dataset.csv to the column "Column1" of New.csv. (copy function)
+2. Copy the column "sex" from Heart Disease Prediction dataset.csv to the column "Column2" of New.csv. (copy function)
 3. Delete the column "age" from Heart Disease Prediction dataset.csv. (drop function)
 4. Delete the column "sex" from Heart Disease Prediction dataset.csv. (drop function)
 
@@ -93,11 +96,11 @@ Error 1:
     "program": [
         {
             "function_name": "copy",
-            "arguments": ["Heart Disease Prediction dataset.csv", "age", "New.csv", "age", "columns"]
+            "arguments": ["Heart Disease Prediction dataset.csv", "age", "New.csv", "Column1", "columns"]
         },
         {
             "function_name": "copy",
-            "arguments": ["Heart Disease Prediction dataset.csv", "sex", "New.csv", "sex", "columns"]
+            "arguments": ["Heart Disease Prediction dataset.csv", "sex", "New.csv", "Column2", "columns"]
         },
         {
             "function_name": "drop",
