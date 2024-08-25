@@ -318,7 +318,6 @@ def get_multi_analyze(client_id, table_list, user_prompt):
         },
         "chat_history": chat_history,
     }
-    print(json.dumps(history, indent=4))
     update_history(client_id, history)
 
     if config["mode"] == "without_CQ":

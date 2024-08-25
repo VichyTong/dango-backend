@@ -127,7 +127,6 @@ def get_step_by_step_plan(
 
     messages = append_message(plan_user_prompt, "user", messages)
     step_by_step_plan = generate_chat_completion(messages, special_type="json_list")
-    print(json.dumps(step_by_step_plan, indent=4))
     messages = append_message(step_by_step_plan, "assistant", messages)
 
     step_by_step_plan_string = "Step-by-step Plan:\n"
@@ -160,7 +159,6 @@ def get_dsls(
     error_list=[],
 ):
     funtion_list = []
-    print(step_by_step_plan)
     for step in step_by_step_plan:
         funtion_list.append(step["function"])
 
@@ -192,7 +190,6 @@ def get_dsls(
 
     messages = append_message(generate_user_prompt, "user", messages)
     generated_dsl = generate_chat_completion(messages, special_type="json_object")
-    print(json.dumps(generated_dsl, indent=4))
     messages = append_message(generated_dsl, "assistant", messages)
     log_messages(client_id, "generate_dsl", messages)
     return generated_dsl
@@ -208,7 +205,6 @@ def verify_syntax(client_id, dsls, error_list):
 def verify(client_id, dsls):
     error_list = []
     verify_syntax(client_id, dsls, error_list)
-    print(f"Error list:\n{json.dumps(error_list, indent=4)}")
     return error_list
 
 
@@ -220,7 +216,6 @@ def dsl_synthesize(client_id: str) -> str:
     )
     dsls = get_dsls(client_id, history, step_by_step_plan, step_by_step_plan_string)
     error_list = verify(client_id, dsls)
-    print(error_list)
     print("1 run")
     count = 1
     while len(error_list) > 0 and count < 5:

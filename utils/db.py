@@ -2,6 +2,9 @@ import sqlite3
 import json
 import uuid
 
+from utils.log import log_text
+
+
 con = sqlite3.connect("clean.db")
 
 cur = con.cursor()
@@ -215,6 +218,11 @@ def update_client_start_timestamp(client_id, start_timestamp):
         (client_id, start_timestamp),
     )
     con.commit()
+    statistics = get_client_statistics(client_id)
+    log_text(
+        client_id,
+        f">>> Statistics:\nstart_timestamp: {statistics[0]}\nend_timestamp: {statistics[1]}\nverification_attempts: {statistics[2]}\n",
+    )
 
 
 def update_client_end_timestamp(client_id, end_timestamp):
@@ -223,6 +231,11 @@ def update_client_end_timestamp(client_id, end_timestamp):
         (end_timestamp, client_id),
     )
     con.commit()
+    statistics = get_client_statistics(client_id)
+    log_text(
+        client_id,
+        f">>> Statistics:\nstart_timestamp: {statistics[0]}\nend_timestamp: {statistics[1]}\nverification_attempts: {statistics[2]}\n",
+    )
 
 
 def update_client_verification_attempts(client_id, verification_attempts):
@@ -231,3 +244,8 @@ def update_client_verification_attempts(client_id, verification_attempts):
         (verification_attempts, client_id),
     )
     con.commit()
+    statistics = get_client_statistics(client_id)
+    log_text(
+        client_id,
+        f">>> Statistics:\nstart_timestamp: {statistics[0]}\nend_timestamp: {statistics[1]}\nverification_attempts: {statistics[2]}\n",
+    )

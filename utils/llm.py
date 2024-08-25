@@ -43,13 +43,11 @@ def generate_chat_completion(messages, model="gpt-4o-mini", special_type=None):
                 .choices[0]
                 .message.content
             )
-            print(response)
             invalid_backslash_pattern = r'(?<!\\)(\\(?!["\\/bfnrtu]))'
             response = re.sub(invalid_backslash_pattern, r"\\\\", response)
             json_list_pattern = r'\[\s*(?:\{[^{}]*\}\s*,?\s*)*\]'
             json_lists = re.findall(json_list_pattern, response)
             response = json.loads(json_lists[0])
-            print(response)
     else:
         response = (
             client.chat.completions.create(messages=messages, model=model)
