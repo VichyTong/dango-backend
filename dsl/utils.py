@@ -4,6 +4,8 @@ import scipy.stats as stats
 import statsmodels.api as sm
 from thefuzz import process
 
+pd.set_option("future.no_silent_downcasting", True)
+
 
 def classify_axis(axis):
     """

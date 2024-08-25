@@ -68,7 +68,7 @@ Example 1:
 '''
 - INPUT:
 # Sheet 1
-Sheet Information: Heart Disease Prediction dataset.csv has 15 columns (Headers are: ["age", "sex", "cp", "trestbps", "chol", "fbs", "restecg", "thalach", "exang", "oldpeak", "slope", "ca", "thal", "target"], the column 0 is the header column) and 303 rows (0 to 302, the row 0 is the header row).
+Sheet Information: Heart Disease Prediction dataset.csv has 15 columns (Columns are ["age", "sex", "cp", "trestbps", "chol", "fbs", "restecg", "thalach", "exang", "oldpeak", "slope", "ca", "thal", "target"], the column 0 is the row index column) and 303 rows (0 to 302, the row 0 is the header row).
 
 Step-by-step Plan:
 1. Create a new table name test_result.csv to store the test result. (create function)
@@ -99,10 +99,10 @@ Example 2:
 '''
 - INPUT:
 # Sheet 1
-Sheet Information: Heart Disease Prediction dataset.csv has 15 columns (Headers are: ["age", "sex", "cp", "trestbps", "chol", "fbs", "restecg", "thalach", "exang", "oldpeak", "slope", "ca", "thal", "target"], the column 0 is the header column) and 303 rows (0 to 302, the row 0 is the header row).
+Sheet Information: Heart Disease Prediction dataset.csv has 15 columns (Columns are ["age", "sex", "cp", "trestbps", "chol", "fbs", "restecg", "thalach", "exang", "oldpeak", "slope", "ca", "thal", "target"], the column 0 is the row index column) and 303 rows (0 to 302, the row 0 is the header row).
 
 # Sheet 2
-Sheet Information: New.csv has 3 columns (Headers are: ["Column1", "Column2"], the column 0 is the header column) and 303 rows (0 to 302, the row 0 is the header row).
+Sheet Information: New.csv has 3 columns (Columns are ["Column1", "Column2"], the column 0 is the row index column) and 303 rows (0 to 302, the row 0 is the header row).
 
 Step-by-step Plan:
 1. Copy the column "age" from Heart Disease Prediction dataset.csv to the column "Column1" of New.csv. (copy function)
@@ -138,7 +138,7 @@ Example 3:
 '''
 - INPUT:
 # Sheet 1
-Sheet Information: sales_data.csv has 5 columns (Headers are: ["Date", "FullName", "Revenue", "Product"], the column 0 is the header column) and 10 rows (0 to 9, the row 0 is the header row).
+Sheet Information: sales_data.csv has 5 columns (Columns are ["Date", "FullName", "Revenue", "Product"], the column 0 is the row index column) and 10 rows (0 to 9, the row 0 is the header row).
 
 Step-by-step Plan:
 1. Drop rows in sales_data.csv where the column "Revenue" is less than 500. (drop function)

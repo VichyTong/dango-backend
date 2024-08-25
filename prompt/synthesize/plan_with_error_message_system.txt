@@ -50,7 +50,7 @@ Example 1:
 '''
 - INPUT:
 # Sheet 1
-Sheet Information: Heart Disease Prediction dataset.csv has 5 columns (Headers are: ["age", "sex", "cp", "trestbps"], the column 0 is the header column) and 303 rows (0 to 302, the row 0 is the header row).
+Sheet Information: Heart Disease Prediction dataset.csv has 5 columns (Columns are ["age", "sex", "cp", "trestbps"], the column 0 is the row index column) and 303 rows (0 to 302, the row 0 is the header row).
 
 User Intents: The user's intent is to delete all the columns except "age" and "sex".
 
@@ -82,7 +82,7 @@ Error 1:
 Example 2:
 '''
 # Sheet 1
-Sheet Information: Heart Disease Prediction dataset.csv has 15 columns (Headers are: ["age", "sex", "cp", "trestbps", "chol", "fbs", "restecg", "thalach", "exang", "oldpeak", "slope", "ca", "thal", "target"], the column 0 is the header column) and 303 rows (0 to 302, the row 0 is the header row).
+Sheet Information: Heart Disease Prediction dataset.csv has 15 columns (Columns are ["age", "sex", "cp", "trestbps", "chol", "fbs", "restecg", "thalach", "exang", "oldpeak", "slope", "ca", "thal", "target"], the column 0 is the row index column) and 303 rows (0 to 302, the row 0 is the header row).
 
 User Intents: The user wants to concatenate the "age" and "sex" with a comma and space if there are no missing values in the columns.
 

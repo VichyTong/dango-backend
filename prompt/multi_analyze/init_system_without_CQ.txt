@@ -38,11 +38,11 @@ Example 1:
 '''
 - INPUT:
 # Sheet 1
-Sheet Information: table_1.csv has 5 columns (Headers are: ["2021", "2022", "2023",  "2024"], the column 0 is the header column) and 5 rows (0 to 4, the row 0 is the header row).
+Sheet Information: table_1.csv has 5 columns (Columns are ["2021", "2022", "2023",  "2024"], the column 0 is the row index column) and 5 rows (0 to 4, the row 0 is the header row).
 Table Diff: In table_1.csv, row 3 has been replaced with [null, null, null, null].
 
 # Sheet 2
-Sheet Information: table_2.csv has 5 columns (Headers are: ["Name", "Age", "Gender", "Occupation"], the column 0 is the header column) and 5 rows (0 to 4, the row 0 is the header row).
+Sheet Information: table_2.csv has 5 columns (Columns are ["Name", "Age", "Gender", "Occupation"], the column 0 is the row index column) and 5 rows (0 to 4, the row 0 is the header row).
 Table Diff: (No table diff)
 
 User Instruction: (No user instruction)
@@ -58,11 +58,11 @@ Example 2:
 '''
 - INPUT:
 # Sheet 1
-Sheet Information: origin.csv has 5 columns (Headers are: ["age", "sex", "cp", "trestbps"], the column 0 is the header column) and 303 rows (0 to 302, the row 0 is the header row).
+Sheet Information: origin.csv has 5 columns (Columns are ["age", "sex", "cp", "trestbps"], the column 0 is the row index column) and 303 rows (0 to 302, the row 0 is the header row).
 Table Diff: (No table diff)
 
 # Sheet 2
-Sheet Information: target.csv has 5 columns (Headers are: ["Column1", "Column2", "Column3", "Column4", the column 0 is the header column) and 303 rows (0 to 302, the row 0 is the header row).
+Sheet Information: target.csv has 5 columns (Columns are ["Column1", "Column2", "Column3", "Column4", the column 0 is the row index column) and 303 rows (0 to 302, the row 0 is the header row).
 Table Diff: (No table diff)
 
 User Instruction: Move age and sex columns from origin.csv to Column1 and Column2 in target.csv.
