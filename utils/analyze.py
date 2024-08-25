@@ -236,11 +236,11 @@ def mata_diff_to_NL(
     client_id: str,
     diff: str,
     row_count: int,
-    column_names: list,
+    column_count: int,
     sheet_state_string: str,
 ) -> str:
     changes = extract_changes(client_id, diff)
-    changes = find_batch_operation(client_id, changes, row_count, len(column_names))
+    changes = find_batch_operation(client_id, changes, row_count, column_count)
 
     changes_text = ""
     for change in changes:
@@ -269,11 +269,7 @@ def get_multi_analyze(client_id, table_list, user_prompt):
         file_name = f"{sheet_id.split('.csv')[0]}_v{version}.csv"
         row_count = len(table["row_names"])
 
-        column_string_list = []
-        for column_index, item in enumerate(column_names, start=1):
-            item = f'{column_index}: "{item}"'
-            column_string_list.append(item)
-        column_names = ", ".join(column_string_list)
+        column_names = json.dumps(column_names)
 
         sheet_state_string = (
             sheet_state_template.replace("{index}", str(index))
@@ -366,11 +362,7 @@ def multi_analyze(
         column_count = len(column_names)
         table_diff = table["table_diff"]
 
-        column_string_list = []
-        for column_index, item in enumerate(column_names, start=1):
-            item = f'{column_index}: "{item}"'
-            column_string_list.append(item)
-        column_names = ", ".join(column_string_list)
+        column_names = json.dumps(column_names)
 
         sheet_state_string = (
             sheet_state_template.replace("{index}", str(index))
@@ -385,7 +377,7 @@ def multi_analyze(
                 client_id,
                 table_diff,
                 row_count,
-                column_string_list,
+                column_count,
                 sheet_state_string,
             )
             table["NL_diff"] = NL_diff

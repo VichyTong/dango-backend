@@ -49,7 +49,7 @@ Example 1:
 ```
 Input:
 # Sheet 1
-Sheet Information: table_1.csv has 5 columns (Headers are 1: "2021", 2: "2022", 3: "2023", 4: "2024", the column 0 is the header column) and 5 rows (0 to 4, the row 0 is the header row).
+Sheet Information: table_1.csv has 5 columns (Headers are: ["2021", "2022", "2023",  "2024"], the column 0 is the header column) and 5 rows (0 to 4, the row 0 is the header row).
 User Operations:
 {"type": "change_cell", "row": 4, "col": 1, "old_value": "", "new_value": "1"}
 {"type": "change_cell", "row": 4, "col": 2, "old_value": "", "new_value": "2"}
@@ -62,7 +62,7 @@ Example 2:
 ```
 Input:
 # Sheet 1
-Sheet Information: table_2.csv has 5 columns (Headers are 1: "Name", 2: "Birthday", 3: "Age", 4: "Gender", the column 0 is the header column) and 11 rows (0 to 10, the row 0 is the header row).
+Sheet Information: table_2.csv has 5 columns (Headers are: ["Name", "Birthday", "Age", "Gender"], the column 0 is the header column) and 11 rows (0 to 10, the row 0 is the header row).
 User Operations:
 {"type": "insert_row", "row": 11}
 {"type": "insert_column", "col": 5}
@@ -75,7 +75,7 @@ Example 3:
 ```
 Input:
 # Sheet 1
-Sheet Information: table_3.csv has 6 columns (Headers are 1: "Product", 2: "Price", 3: "Quantity", 4: "Total", the column 0 is the header column) and 10 rows (0 to 9, the row 0 is the header row).
+Sheet Information: table_3.csv has 5 columns (Headers are: ["Product", "Price", "Quantity", "Total"], the column 0 is the header column) and 10 rows (0 to 9, the row 0 is the header row).
 User Operations:
 {"type": "copy_data", "start_row": 2, "end_row": 2, "start_col": 1, "end_col": 3}
 {"type": "copy_data", "start_row": 3, "end_row": 3, "start_col": 1, "end_col": 3}
@@ -90,7 +90,7 @@ Example 4:
 ```
 Input:
 # Sheet 1
-Sheet Information: table_4.csv has 6 columns (Headers are 1: "Product", 2: "Price", 3: "Quantity", 4: "Total", the column 0 is the header column) and 10 rows (0 to 9, the row 0 is the header row).
+Sheet Information: table_4.csv has 6 columns (Headers are: ["Product", "Price", "Quantity", "Total"], the column 0 is the header column) and 10 rows (0 to 9, the row 0 is the header row).
 User Operations:
 {"type": "paste_data", "start_row": 1, "end_row": 1, "start_col": 1, "end_col": 3}
 {"type": "paste_data", "start_row": 2, "end_row": 2, "start_col": 1, "end_col": 3}
@@ -105,7 +105,7 @@ Example 5:
 ```
 Input:
 # Sheet 1
-Sheet Information: table_5.csv has 5 columns (Headers are 1: "Date", 2: "Sales", 3: "Time", 4: "Product", the column 0 is the header column) and 5 rows (0 to 4, the row 0 is the header row).
+Sheet Information: table_5.csv has 5 columns (Headers are: ["Date", "Sales", "Time", "Product"], the column 0 is the header column) and 5 rows (0 to 4, the row 0 is the header row).
 User Operations:
 {"type": "change_entire_column", "column": 3, "old_values": ["Time", "1500", "1200", "1100", "1300"], "new_values": ["null", "null", "null", "null", "null"]}
 
@@ -117,7 +117,7 @@ Example 6:
 ```
 Input:
 # Sheet 1
-Sheet Information: table_6.csv has 3 columns (Headers are 1: "Item", 2: "Quantity", 3: "Price", the column 0 is the header column) and 7 rows (0 to 6, the row 0 is the header row).
+Sheet Information: table_6.csv has 3 columns (Headers are: ["Item", "Quantity", "Price"], the column 0 is the header column) and 7 rows (0 to 6, the row 0 is the header row).
 User Operations:
 {"type": "insert_row", "row": 7}
 {"type": "change_cell", "row": 7, "col": 1, "old_value": "", "new_value": "New Item"}
@@ -131,7 +131,7 @@ Example 7:
 ```
 Input:
 # Sheet 1
-Sheet Information: table_7.csv has 4 columns (Headers are 1: "Name", 2: "School", 3: "Nationality", the column 0 is the header column) and 5 rows (0 to 4, the row 0 is the header row).
+Sheet Information: table_7.csv has 4 columns (Headers are: ["Name", "School", "Nationality"], the column 0 is the header column) and 5 rows (0 to 4, the row 0 is the header row).
 User Operations:
 {"type": "paste_data", "start_row": 1, "end_row": 1, "start_col": 1, "end_col": 3}
 {"type": "paste_data", "start_row": 3, "end_row": 3, "start_col": 1, "end_col": 3}

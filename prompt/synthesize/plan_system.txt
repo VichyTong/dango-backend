@@ -48,7 +48,7 @@ Example 1:
 '''
 - INPUT:
 # Sheet 1
-Sheet Information: Heart Disease Prediction dataset.csv has 15 columns (Headers are: 1: "age", 2: "sex", 3: "cp", 4: "trestbps", 5: "chol", 6: "fbs", 7: "restecg", 8: "thalach", 9: "exang", 10: "oldpeak", 11: "slope", 12: "ca", 13: "thal", 14: "target", the column 0 is the header column) and 303 rows (0 to 302, the row 0 is the header row).
+Sheet Information: Heart Disease Prediction dataset.csv has 15 columns (Headers are: ["age", "sex", "cp", "trestbps", "chol", "fbs", "restecg", "thalach", "exang", "oldpeak", "slope", "ca", "thal", "target"], the column 0 is the header column) and 303 rows (0 to 302, the row 0 is the header row).
 User Intents: The user's intent is to drop the column "ca" and "thal".
 
 - OUTPUT:
@@ -68,7 +68,7 @@ Example 2:
 '''
 - INPUT:
 # Sheet 1
-Sheet Information: Heart Disease Prediction dataset.csv has 15 columns (Headers are: 1: "age", 2: "sex", 3: "cp", 4: "trestbps", 5: "chol", 6: "fbs", 7: "restecg", 8: "thalach", 9: "exang", 10: "oldpeak", 11: "slope", 12: "ca", 13: "thal", 14: "target", the column 0 is the header column) and 303 rows (0 to 302, the row 0 is the header row).
+Sheet Information: Heart Disease Prediction dataset.csv has 15 columns (Headers are: ["age", "sex", "cp", "trestbps", "chol", "fbs", "restecg", "thalach", "exang", "oldpeak", "slope", "ca", "thal", "target"], the column 0 is the header column) and 303 rows (0 to 302, the row 0 is the header row).
 
 # Sheet 2
 Sheet Information: New.csv has 3 columns (Headers are: 1: "location", 2: "nationality", the column 0 is the header column) and 303 rows (0 to 302, the row 0 is the header row).
@@ -100,7 +100,7 @@ Example 3:
 '''
 - INPUT:
 # Sheet 1
-Sheet Information: Heart Disease Prediction dataset.csv has 15 columns (Headers are: 1: "age", 2: "sex", 3: "cp", 4: "trestbps", 5: "chol", 6: "fbs", 7: "restecg", 8: "thalach", 9: "exang", 10: "oldpeak", 11: "slope", 12: "ca", 13: "thal", 14: "target", the column 0 is the header column) and 303 rows (0 to 302, the row 0 is the header row).
+Sheet Information: Heart Disease Prediction dataset.csv has 15 columns (Headers are: ["age", "sex", "cp", "trestbps", "chol", "fbs", "restecg", "thalach", "exang", "oldpeak", "slope", "ca", "thal", "target"], the column 0 is the header column) and 303 rows (0 to 302, the row 0 is the header row).
 
 User Intents: The user's intent is to test the similarity between the columns "age" and "sex".
 
@@ -117,7 +117,7 @@ Example 4:
 '''
 - INPUT:
 # Sheet 1
-Sheet Information: Heart Disease Prediction dataset.csv has 15 columns (Headers are: 1: "age", 2: "sex", 3: "cp", 4: "trestbps", 5: "chol", 6: "fbs", 7: "restecg", 8: "thalach", 9: "exang", 10: "oldpeak", 11: "slope", 12: "ca", 13: "thal", 14: "target", the column 0 is the header column) and 303 rows (0 to 302, the row 0 is the header row).
+Sheet Information: Heart Disease Prediction dataset.csv has 15 columns (Headers are: ["age", "sex", "cp", "trestbps", "chol", "fbs", "restecg", "thalach", "exang", "oldpeak", "slope", "ca", "thal", "target"], the column 0 is the header column) and 303 rows (0 to 302, the row 0 is the header row).
 
 User intents: The user wants to concatenate the "age" and "sex" with a comma and space if there are no missing values in the columns.
 

@@ -438,18 +438,6 @@ class DependenciesManager:
         return True
 
     def handle_test_statement(self, arguments):
-        table_a, label_a, table_b, label_b, strategy, axis = arguments
-        new_version = max(self.get_new_version(table_a), self.get_new_version(table_b))
-        new_table_name = f"test_result_v{new_version}.csv"
-
-        action = f"perform {strategy} test on {'rows' if axis in (0, 'index') else 'columns'} {label_a} from {table_a} and {label_b} from {table_b}"
-
-        dependency_a = {"sheet_id": table_a, "action": action}
-        dependency_b = {"sheet_id": table_b, "action": action}
-
-        self.add_node(new_table_name, [dependency_a, dependency_b])
-
-        self.display_nodes()
         return True
 
     def get_new_version(self, table_name):
