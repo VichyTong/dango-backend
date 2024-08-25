@@ -156,7 +156,6 @@ USER:
     "choice": "Yes, transfer data from 'geneder'"
 }
 
-
 - OUTPUT:
 {
     "type": "finish",

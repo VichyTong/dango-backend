@@ -1,15 +1,14 @@
 from typing import List
 import json
 import re
-import copy
 
 from utils.llm import (
     generate_chat_completion,
     append_message,
 )
-from utils.log import log_messages, log_text, log_warn, log_error
+from utils.log import log_messages, log_text, log_warn
 from utils.db import update_history, get_history
-from utils.format_text import get_history_text
+from utils.format_text import get_history_text, format_multiple_choices_question
 from config.config import config
 
 
@@ -293,21 +292,34 @@ def get_multi_analyze(client_id, table_list, user_prompt):
 
     if user_prompt == "":
         user_prompt = "User Instruction: (No user instruction)"
+        chat_history = []
     else:
         user_prompt = "User Instruction: " + user_prompt
+        chat_history = [
+            {
+                "role": "user",
+                "message": user_prompt,
+            }
+        ]
     input_user_prompt += "\n" + user_prompt
 
-    update_history(
-        client_id,
-        {
-            "information": {
-                "sheet_state": sheet_state_list,
-                "table_diff": table_diff_list,
-                "user_prompt": user_prompt,
-            },
-            "question_answer_pairs": [],
+    history = {}
+    last_history = get_history(client_id)
+    if "chat_history" in last_history:
+        last_history["chat_history"].extend(chat_history)
+        chat_history = last_history["chat_history"]
+        input_user_prompt += get_history_text(last_history, with_sheet_info=False)
+
+    history = {
+        "information": {
+            "sheet_state": sheet_state_list,
+            "table_diff": table_diff_list,
+            "user_prompt": user_prompt,
         },
-    )
+        "chat_history": chat_history,
+    }
+    print(json.dumps(history, indent=4))
+    update_history(client_id, history)
 
     if config["mode"] == "without_CQ":
         messages = append_message(init_system_prompt_without_CQ, "system", [])
@@ -324,13 +336,14 @@ def get_multi_analyze(client_id, table_list, user_prompt):
         history = get_history(client_id)
         if "choices" not in response:
             response["choices"] = ["other (please specify)"]
-        history["question_answer_pairs"] = [
+        history["chat_history"].append(
             {
-                "summary": response["summary"],
-                "question": response["question"],
-                "choices": response["choices"],
+                "role": "assistant",
+                "message": format_multiple_choices_question(
+                    response["question"], response["choices"]
+                ),
             }
-        ]
+        )
         update_history(client_id, history)
     else:
         history = get_history(client_id)
@@ -383,14 +396,16 @@ def multi_analyze(
 
 def followup(client_id, response):
     history = get_history(client_id)
-    if "response" in history["question_answer_pairs"][-1]:
-        log_warn(client_id, f">>> followup\nFollowup already done\nresponse:{response}")
-        return
-    history["question_answer_pairs"][-1]["answer"] = response
+    history["chat_history"].append(
+        {
+            "role": "user",
+            "message": response,
+        }
+    )
     update_history(client_id, history)
 
     history = get_history(client_id)
-    history_text = get_history_text(history, is_dump=True)
+    history_text = get_history_text(history)
     messages = append_message(followup_system_prompt, "system", [])
     messages = append_message(history_text, "user", messages)
     response = generate_chat_completion(messages, special_type="json_object")
@@ -401,11 +416,12 @@ def followup(client_id, response):
         history = get_history(client_id)
         if "choices" not in response:
             response["choices"] = ["other (please specify)"]
-        history["question_answer_pairs"].append(
+        history["chat_history"].append(
             {
-                "summary": response["summary"],
-                "question": response["question"],
-                "choices": response["choices"],
+                "role": "assistant",
+                "message": format_multiple_choices_question(
+                    response["question"], response["choices"]
+                ),
             }
         )
         update_history(client_id, history)

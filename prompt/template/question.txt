@@ -1,3 +1,2 @@
-Clarification Question {INDEX}:
 {QUESTION}
 {CHOICES}

@@ -21,6 +21,7 @@ The input includes the following information:
 - Sheet Information: the name of the sheet, the headers, and the number of rows in the table.
 - Table Diff: the changes made to the table.
 - User Instruction: the user's instruction that indicates the changes they want to make.
+- Question & Answering History (Optional): The history of questions & answers exchanged between the assistant and the user.
 
 #############
 
@@ -64,33 +65,12 @@ User Instruction: (No user instruction)
     "choices": [
         "Yes, drop the row in both tables",
         "No, only drop the row in table_1.csv",
-        "No, only drop the row in table_2.csv",
         "other (please specify)"
     ]
 }
 '''
 
 Example 2:
-'''
-- INPUT:
-# Sheet 1
-Sheet Information: HeartDisease.csv has 15 columns (Headers are: 1: "age", 2: "sex", 3: "cp", 4: "trestbps", 5: "chol", 6: "fbs", 7: "restecg", 8: "thalach", 9: "exang", 10: "oldpeak", 11: "slope", 12: "ca", 13: "thal", 14: "target", the column 0 is the header column) and 303 rows (0 to 302, the row 0 is the header row).
-Table Diff: (No table diff)
-
-# Sheet 2
-Sheet Information: test.csv has 15 columns (Headers are: 1: "Column1", 2: "Column2", 3: "Column3", 4: "Column4", 5: "Column5", 6: "Column6", 7: "Column7", 8: "Column8", 9: "Column9", 10: "Column10", 11: "Column11", 12: "Column12", 13: "Column13", 14: "Column14", the column 0 is the header column) and 303 rows (0 to 302, the row 0 is the header row).
-Table Diff: (No table diff)
-
-User Instruction: Move age and sex columns from HeartDisease.csv to test_v0.csv.
-
-- OUTPUT:
-{
-    "type": "finish",
-    "summary": "The user wants to move the age and sex columns from HeartDisease.csv to Column1 and Column2 in test.csv."
-}
-'''
-
-Example 3:
 '''
 - INPUT:
 # Sheet 1
@@ -112,7 +92,7 @@ User Instruction: Insert a new column "NewColumn" at the end of the table.
 }
 '''
 
-Example 4:
+Example 3:
 '''
 - INPUT:
 # Sheet 1
@@ -138,7 +118,7 @@ User Instruction: Perform a statistical analysis using Pearson correlation to co
 }
 '''
 
-Example 5:
+Example 4:
 '''
 - INPUT:
 # Sheet 1
@@ -161,5 +141,42 @@ User Instruction: (No user instruction)
         "Copy all columns",
         "other (please specify)"
     ]
+}
+'''
+
+Example 5:
+'''
+# Sheet 1
+Sheet Information: table_2.csv has 5 columns (Headers are 1: "name", 2: "age", 3: "geneder", 4: "address", the column 0 is the header column) and 5 rows (0 to 4, the row 0 is the header row).
+Table Diff: In SalesRep.xlsx-Sheet1_v0.csv, the user copies data from columns "name" and "age" for all rows.
+
+# Sheet 2
+Sheet Information: new.csv has 5 columns (Headers are: 1: "Column1", 2: "Column2", 3: "Column3", 4: "Column4", the column 0 is the header column) and 5 rows (0 to 4, the row 0 is the header row).
+Table Diff: In new.csv, the user pastes data into columns 1 and 2 from rows 0 to 10. Then, they completely update column 1, renaming it to "Sales Rep" and populating it with the names of various sales representatives. Additionally, they update column 2 with values representing sales figures for January.
+
+User Instruction: (No user instruction)
+
+Question & Answering History:
+ASSISTANT:
+{
+    "type": "question",
+    "summary": "The user has copied data from 'name' and 'age' columns in table_2.csv and pasted it into new.csv, updating columns accordingly.",
+    "question": "Do you want to continue transferring data from the 'geneder' column in table_2.csv to the next column in test_v0.csv?",
+    "choices": [
+        "Yes, transfer data from 'geneder'",
+        "No, do not transfer data from 'geneder'",
+        "other (please specify)"
+    ]
+}
+
+USER:
+{
+    "choice": "Yes, transfer data from 'geneder'"
+}
+
+- OUTPUT:
+{
+    "type": "finish",
+    "summary": "The user wants to copy all columns from table_2.csv to new.csv, including 'name', 'age', 'gender, and 'address'."
 }
 '''

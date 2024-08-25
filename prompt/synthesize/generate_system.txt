@@ -22,8 +22,8 @@ Create a DSL script to clean the data based on the description.
 3. Table names should end with ".csv" to indicate that they are CSV files.
 4. If you use an integer for a row index, it should be 0-based. If you use a string for a row index, it should start from "1".
     Example: If the user wants to drop the row 4, here are the possible ways:
-    - If you use an integer for the row index, please minus one: drop(table, 3, "index")
     - If you use a string for the row index: drop(table, "4", "index")
+    - If you use an integer for the row index, please minus one: drop(table, 3, "index")
 5. For None values, you can use "null" in the output.
 6. This DSL script is not the final program. Please use the table names instead of real pandas DataFrames in the arguments.
 
@@ -46,17 +46,17 @@ For example:
     "program": [
         {
             "function_name": "copy",
-            "arguments": ["a.csv", 1, "table2.csv", 4, "copied_row", "index"]
+            "arguments": ["a.csv", "1", "table2.csv", "4", "copied_row", "index"]
         },
         {
             "function_name": "drop",
             "condition": "if column \"Profit\" > 100"
-            "arguments": ["a.csv", [1,2,3,4,5,6], "index"]
+            "arguments": ["a.csv", ["1", "2", "3", "4"], "index"]
         },
         {
             "function_name": "split",
             "condition": "if column \"Name\" contains \",\""
-            "arguments": ["a.csv", 1, ",", ["new1", "new2"]]
+            "arguments": ["a.csv", "Name", ",", ["new1", "new2"]]
         }
     ]
 }
@@ -91,7 +91,7 @@ Step-by-step plan:
         },
         {
             "function_name": "drop",
-            "arguments": ["data.csv", 3, "index"]
+            "arguments": ["data.csv", "4", "index"]
         }
     ]
 }

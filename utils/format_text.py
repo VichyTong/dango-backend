@@ -19,14 +19,27 @@ def init_prompt():
 init_prompt()
 
 
-def get_history_text(history, is_dump=False, with_table_diff=True):
-    if is_dump:
-        history = convert_history_to_dumped_text(
-            history, with_table_diff=with_table_diff
-        )
+def format_multiple_choices_question(question, choices):
+    choices_string = ""
+    for index, choice in enumerate(choices, start=1):
+        choices_string += f"{index}. {choice}\n"
+    prompt = question_template.replace("{QUESTION}", question).replace(
+        "{CHOICES}", choices_string
+    )
+    return prompt
+
+
+def get_history_text(history, with_sheet_info=True):
+    if with_sheet_info:
+        prompt = format_information(history["information"])
     else:
-        history = convert_history_to_text(history, with_table_diff=with_table_diff)
-    return history
+        prompt = ""
+    chat_history = history["chat_history"]
+    prompt += "Chat History:\n\n"
+    for chat in chat_history:
+        prompt += f"{chat['role']}:\n{chat['message']}\n\n"
+
+    return prompt
 
 
 def format_information(information, with_table_diff=True):
@@ -44,64 +57,6 @@ def format_information(information, with_table_diff=True):
     result += information["user_prompt"]
     result += "\n"
     return result
-
-
-def convert_history_to_text(history, with_table_diff=True):
-    prompt = format_information(history["information"], with_table_diff)
-
-    question_index = 1
-    for pair in history["question_answer_pairs"]:
-        question = pair["question"]
-        choices = pair["choices"]
-
-        choices_text = ""
-        for i, choice in enumerate(choices, start=1):
-            choices_text += f"{i}. {choice}\n"
-
-        prompt += "\n"
-
-        question_answer_pair = (
-            question_template.replace("{INDEX}", str(question_index))
-            .replace("{QUESTION}", question)
-            .replace("{CHOICES}", choices_text)
-        )
-        if "answer" in pair:
-            answer = pair["answer"]
-            question_answer_pair += answer_template.replace(
-                "{INDEX}", str(question_index)
-            ).replace("{ANSWER}", answer)
-
-        question_index += 1
-        prompt += question_answer_pair
-    return prompt
-
-
-def convert_history_to_dumped_text(history, with_table_diff=True):
-    prompt = format_information(history["information"], with_table_diff)
-    prompt += "Question & Answering History:\n"
-
-    for pair in history["question_answer_pairs"]:
-        question = pair["question"]
-        choices = pair["choices"]
-        summary = pair["summary"]
-
-        question_answer_pair = "ASSISTANT:\n"
-        question_answer_pair += json.dumps(
-            {
-                "type": "question",
-                "summary": summary,
-                "question": question,
-                "choices": choices,
-            },
-            indent=4,
-        )
-
-        answer = pair["answer"]
-        question_answer_pair += "\n\nUSER:\n"
-        question_answer_pair += json.dumps({"choice": answer}, indent=4)
-
-        prompt += question_answer_pair
-    return prompt
 
 
 def format_error_message(error_list):

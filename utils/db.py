@@ -153,15 +153,16 @@ def find_next_version(client_id, sheet_id):
 """
 Organization of "history"
 {
-    "infomation": <string>,
-    "question_answer_list": [
+    "infomation": {
+        "sheet_state": <sheet_state>,
+        "table_diff": <table_diff>,
+        "user_prompt": <user_prompt>
+    }
+    "chat_history": [
         {
-            "summary": <string>,
-            "question": <string>,
-            "choices": [<string>, <string>, ...],
-            "answer": <string>,
-        },
-        ...
+            "role": "user / assistant",
+            "message": <message>
+        }
     ]
 }
 """
@@ -178,6 +179,11 @@ def get_history(client_id):
     cur.execute("SELECT history FROM histories WHERE client_id = ?", (client_id,))
     history = json.loads(cur.fetchone()[0])
     return history
+
+
+def history_exists(client_id):
+    cur.execute("SELECT * FROM histories WHERE client_id = ?", (client_id,))
+    return cur.fetchone() is not None
 
 
 def update_history(client_id, history):
