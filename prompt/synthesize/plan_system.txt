@@ -10,7 +10,6 @@ Generate a step-by-step plan to clean the data based on the user's intents and t
 #############
 
 # DSL GRAMMAR #
-
 {DSL_GRAMMAR}
 
 #############
@@ -26,8 +25,9 @@ Generate a step-by-step plan to clean the data based on the user's intents and t
 - Sheet Information: the name of the sheet, the headers, and the number of rows in the table.
 - User Intents: the user's intents.
 
-# OUTPUT #
+#############
 
+# OUTPUT #
 - Step-by-step plan: a JSON list.
     - Each step should only include the function name and its description.
     - If there are multiple steps, list them in the order they should be executed.

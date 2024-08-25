@@ -11,7 +11,6 @@ Create a small Python code snippet that executes the given DSL function.
 #############
 
 # DSL GRAMMAR #
-
 {SELECTED_DSL_GRAMMAR}
 
 ### Database Functions
@@ -63,7 +62,7 @@ Your output should between ``` tags and contain the Python code snippet that exe
 
 #############
 
-# EXAMPLE #
+# EXAMPLES #
 
 Example 1:
 '''

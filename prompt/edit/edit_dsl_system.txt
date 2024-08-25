@@ -10,7 +10,6 @@ Change the DSL as the instructions specified
 #############
 
 # DSL GRAMMAR #
-
 {DSL_GRAMMAR}
 
 #############
@@ -29,7 +28,6 @@ Change the DSL as the instructions specified
 
 #############
 # OUTPUT
-
 Your output should be in a JSON object. Each object should contain the function name and its arguments. 
 If a function needs to be applied to specific cells, you can add a "condition" parameter to the object. 
 For example:
@@ -49,7 +47,7 @@ Do not add any other characters to the output.
 
 #############
 
-# EXAMPLE #
+# EXAMPLES #
 
 Example 1:
 '''

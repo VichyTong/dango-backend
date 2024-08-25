@@ -19,11 +19,10 @@ Ask clarification questions to understand the user's intent.
 #############
 
 # INPUT #
-The input includes the following:
-- Sheet Information:  the name of the sheet, the headers, and the number of rows in the table. 
+- Sheet Information:  the name of the sheet, the headers, and the number of rows in the table.
 - Table Diff: the changes made to the table, including the cells that have been modified.
 - User Instruction: the user's instruction that indicates the changes they want to make.
-- Question & Answering History: The history of questions & answers exchanged between the assistant and the user.
+- Chat History: The history of chat between the assistant and the user.
 
 #############
 
@@ -55,7 +54,7 @@ Table Diff: In table_1.csv, row 3 has been replaced with [null, null, null, null
 
 User Instruction: (No user instruction)
 
-Question & Answering History: 
+Chat History:
 ASSISTANT:
 Do you want to delete the row 4 in table_1.csv?
 1. Yes, confirm the deletion
@@ -86,7 +85,7 @@ Table Diff: In the given table, the user clears all values in row 4 across all c
 
 User Instruction: (No user instruction)
 
-Question & Answering History: 
+Chat History:
 ASSISTANT:
 Do you want to delete the row 3 in table_1.csv and delete the values in row 4 in table_2.csv?
 1. Yes, delete the values
@@ -94,9 +93,7 @@ Do you want to delete the row 3 in table_1.csv and delete the values in row 4 in
 3. other (please specify)
 
 USER:
-{
-    "choice": "Other: Actually, I want to replace row 3 with the values from row 5 in table_1.csv."
-}
+Other: Actually, I want to replace row 3 with the values from row 5 in table_1.csv.
 
 
 - OUTPUT:
@@ -124,7 +121,7 @@ Table Diff: In new.csv, the user pastes data into columns 1 and 2 from rows 0 to
 
 User Instruction: (No user instruction)
 
-Question & Answering History:
+Chat History:
 ASSISTANT:
 Do you want to continue transferring data from the 'geneder' column in table_2.csv to the next column in test_v0.csv?
 1. Yes, transfer data from 'geneder'
@@ -132,9 +129,7 @@ Do you want to continue transferring data from the 'geneder' column in table_2.c
 3. other (please specify)
 
 USER:
-{
-    "choice": "Yes, transfer data from 'geneder'"
-}
+Yes, transfer data from 'geneder'
 
 - OUTPUT:
 {

@@ -11,7 +11,6 @@ Create a DSL script to clean the data based on the description.
 #############
 
 # DSL GRAMMAR #
-
 {SELECTED_DSL_GRAMMAR}
 
 #############
@@ -30,8 +29,8 @@ Create a DSL script to clean the data based on the description.
 #############
 
 # INPUT #
-1. Sheet information.
-2. Step-by-step plan of the data cleaning process.
+- Sheet information: the name of the sheet, the headers, and the number of rows in the table.
+- Step-by-step Plan: a detailed description of the process.
 
 #############
 
@@ -72,7 +71,7 @@ Example 1:
 # Sheet 1
 Sheet Information: Heart Disease Prediction dataset.csv has 15 columns (Headers are: 1: "age", 2: "sex", 3: "cp", 4: "trestbps", 5: "chol", 6: "fbs", 7: "restecg", 8: "thalach", 9: "exang", 10: "oldpeak", 11: "slope", 12: "ca", 13: "thal", 14: "target", the column 0 is the header column) and 303 rows (0 to 302, the row 0 is the header row).
 
-Step-by-step plan:
+Step-by-step Plan:
 1. Create a new table name test_result.csv to store the test result. (create function)
 2. Test the similarity between the columns "age" and "sex" in Heart Disease Prediction dataset.csv using t-test. (test function)
 3. Delete the row 4 in data.csv. (drop function)
@@ -106,7 +105,7 @@ Sheet Information: Heart Disease Prediction dataset.csv has 15 columns (Headers 
 # Sheet 2
 Sheet Information: New.csv has 3 columns (Headers are: 1: "Column1", 2: "Column2", the column 0 is the header column) and 303 rows (0 to 302, the row 0 is the header row).
 
-Step-by-step plan:
+Step-by-step Plan:
 1. Copy the column "age" from Heart Disease Prediction dataset.csv to the column "Column1" of New.csv. (copy function)
 2. Copy the column "sex" from Heart Disease Prediction dataset.csv to the column "Column2" of New.csv. (copy function)
 3. Delete the column "age" from Heart Disease Prediction dataset.csv. (drop function)
@@ -142,7 +141,7 @@ Example 3:
 # Sheet 1
 Sheet Information: sales_data.csv has 5 columns (Headers are: 1: "Date", 2: "FullName", 3: "Revenue", 4: "Product", the column 0 is the header column) and 10 rows (0 to 9, the row 0 is the header row).
 
-Step-by-step plan:
+Step-by-step Plan:
 1. Drop rows in sales_data.csv where the column "Revenue" is less than 500. (drop function)
 2. Split the column "FullName" in employees.csv into two columns "FirstName" and "LastName" if it contains a space. (split function)
 
