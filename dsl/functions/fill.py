@@ -13,8 +13,8 @@ Parameters:
 - method (str, required): The method to use for filling missing values. Choose from 'value', 'mean', 'median', 'mode', 'ffill', 'bfill', 'interpolate'.
 - labels (list[str or int] or int or str, required): The label or list of labels of the row(s) or column(s) where missing values will be filled.
 - axis (str or int, required):
-    - 0 or "index": Indicates that missing values will be filled by rows.
-    - 1 or "columns": Indicates that missing values will be filled by columns.
+    - 0 or "index": Indicates that labels are row labels.
+    - 1 or "columns": Indicates that labels are column labels.
 Output:
 - A pandas DataFrame.\
 """
