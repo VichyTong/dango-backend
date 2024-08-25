@@ -142,7 +142,24 @@ User Intents: Fill all missing values for each of the row.
 [
     {
         "function": "fill",
-        "description": "Fill all missing values in the row from row 1 to row 19 in test.csv."
+        "description": "Fill all missing values for each row from row 1 to row 19 in test.csv."
+    }
+]
+'''
+
+Example 5:
+'''
+- INPUT:
+# Sheet 1
+Sheet Information: test.csv has 3 columns (Columns are ["Column1", "Column2"], the column 0 is the row index column) and 20 rows (0 to 19, the row 0 is the header row).
+
+User Intents: Fill all missing values for each of the column.
+
+- OUTPUT:
+[
+    {
+        "function": "fill",
+        "description": "Fill all missing values for each column ("Column1" and "Column2") in test.csv."
     }
 ]
 '''
