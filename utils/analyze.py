@@ -274,7 +274,7 @@ def get_multi_analyze(client_id, table_list, user_prompt):
         sheet_state_string = (
             sheet_state_template.replace("{index}", str(index))
             .replace("{file_name}", file_name)
-            .replace("{column_count}", str(column_number + 1))
+            .replace("{column_count}", str(column_number))
             .replace("{column_names}", column_names)
             .replace("{row_count}", str(row_count + 1))
             .replace("{row_end}", str(row_count))
@@ -367,7 +367,7 @@ def multi_analyze(
         sheet_state_string = (
             sheet_state_template.replace("{index}", str(index))
             .replace("{file_name}", file_name)
-            .replace("{column_count}", str(column_count + 1))
+            .replace("{column_count}", str(column_count))
             .replace("{column_names}", column_names)
             .replace("{row_count}", str(row_count + 1))
             .replace("{row_end}", str(row_count))

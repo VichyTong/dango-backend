@@ -49,11 +49,11 @@ Example 1:
 '''
 - INPUT:
 # Sheet 1
-Sheet Information: table_1.csv has 5 columns (Columns are ["2021", "2022", "2023",  "2024"], the column 0 is the row index column) and 5 rows (0 to 4, the row 0 is the header row).
+Sheet Information: table_1.csv has 4 columns (Columns are ["2021", "2022", "2023",  "2024"], starting from index 1) and 5 rows (0 to 4, the row 0 is the header row).
 Table Diff: In table_1.csv, row 3 has been deleted and replaced with [null, null, null, null].
 
 # Sheet 2
-Sheet Information: table_2.csv has 5 columns (Columns are ["Name", "Age", "Gender", "Occupation"], the column 0 is the row index column) and 5 rows (0 to 4, the row 0 is the header row).
+Sheet Information: table_2.csv has 4 columns (Columns are ["Name", "Age", "Gender", "Occupation"], starting from index 1) and 5 rows (0 to 4, the row 0 is the header row).
 Table Diff: In the given table, the user clears all values in row 4 across all columns.
 
 User Instruction: (No user instruction)
@@ -85,11 +85,11 @@ Other: Actually, I want to replace row 3 with the values from row 5 in table_1.c
 Example 2:
 '''
 # Sheet 1
-Sheet Information: table_2.csv has 5 columns (Columns are ["name", "age", "geneder", "address"], the column 0 is the row index column) and 5 rows (0 to 4, the row 0 is the header row).
+Sheet Information: table_2.csv has 4 columns (Columns are ["name", "age", "geneder", "address"], starting from index 1) and 5 rows (0 to 4, the row 0 is the header row).
 Table Diff: In SalesRep.xlsx-Sheet1_v0.csv, the user copies data from columns "name" and "age" for all rows.
 
 # Sheet 2
-Sheet Information: new.csv has 5 columns (Columns are ["Column1", "Column2",  "Column3", "Column4"], the column 0 is the row index column) and 5 rows (0 to 4, the row 0 is the header row).
+Sheet Information: new.csv has 4 columns (Columns are ["Column1", "Column2",  "Column3", "Column4"], starting from index 1) and 5 rows (0 to 4, the row 0 is the header row).
 Table Diff: In new.csv, the user pastes data into columns 1 and 2 from rows 0 to 10. Then, they completely update column 1, renaming it to "Sales Rep" and populating it with the names of various sales representatives. Additionally, they update column 2 with values representing sales figures for January.
 
 User Instruction: (No user instruction)
@@ -114,7 +114,7 @@ Yes, transfer data from 'geneder'
 Example 3:
 '''
 # Sheet 1
-Sheet Information: test.csv has 3 columns (Columns are ["Column1", "Column2"], the column 0 is the row index column) and 20 rows (0 to 19, the row 0 is the header row).
+Sheet Information: test.csv has 2 columns (Columns are ["Column1", "Column2"], starting from index 1) and 20 rows (0 to 19, the row 0 is the header row).
 
 User Instruction: Fill all missing values in the row.
 

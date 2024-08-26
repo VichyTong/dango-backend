@@ -71,10 +71,10 @@ Example 1:
 '''
 - INPUT:
 # Sheet 1
-Sheet Information: Heart Disease Prediction dataset.csv has 15 columns (Columns are ["age", "sex", "cp", "trestbps", "chol", "fbs", "restecg", "thalach", "exang", "oldpeak", "slope", "ca", "thal", "target"], the column 0 is the row index column) and 303 rows (0 to 302, the row 0 is the header row).
+Sheet Information: Heart Disease Prediction dataset.csv has 14 columns (Columns are ["age", "sex", "cp", "trestbps", "chol", "fbs", "restecg", "thalach", "exang", "oldpeak", "slope", "ca", "thal", "target"], starting from index 1) and 303 rows (0 to 302, the row 0 is the header row).
 
 # Sheet 2
-Sheet Information: New.csv has 3 columns (Columns are 1: "location", 2: "nationality", the column 0 is the row index column) and 303 rows (0 to 302, the row 0 is the header row).
+Sheet Information: New.csv has 2 columns (Columns are 1: "location", 2: "nationality") and 303 rows (0 to 302, the row 0 is the header row).
 
 Step-by-step Plan:
 1. Copy the column "age" from Heart Disease Prediction dataset.csv to the column "Column1" of New.csv. (copy function)
@@ -118,7 +118,7 @@ Example 2:
 '''
 - INPUT:
 # Sheet 1
-Sheet Information: sales_data.csv has 5 columns (Columns are ["Date", "FullName", "Revenue", "Product"], the column 0 is the row index column) and 10 rows (0 to 9, the row 0 is the header row).
+Sheet Information: sales_data.csv has 4 columns (Columns are ["Date", "FullName", "Revenue", "Product"], starting from index 1) and 10 rows (0 to 9, the row 0 is the header row).
 
 Step-by-step Plan:
 1. Split the column "FullName" in employees.csv into two columns "FirstName" and "LastName" if it contains a space. (split function)
@@ -146,7 +146,7 @@ Example 3:
 '''
 - INPUT:
 # Sheet 1
-Sheet Information: Heart Disease Prediction dataset.csv has 15 columns (Columns are ["age", "sex", "cp", "trestbps", "chol", "fbs", "restecg", "thalach", "exang", "oldpeak", "slope", "ca", "thal", "target"], the column 0 is the row index column) and 303 rows (0 to 302, the row 0 is the header row).
+Sheet Information: Heart Disease Prediction dataset.csv has 14 columns (Columns are ["age", "sex", "cp", "trestbps", "chol", "fbs", "restecg", "thalach", "exang", "oldpeak", "slope", "ca", "thal", "target"], starting from index 1) and 303 rows (0 to 302, the row 0 is the header row).
 
 Step-by-step Plan:
 1. Concatenate the columns "age" and "sex" in Heart Disease Prediction dataset.csv with a comma and space if there are no missing values.

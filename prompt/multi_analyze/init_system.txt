@@ -47,11 +47,11 @@ Example 1:
 '''
 - INPUT:
 # Sheet 1
-Sheet Information: table_1.csv has 5 columns (Columns are ["2021", "2022", "2023",  "2024"], the column 0 is the row index column) and 5 rows (0 to 4, the row 0 is the header row).
+Sheet Information: table_1.csv has 4 columns (Columns are ["2021", "2022", "2023",  "2024"], starting from index 1) and 5 rows (0 to 4, the row 0 is the header row).
 Table Diff: In table_1.csv, row 3 has been replaced with [null, null, null, null].
 
 # Sheet 2
-Sheet Information: table_2.csv has 5 columns (Columns are ["Name", "Age", "Gender", "Occupation"], the column 0 is the row index column) and 5 rows (0 to 4, the row 0 is the header row).
+Sheet Information: table_2.csv has 4 columns (Columns are ["Name", "Age", "Gender", "Occupation"], starting from index 1) and 5 rows (0 to 4, the row 0 is the header row).
 Table Diff: (No table diff)
 
 User Instruction: (No user instruction)
@@ -73,7 +73,7 @@ Example 2:
 '''
 - INPUT:
 # Sheet 1
-Sheet Information: test.csv has 4 columns (Columns are ["Column1", "Column2", "Column3"], the column 0 is the row index column) and 5 rows (0 to 4, the row 0 is the header row).
+Sheet Information: test.csv has 3 columns (Columns are ["Column1", "Column2", "Column3"], starting from index 1) and 5 rows (0 to 4, the row 0 is the header row).
 Table Diff: (No table diff)
 
 User Instruction: Insert a new column "NewColumn" at the end of the table.
@@ -95,11 +95,11 @@ Example 3:
 '''
 - INPUT:
 # Sheet 1
-Sheet Information: sheet_1.csv has 4 columns (Columns are ["Column1", "Column2", "Column3"], the column 0 is the row index column) and 5 rows (0 to 4, the row 0 is the header row).
+Sheet Information: sheet_1.csv has 3 columns (Columns are ["Column1", "Column2", "Column3"], starting from index 1) and 5 rows (0 to 4, the row 0 is the header row).
 Table Diff: (No table diff)
 
 # Sheet 2
-Sheet Information: sheet_2.csv has 4 columns (Columns are ["Column1", "Column2", "Column3"], the column 0 is the row index column) and 5 rows (0 to 4, the row 0 is the header row).
+Sheet Information: sheet_2.csv has 3 columns (Columns are ["Column1", "Column2", "Column3"], starting from index 1) and 5 rows (0 to 4, the row 0 is the header row).
 Table Diff: (No table diff)
 
 User Instruction: Perform a statistical analysis using Pearson correlation to compare the "Column1" column in sheet_1 with the "Column2" column in sheet_2. If the resulting p-value from the analysis is less than 0.05, remove one of the columns, keeping only the other one.
@@ -121,11 +121,11 @@ Example 4:
 '''
 - INPUT:
 # Sheet 1
-Sheet Information: table_1.csv has 5 columns (Columns are ["2021", "2022", "2023",  "2024"], the column 0 is the row index column) and 5 rows (0 to 4, the row 0 is the header row).
+Sheet Information: table_1.csv has 4 columns (Columns are ["2021", "2022", "2023",  "2024"], starting from index 1) and 5 rows (0 to 4, the row 0 is the header row).
 Table Diff: In table_1.csv, the user copies column "2021" and "2022" from row 0 to 4.
 
 # Sheet 2
-Sheet Information: table_2.csv has 5 columns (Columns are ["Column1", "Column2", "Column3", "Column4"], the column 0 is the row index column) and 5 rows (0 to 4, the row 0 is the header row).
+Sheet Information: table_2.csv has 4 columns (Columns are ["Column1", "Column2", "Column3", "Column4"], starting from index 1) and 5 rows (0 to 4, the row 0 is the header row).
 Table Diff: In table_2.csv, the user pastes "Column1" and "Column2" from row 0 to 4.
 
 User Instruction: (No user instruction)
@@ -146,11 +146,11 @@ User Instruction: (No user instruction)
 Example 5:
 '''
 # Sheet 1
-Sheet Information: table_2.csv has 5 columns (Columns are ["name", "age", "geneder", "address"], the column 0 is the row index column) and 5 rows (0 to 4, the row 0 is the header row).
+Sheet Information: table_2.csv has 4 columns (Columns are ["name", "age", "geneder", "address"], starting from index 1) and 5 rows (0 to 4, the row 0 is the header row).
 Table Diff: In SalesRep.xlsx-Sheet1_v0.csv, the user copies data from columns "name" and "age" for all rows.
 
 # Sheet 2
-Sheet Information: new.csv has 5 columns (Columns are ["Column1", "Column2",  "Column3", "Column4"], the column 0 is the row index column) and 5 rows (0 to 4, the row 0 is the header row).
+Sheet Information: new.csv has 4 columns (Columns are ["Column1", "Column2", "Column3", "Column4"], starting from index 1) and 5 rows (0 to 4, the row 0 is the header row).
 Table Diff: In new.csv, the user pastes data into columns 1 and 2 from rows 0 to 10. Then, they completely update column 1, renaming it to "Sales Rep" and populating it with the names of various sales representatives. Additionally, they update column 2 with values representing sales figures for January.
 
 User Instruction: (No user instruction)
@@ -177,7 +177,7 @@ I also want to copy all columns from table_2.csv to new.csv.
 
 Example 6:
 # Sheet 1
-Sheet Information: test.csv has 3 columns (Columns are ["Column1", "Column2"], the column 0 is the row index column) and 20 rows (0 to 19, the row 0 is the header row).
+Sheet Information: test.csv has 2 columns (Columns are ["Column1", "Column2"], starting from index 1) and 20 rows (0 to 19, the row 0 is the header row).
 
 User Instruction: Fill all missing values for each of the row.
 

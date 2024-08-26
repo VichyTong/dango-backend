@@ -48,7 +48,7 @@ Example 1:
 '''
 - INPUT:
 # Sheet 1
-Sheet Information: Heart Disease Prediction dataset.csv has 15 columns (Columns are ["age", "sex", "cp", "trestbps", "chol", "fbs", "restecg", "thalach", "exang", "oldpeak", "slope", "ca", "thal", "target"], the column 0 is the row index column) and 303 rows (0 to 302, the row 0 is the header row).
+Sheet Information: Heart Disease Prediction dataset.csv has 14 columns (Columns are ["age", "sex", "cp", "trestbps", "chol", "fbs", "restecg", "thalach", "exang", "oldpeak", "slope", "ca", "thal", "target"], starting from index 1) and 303 rows (0 to 302, the row 0 is the header row).
 User Intents: The user's intent is to drop the column "ca" and "thal".
 
 - OUTPUT:
@@ -68,10 +68,10 @@ Example 2:
 '''
 - INPUT:
 # Sheet 1
-Sheet Information: Heart Disease Prediction dataset.csv has 15 columns (Columns are ["age", "sex", "cp", "trestbps", "chol", "fbs", "restecg", "thalach", "exang", "oldpeak", "slope", "ca", "thal", "target"], the column 0 is the row index column) and 303 rows (0 to 302, the row 0 is the header row).
+Sheet Information: Heart Disease Prediction dataset.csv has 14 columns (Columns are ["age", "sex", "cp", "trestbps", "chol", "fbs", "restecg", "thalach", "exang", "oldpeak", "slope", "ca", "thal", "target"], starting from index 1) and 303 rows (0 to 302, the row 0 is the header row).
 
 # Sheet 2
-Sheet Information: New.csv has 3 columns (Columns are ["location", "nationality"], the column 0 is the row index column) and 303 rows (0 to 302, the row 0 is the header row).
+Sheet Information: New.csv has 2 columns (Columns are ["location", "nationality"], starting from index 1) and 303 rows (0 to 302, the row 0 is the header row).
 
 User Intents: The user's intent is to copy "age" and "sex" columns from Sheet 1 to Sheet 2, updating those columns with new values representing the age information and sex information.
 
@@ -92,7 +92,7 @@ Example 3:
 '''
 - INPUT:
 # Sheet 1
-Sheet Information: Heart Disease Prediction dataset.csv has 15 columns (Columns are ["age", "sex", "cp", "trestbps", "chol", "fbs", "restecg", "thalach", "exang", "oldpeak", "slope", "ca", "thal", "target"], the column 0 is the row index column) and 303 rows (0 to 302, the row 0 is the header row).
+Sheet Information: Heart Disease Prediction dataset.csv has 14 columns (Columns are ["age", "sex", "cp", "trestbps", "chol", "fbs", "restecg", "thalach", "exang", "oldpeak", "slope", "ca", "thal", "target"], starting from index 1) and 303 rows (0 to 302, the row 0 is the header row).
 
 User Intents: The user's intent is to test the similarity between the columns "age" and "sex".
 
@@ -109,7 +109,7 @@ Example 4:
 '''
 - INPUT:
 # Sheet 1
-Sheet Information: Heart Disease Prediction dataset.csv has 15 columns (Columns are ["age", "sex", "cp", "trestbps", "chol", "fbs", "restecg", "thalach", "exang", "oldpeak", "slope", "ca", "thal", "target"], the column 0 is the row index column) and 303 rows (0 to 302, the row 0 is the header row).
+Sheet Information: Heart Disease Prediction dataset.csv has 14 columns (Columns are ["age", "sex", "cp", "trestbps", "chol", "fbs", "restecg", "thalach", "exang", "oldpeak", "slope", "ca", "thal", "target"], starting from index 1) and 303 rows (0 to 302, the row 0 is the header row).
 
 User intents: The user wants to concatenate the "age" and "sex" with a comma and space if there are no missing values in the columns.
 
@@ -126,7 +126,7 @@ Example 4:
 '''
 - INPUT:
 # Sheet 1
-Sheet Information: test.csv has 3 columns (Columns are ["Column1", "Column2"], the column 0 is the row index column) and 20 rows (0 to 19, the row 0 is the header row).
+Sheet Information: test.csv has 2 columns (Columns are ["Column1", "Column2"], starting from index 1) and 20 rows (0 to 19, the row 0 is the header row).
 
 User Intents: Fill all missing values for each of the row.
 
@@ -143,7 +143,7 @@ Example 5:
 '''
 - INPUT:
 # Sheet 1
-Sheet Information: test.csv has 3 columns (Columns are ["Column1", "Column2"], the column 0 is the row index column) and 20 rows (0 to 19, the row 0 is the header row).
+Sheet Information: test.csv has 2 columns (Columns are ["Column1", "Column2"], starting from index 1) and 20 rows (0 to 19, the row 0 is the header row).
 
 User Intents: Fill all missing values for each of the column.
 
