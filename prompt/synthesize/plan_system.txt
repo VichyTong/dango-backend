@@ -73,25 +73,17 @@ Sheet Information: Heart Disease Prediction dataset.csv has 15 columns (Columns 
 # Sheet 2
 Sheet Information: New.csv has 3 columns (Columns are ["location", "nationality"], the column 0 is the row index column) and 303 rows (0 to 302, the row 0 is the header row).
 
-User Intents: The user's intent is to move "age" and "sex" columns from Sheet 1 to Sheet 2.
+User Intents: The user's intent is to copy "age" and "sex" columns from Sheet 1 to Sheet 2, updating those columns with new values representing the age information and sex information.
 
 - OUTPUT:
 [
     {
         "function": "copy",
-        "description": "Copy the column \"age\" from Heart Disease Prediction dataset.csv to New.csv."
+        "description": "Copy the column 'age' from Heart Disease Prediction dataset.csv to the 'age' column of New.csv."
     },
     {
         "function": "copy",
-        "description": "Copy the column \"sex\" from Heart Disease Prediction dataset.csv to New.csv."
-    },
-    {
-        "function": "drop",
-        "description": "Delete the column \"age\" from Heart Disease Prediction dataset.csv."
-    },
-    {
-        "function": "drop",
-        "description": "Delete the column \"sex\" from Heart Disease Prediction dataset.csv."
+        "description": "Copy the column 'sex' from Heart Disease Prediction dataset.csv to the 'sex' column of New.csv."
     }
 ]
 '''
