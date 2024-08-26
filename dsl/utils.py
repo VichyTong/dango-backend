@@ -107,26 +107,43 @@ def concatenate(table, label_a, label_b, glue, new_label, axis=0):
 
 def copy(origin_table, origin_label, target_table, target_label, axis):
     axis = classify_axis(axis)
-    if axis == 1:
+
+    if axis == 1:  # Copying columns
         if isinstance(origin_label, int):
             origin_label = origin_table.columns[origin_label]
         if isinstance(target_label, int):
             target_label = target_table.columns[target_label]
+
         if isinstance(origin_label, str) and isinstance(target_label, str):
-            target_table[origin_label] = origin_table[origin_label]
-            if target_label != origin_label and target_label in target_table.columns:
-                target_table.drop(columns=[target_label], inplace=True)
+            target_table[target_label] = origin_table[origin_label]
+
+            # Update the column name and maintain order
+            columns = list(target_table.columns)
+            origin_index = columns.index(target_label)
+            columns[origin_index] = target_label
+            target_table = target_table[columns]
+            target_table.rename(columns={target_label: origin_label}, inplace=True)
+
         else:
             raise ValueError("Invalid column labels.")
-    elif axis == 0:
+
+    elif axis == 0:  # Copying rows
         if isinstance(origin_label, int):
             origin_label = str(origin_label + 1)
 
         if isinstance(origin_label, int) or isinstance(origin_label, str):
             row_data = origin_table.loc[origin_label]
+
+            if target_label in target_table.index:
+                target_table.drop(index=target_label, inplace=True)
+
             target_table.loc[target_label] = row_data
-            if target_label != origin_label and target_label in target_table.index:
-                target_table.rename(index={target_label: origin_label}, inplace=True)
+            # Reorder rows to preserve the original order
+            rows = list(target_table.index)
+            rows.remove(target_label)
+            rows.insert(rows.index(origin_label), target_label)
+            target_table = target_table.reindex(rows)
+
         else:
             raise ValueError("For axis=0, origin_label must be an int or str.")
 
@@ -155,22 +172,16 @@ def drop(table, label, axis=0):
     if not isinstance(label, list):
         label = [label]
 
-    if axis == 1:
-        missing_columns = [col for col in label if col not in table.columns]
-        if missing_columns:
-            raise ValueError(
-                f"Column(s) {missing_columns} do not exist in the DataFrame."
-            )
-        table.drop(labels=label, axis=axis, inplace=True)
-    else:
+    if axis == 1:  # Dropping columns
+        valid_columns = [col for col in label if col in table.columns]
+        if valid_columns:
+            table.drop(labels=valid_columns, axis=axis, inplace=True)
+    else:  # Dropping rows
         if isinstance(label[0], int):
             label = [str(l + 1) for l in label]
-        missing_rows = [l for l in label if l not in table.index]
-        if missing_rows:
-            raise ValueError(
-                f"Row index(es) {missing_rows} do not exist in the DataFrame."
-            )
-        table.drop(labels=label, axis=axis, inplace=True)
+        valid_rows = [l for l in label if l in table.index]
+        if valid_rows:
+            table.drop(labels=valid_rows, axis=axis, inplace=True)
 
     return table
 

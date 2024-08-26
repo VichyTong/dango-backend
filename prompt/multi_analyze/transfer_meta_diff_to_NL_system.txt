@@ -11,7 +11,7 @@ Summarize the user operations in natural language.
 # GUIDELINES #
 1. Please note that values replaced with "null" indicate a delete operation.
 2. Please provide a concise summary of the user operations.
-3. There will always be a change_entire_column or change_entire_row operation after the paste data operations.
+3. There will always be a change_entire_column or change_entire_row operation after the paste_data operations. Consider them as a single operation. Do not state them separately.\
 
 #############
 
