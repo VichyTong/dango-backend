@@ -79,7 +79,7 @@ Parameters:
 Output:
 - A pandas DataFrame.
 
-3. assign(table, start_row_index, end_row_index, start_column_index, end_column_index, values): Assigns constant values to specific cells in the table.
+3. assign(table, start_row_index, end_row_index, start_column_index, end_column_index, values): Assigns fixed constant values to specific cells in the table.
 Parameters:
 - table (DataFrame, required): The table to which the values will be assigned.
 - start_row_index, end_row_index (int, required): The range of row indices where the values will be assigned. Indexing starts from 0.
