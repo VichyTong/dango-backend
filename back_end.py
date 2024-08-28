@@ -5,6 +5,7 @@ from pydantic import BaseModel, Field
 from typing import List, Optional, Union
 from io import StringIO
 import json
+import re
 import pandas as pd
 import time
 
@@ -24,8 +25,7 @@ from utils.db import (
 )
 from utils.execute_program import execute_dsl_list
 from utils.dependency import DependenciesManager
-from utils.edit import edit_dsl
-from config.config import config
+from utils.edit import edit_dsl, create_dsl
 
 
 app = FastAPI()
@@ -105,9 +105,23 @@ async def is_file_exists(request_body: FileExists):
 async def delete_file(
     client_id: str = Form(...),
     sheet_id: str = Form(...),
-    version: Optional[int] = Form(0),
 ):
-    # Check if file exists
+    def split_sheet_name(sheet_name):
+        # Regular expression to find "v{int}" suffix
+        match = re.search(r"_v(\d+)\.csv$", sheet_name)
+        if match:
+            # Extract base name and version number
+            base_name = sheet_name[: match.start()] + ".csv"
+            version = int(match.group(1))
+        else:
+            # No version number present
+            base_name = sheet_name
+            version = 0
+
+        return base_name, version
+
+    sheet_id, version = split_sheet_name(sheet_id)
+
     if not is_sheet_exists(client_id, sheet_id, version):
         raise HTTPException(status_code=404, content={"message": "File not found"})
 
@@ -285,7 +299,6 @@ async def handle_generate_dsl(request_body: GenerateDSL):
 
     response = dsl_synthesize(client_id)
     return_message = {"dsl": response, "status": "finish"}
-    print(return_message)
 
     update_client_end_timestamp(client_id, str(time.time()))
     return return_message
@@ -329,17 +342,33 @@ async def get_dependencies():
     return JSONResponse(status_code=200, content={"dependencies": dependency_list})
 
 
+class Program(BaseModel):
+    function_name: Optional[str] = None  # Allow function_name to be None
+    arguments: Optional[List[Union[str, int, float, None, list, dict]]] = None
+    condition: Optional[str] = None
+
+
 class EditDSL(BaseModel):
     client_id: str
-    dsl: Program
+    dsl: Optional[Program] = None
     new_instruction: str
 
 
 @app.post("/edit_dsl")
 async def handle_edit_dsl(request_body: EditDSL):
     client_id = request_body.client_id
-    dsl = request_body.dsl
     new_instruction = request_body.new_instruction
 
-    update_client_end_timestamp(client_id, str(time.time()))
-    return edit_dsl(client_id, dsl, new_instruction)
+    if (
+        (not request_body.dsl.function_name)
+        and (request_body.dsl.arguments == [])
+        and (not request_body.dsl.condition)
+    ):
+        response = create_dsl(client_id, new_instruction)
+        update_client_end_timestamp(client_id, str(time.time()))
+        return response
+    else:
+        dsl = request_body.dsl
+        response = edit_dsl(client_id, dsl, new_instruction)
+        update_client_end_timestamp(client_id, str(time.time()))
+        return response

@@ -52,6 +52,15 @@ CREATE TABLE IF NOT EXISTS client_statistics (
 """
 )
 
+cur.execute(
+    """
+CREATE TABLE IF NOT EXISTS DSL_functions (
+    client_id TEXT PRIMARY KEY,
+    functions TEXT
+);
+"""
+)
+
 
 def upload_sheet(client_id, sheet_id, version, data):
     data = json.dumps(data)
@@ -98,6 +107,7 @@ def get_all_sheet_buffer(client_id):
 
 
 def delete_sheet(client_id, sheet_id, version):
+    print(f"Deleting sheet {sheet_id} version {version}")
     cur.execute(
         "DELETE FROM sheets WHERE client_id = ? AND sheet_id = ? AND version = ?",
         (client_id, sheet_id, version),
@@ -249,3 +259,33 @@ def update_client_verification_attempts(client_id, verification_attempts):
         client_id,
         f">>> Statistics:\nstart_timestamp: {statistics[0]}\nend_timestamp: {statistics[1]}\nverification_attempts: {statistics[2]}\n",
     )
+
+
+def get_DSL_functions(client_id):
+    cur.execute("SELECT functions FROM DSL_functions WHERE client_id = ?", (client_id,))
+    functions = cur.fetchone()[0]
+    return json.loads(functions)
+
+
+def update_DSL_functions(client_id, functions):
+    functions_text = json.dumps(functions)
+    
+    # Check if the client_id already exists in the table
+    cur.execute("SELECT 1 FROM DSL_functions WHERE client_id = ?", (client_id,))
+    exists = cur.fetchone()
+
+    if exists:
+        # If the client_id exists, update the record
+        cur.execute(
+            "UPDATE DSL_functions SET functions = ? WHERE client_id = ?",
+            (functions_text, client_id),
+        )
+    else:
+        # If the client_id doesn't exist, insert a new record
+        cur.execute(
+            "INSERT INTO DSL_functions (client_id, functions) VALUES (?, ?)",
+            (client_id, functions_text),
+        )
+
+    con.commit()
+    return get_DSL_functions(client_id)

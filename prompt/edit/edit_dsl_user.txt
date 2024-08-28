@@ -1,5 +1,5 @@
 Previous Generated DSL:
 {DSL}
 
-New Instructions:
+New Instruction:
 {INSTRUCTIONS}
