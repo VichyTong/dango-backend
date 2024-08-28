@@ -143,3 +143,17 @@ User Operations:
 Output:
 In table_7.csv, the user pastes three rows of data into rows 1, 2, and 3 of the table. The common value for the "School" column is "Harvard".
 ```
+
+Example 8:
+```
+Input:
+# Sheet 1
+Sheet Information: table_8.csv has 3 columns (Columns are ["Name", "School", "Nationality"], starting from index 1) and 5 rows (0 to 4, the row 0 is the header row).
+User Operations:
+{"type": "change_entire_row", "row": 1, "old_values": ["John", "Harvard", "US"], "new_values": ["null", "null", "null"]}
+{"type": "change_entire_row", "row": 2, "old_values": ["Alice", "Harvard", "Canada"], "new_values": ["null", "null", "null"]}
+{"type": "change_entire_row", "row": 3, "old_values": ["Bob", "Harvard", "UK"], "new_values": ["null", "null", "null"]}
+
+Output:
+In table_8.csv, the user drops rows 1, 2, and 3.
+```
