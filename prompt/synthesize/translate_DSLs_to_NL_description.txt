@@ -1,0 +1,131 @@
+# CONTEXT #
+You are a professional Data Scientist.
+You will be given a DSL script that is used to clean and manipulate the data.
+
+#############
+
+# OBJECTIVE #
+Provide a natural language description for the DSL script.
+
+#############
+
+# DSL GRAMMAR #
+{SELECTED_DSL_GRAMMAR}
+
+#############
+
+# INPUT #
+- 
+- DSL Script: a list of objects that represent the functions to be applied to the tables.
+For example:
+{
+    "required_tables": ["test_result.csv", "data.csv"],
+    "program": [
+        {
+            "function_name": "create",
+            "arguments": ["test_result.csv", 1, 2]
+        },
+        {
+            "function_name": "test",
+            "arguments": ["data.csv", "age", "t-test", "columns"]
+        },
+        {
+            "function_name": "drop",
+            "arguments": ["data.csv", "4", "index"]
+        }
+    ]
+}
+
+#############
+
+# OUTPUT #
+- NL Explanation: a JSON object contains natural language explanation that summarizes the DSL script.
+
+#############
+
+# EXAMPLES #
+
+Example 1:
+'''
+- INPUT:
+# Sheet 1
+{
+    "required_tables": ["test_result.csv", "data.csv"],
+    "program": [
+        {
+            "function_name": "create",
+            "arguments": ["test_result.csv", 1, 2]
+        },
+        {
+            "function_name": "test",
+            "arguments": ["data.csv", "age", "t-test", "columns"]
+        },
+        {
+            "function_name": "drop",
+            "arguments": ["data.csv", "4", "index"]
+        }
+    ]
+}
+
+- OUTPUT:
+{
+    "NL Description": "To evaluate the relationship between age and sex in the "Heart Disease Prediction dataset.csv" file, we'll conduct a t-test and store the results in a new table called "test_result.csv". Additionally, we'll remove the fourth row from "data.csv" to ensure data consistency."
+}
+
+'''
+
+Example 2:
+'''
+- INPUT:
+{
+    "required_tables": ["Heart Disease Prediction dataset.csv", "New.csv"],
+    "program": [
+        {
+            "function_name": "copy",
+            "arguments": ["Heart Disease Prediction dataset.csv", "age", "New.csv", "Column1", "columns"]
+        },
+        {
+            "function_name": "copy",
+            "arguments": ["Heart Disease Prediction dataset.csv", "sex", "New.csv", "Column2", "columns"]
+        },
+        {
+            "function_name": "drop",
+            "arguments": ["Heart Disease Prediction dataset.csv", "age", "columns"]
+        },
+        {
+            "function_name": "drop",
+            "arguments": ["Heart Disease Prediction dataset.csv", "sex", "columns"]
+        }
+    ]
+}
+- OUTPUT:
+{
+    "NL Description": "Copy the 'age' column from "Heart Disease Prediction dataset.csv" to "New.csv" and rename it to 'Column1'. Copy the 'sex' column from "Heart Disease Prediction dataset.csv" to "New.csv" and rename it to 'Column2'. Remove the 'age' and 'sex' columns from "Heart Disease Prediction dataset.csv"."
+}
+
+'''
+
+Example 3:
+'''
+- INPUT:
+{
+    "required_tables": ["sales_data.csv", "employees.csv"],
+    "program": [
+        {
+            "function_name": "drop",
+            "condition": "if column \"Revenue\" < 500",
+            "arguments": ["sales_data.csv", "Revenue", "index"]
+        },
+        {
+            "function_name": "split",
+            "condition": "if column \"FullName\" contains \" \"",
+            "arguments": ["employees.csv", "FullName", " ", ["FirstName", "LastName"]]
+        }
+    ]
+}
+- OUTPUT:
+{
+    "NL Description": "Remove rows from 'sales_data.csv' where the 'Revenue' column is less than 500. For 'employees.csv', split the 'FullName' column into 'FirstName' and 'LastName' if it contains a space."
+}
+
+'''

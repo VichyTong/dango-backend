@@ -28,6 +28,7 @@ def init_prompt():
     global plan_with_error_message_system_prompt, plan_with_error_message_user_prompt_template
     global generate_with_error_message_system_prompt, generate_with_error_message_user_prompt_template
     global add_information_system_prompt, add_information_user_prompt_template
+    global translate_DSLs_to_NL_description_prompt
     with open("prompt/synthesize/dsl_grammar.txt", "r") as f:
         dsl_grammar = f.read()
     with open("prompt/synthesize/plan_system.txt", "r") as f:
@@ -52,6 +53,8 @@ def init_prompt():
         add_information_system_prompt = f.read()
     with open("prompt/synthesize/add_information_user.txt", "r") as f:
         add_information_user_prompt_template = f.read()
+    with open("prompt/synthesize/translate_DSLs_to_NL_description.txt", "r") as f:
+        translate_DSLs_to_NL_description_prompt = f.read()
 
 
 init_prompt()
@@ -208,6 +211,15 @@ def verify(client_id, dsls):
     return error_list
 
 
+def translate_DSLs_to_NL(client_id, dsl_list):
+    messages = append_message(translate_DSLs_to_NL_description_prompt, "system", [])
+    messages = append_message(json.dumps(dsl_list, indent=4), "user", messages)
+    response = generate_chat_completion(messages, special_type="json_object")
+    messages = append_message(response, "assistant", messages)
+    log_messages(client_id, "translate_DSLs_to_NL", messages)
+    return response["NL Description"]
+
+
 def dsl_synthesize(client_id: str) -> str:
     history = get_history(client_id)
     summarization = history["summary"]
@@ -238,4 +250,5 @@ def dsl_synthesize(client_id: str) -> str:
     for dsl in dsls["program"]:
         dsl["natural_language"] = transfer_to_NL(dsl)
     dsls["step_by_step_plan"] = summarization
+    dsls["natural_language"] = translate_DSLs_to_NL(client_id, dsls)
     return dsls
