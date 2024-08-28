@@ -58,8 +58,6 @@ def edit_dsl(client_id, dsl, new_instruction):
             dsl_functions["program"][i] = edited_dsl
             break
     update_DSL_functions(client_id, dsl_functions)
-    print(json.dumps(edited_dsl, indent=4))
-    print(json.dumps(dsl_functions, indent=4))
     return edited_dsl
 
 
@@ -77,5 +75,4 @@ def create_dsl(client_id, new_instruction):
 
     dsl_functions["program"].append(created_dsl)
     update_DSL_functions(client_id, dsl_functions)
-    print(json.dumps(dsl_functions, indent=4))
     return created_dsl
