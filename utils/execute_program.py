@@ -81,14 +81,22 @@ def execute_dsl_list(
     function_list = []
     dsl_program_list = []
     for dsl in dsl_list:
-        function_list.append(dsl.function_name)
-        dsl_program_list.append(
-            {
-                "function_name": dsl.function_name,
-                "arguments": dsl.arguments,
-                "condition": dsl.condition,
-            }
-        )
+        function_list.append(dsl["function_name"])
+        if "condition" not in dsl:
+            dsl_program_list.append(
+                {
+                    "function_name": dsl["function_name"],
+                    "arguments": dsl["arguments"],
+                }
+            )
+        else:
+            dsl_program_list.append(
+                {
+                    "function_name": dsl["function_name"],
+                    "arguments": dsl["arguments"],
+                    "condition": dsl["condition"],
+                }
+            )
 
     selected_dsl_grammar = format_selected_dsl_grammar(function_list)
     execute_system_prompt = execute_system_template.replace(
@@ -185,8 +193,8 @@ def execute_dsl_list(
         upload_sheet(client_id, sheet_id, sheet_version, buffer_sheet_data)
 
     for dsl in dsl_list:
-        function = dsl.function_name
-        arguments = dsl.arguments
+        function = dsl["function_name"]
+        arguments = dsl["arguments"]
 
         # Handle divide statement
         if function == "divide" and len(dsl_list) == 1:
