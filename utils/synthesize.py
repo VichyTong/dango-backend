@@ -251,6 +251,6 @@ def dsl_synthesize(client_id: str) -> str:
     for dsl in dsls["program"]:
         dsl["natural_language"] = transfer_to_NL(dsl)
     dsls["step_by_step_plan"] = summarization
-    dsls["natural_language"] = translate_DSLs_to_NL(client_id, dsls)
+    dsls["natural_language_description"] = translate_DSLs_to_NL(client_id, dsls)
     update_DSL_functions(client_id, dsls)
     return dsls
