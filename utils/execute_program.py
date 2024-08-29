@@ -156,14 +156,31 @@ def execute_dsl_list(
                     "version": sheet_version,
                     "data": [],
                     "is_delete": True,
+                    "is_new": False,
                 }
             )
             continue
-
+        
         buffer_sheet_data = buffer["data"]
+        # Same table data
+        same_sheet_version = get_same_sheet_version(
+            client_id, sheet_id, buffer_sheet_data
+        )
         sheet = pd.DataFrame(buffer_sheet_data)
         if "Unnamed: 0" in sheet.columns:
             sheet = pd.DataFrame(buffer_sheet_data, index_col=0)
+        if same_sheet_version is not None:
+            print(f"Sheet {sheet_id} already exists in version {same_sheet_version}")
+            output.append(
+                {
+                    "sheet_id": sheet_id,
+                    "version": same_sheet_version,
+                    "data": sheet.fillna("").to_dict(orient="list"),
+                    "is_delete": False,
+                    "is_new": True,
+                }
+            )
+            continue
 
         # New table data
         sheet_version = find_next_version(client_id, sheet_id)
@@ -173,6 +190,7 @@ def execute_dsl_list(
                 "version": sheet_version,
                 "data": sheet.fillna("").to_dict(orient="list"),
                 "is_delete": False,
+                "is_new": False,
             }
         )
         upload_sheet(client_id, sheet_id, sheet_version, buffer_sheet_data)
