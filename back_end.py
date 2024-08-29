@@ -26,7 +26,7 @@ from utils.db import (
 )
 from utils.execute_program import execute_dsl_list
 from utils.dependency import DependenciesManager
-from utils.edit import edit_dsl, update_dsl
+from utils.edit import edit_dsl, update_dsl, update_intent
 
 
 app = FastAPI()
@@ -319,18 +319,33 @@ class DSL(BaseModel):
 
 class ExecuteDSLList(BaseModel):
     client_id: str
+    dsl_list: DSL
 
 
 @app.post("/execute_dsl_list")
 async def handle_execute_dsl_list(request_body: ExecuteDSLList):
     client_id = request_body.client_id
+    frontend_dsl_list = request_body.dsl_list
+    frontend_program = []
+    for program in frontend_dsl_list.program:
+        frontend_program.append(program.model_dump())
+
     dsls = get_DSL_functions(client_id)
     required_tables = dsls["required_tables"]
     dsl_list = dsls["program"]
     step_by_step_plan = dsls["step_by_step_plan"]
 
+    if frontend_program != dsl_list:
+        step_by_step_plan = update_intent(
+            client_id, frontend_program, step_by_step_plan
+        )
+
     output = execute_dsl_list(
-        client_id, required_tables, dsl_list, step_by_step_plan, DependenciesManager
+        client_id,
+        required_tables,
+        frontend_program,
+        step_by_step_plan,
+        DependenciesManager,
     )
 
     update_client_end_timestamp(client_id, str(time.time()))

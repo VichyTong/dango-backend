@@ -6,6 +6,7 @@ from utils.llm import (
 )
 from utils.convert2NL import transfer_to_NL
 from utils.db import get_DSL_functions, update_DSL_functions
+from utils.log import log_messages
 
 
 def init_prompt():
@@ -30,6 +31,21 @@ def init_prompt():
 
 
 init_prompt()
+
+
+def update_intent(client_id, dsl_functions, old_intent):
+    messages = append_message(update_user_intent_system_prompt, "system", [])
+    messages = append_message(
+        update_user_intent_user_template.replace(
+            "{DSL_SCRIPT}", json.dumps(dsl_functions, indent=4)
+        ).replace("{USER_INTENT}", old_intent),
+        "user",
+        messages,
+    )
+    response = generate_chat_completion(messages)
+    messages = append_message(response, "assistant", messages)
+    log_messages(client_id, "update_intent", messages)
+    return response
 
 
 def edit_dsl(client_id, dsl, new_instruction):
@@ -63,15 +79,9 @@ def edit_dsl(client_id, dsl, new_instruction):
             dsl_functions["program"][i] = edited_dsl
             break
 
-    messages = append_message(update_user_intent_system_prompt, "system", [])
-    messages = append_message(
-        update_user_intent_user_template.replace("{DSL_SCRIPT}", json.dumps(dsl_functions["program"], indent=4)).replace("{USER_INTENT}", dsl_functions["step_by_step_plan"]),
-        "user",
-        messages,
+    dsl_functions["step_by_step_plan"] = update_intent(
+        client_id, dsl_functions["program"], dsl_functions["step_by_step_plan"]
     )
-    messages = generate_chat_completion(messages)
-    dsl_functions["step_by_step_plan"] = messages
-
     update_DSL_functions(client_id, dsl_functions)
     return edited_dsl
 
@@ -90,14 +100,8 @@ def update_dsl(client_id, new_instruction):
 
     dsl_functions["program"].append(created_dsl)
 
-    messages = append_message(update_user_intent_system_prompt, "system", [])
-    messages = append_message(
-        update_user_intent_user_template.replace("{DSL_SCRIPT}", json.dumps(dsl_functions["program"], indent=4)).replace("{USER_INTENT}", dsl_functions["step_by_step_plan"]),
-        "user",
-        messages,
+    dsl_functions["step_by_step_plan"] = update_intent(
+        client_id, dsl_functions["program"], dsl_functions["step_by_step_plan"]
     )
-    messages = generate_chat_completion(messages)
-    dsl_functions["step_by_step_plan"] = messages
-
     update_DSL_functions(client_id, dsl_functions)
     return created_dsl
