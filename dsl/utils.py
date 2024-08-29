@@ -186,7 +186,7 @@ def drop(table, label, axis=0):
     return table
 
 
-def fill(table, method, labels, axis=0):
+def fill(table, labels, method, axis=0):
     axis = classify_axis(axis)
     df = table.copy()
     df.replace("", None, inplace=True)

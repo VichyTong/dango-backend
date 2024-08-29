@@ -21,7 +21,7 @@ Example:
         },
         {
             "function_name": "test",
-            "arguments": ["data.csv", "age", "t-test", "columns"]
+            "arguments": ["data.csv", "age", "data.csv", "sex", "t-test", "columns"]
         },
         {
             "function_name": "drop",

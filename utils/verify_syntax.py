@@ -357,16 +357,16 @@ def pivot_table(params: PIVOT_TABLE_PARAMS):
 # fill(table, method, labels, axis): Fills missing values in the table using the specified method.
 # Parameters:
 # - table (DataFrame, required): Table to fill missing values.
-# - method (str, required): The method to use for filling missing values. Choose from 'value', 'mean', 'median', 'mode', 'ffill', 'bfill', 'interpolate'.
 # - labels (list[str or int] or int or str, required): The label of labels list of the row(s)/column(s) to fill missing values.
+# - method (str, required): The method to use for filling missing values. Choose from 'value', 'mean', 'median', 'mode', 'ffill', 'bfill', 'interpolate'.
 # - axis (str or int, required):
 #     - 0 or "index": Indicates to fill missing values in rows.
 #     - 1 or "columns": Indicates to fill missing values in columns.
 
 class FILL(BaseModel):
     table_name: str
-    method: str
     label: Union[List[str], List[int], int, str]
+    method: str
     axis: Union[str, int]
 
 def fill(params: FILL):
@@ -788,11 +788,11 @@ def validate_pivot_table(arguments, error_list, sheets_names):
 
 def validate_fill(arguments, error_list, sheets_names):
     if len(arguments) != 4:
-        error = create_error_message("Invalid number of arguments", f"The function 'fill' requires 4 arguments: 'table_name', 'method', 'labels', 'axis'.", "fill")
+        error = create_error_message("Invalid number of arguments", f"The function 'fill' requires 4 arguments: 'table_name', 'label', 'method', 'axis'.", "fill")
         error_list.append(error)
         return "Failed"
     try:
-        params = FILL(table_name=arguments[0], method=arguments[1], label=arguments[2], axis=arguments[3])
+        params = FILL(table_name=arguments[0], label=arguments[1], method=arguments[2], axis=arguments[3])
         fill(params)
     except ValidationError as e:
         error = create_error_message("Invalid argument format", f"The arguments for 'fill' are not in the correct format. Please check the argument types and values.", "fill")

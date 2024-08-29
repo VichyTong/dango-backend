@@ -81,7 +81,7 @@ Step-by-step Plan:
         },
         {
             "function_name": "test",
-            "arguments": ["data.csv", "age", "t-test", "columns"]
+            "arguments": ["data.csv", "age", "data.csv", "sex", "t-test", "columns"]
         },
         {
             "function_name": "drop",
@@ -137,7 +137,7 @@ Example 3:
 Sheet Information: sales_data.csv has 4 columns (Columns are ["Date", "FullName", "Revenue", "Product"], starting from index 1) and 10 rows (0 to 9, the row 0 is the header row).
 
 Step-by-step Plan:
-1. Drop rows in sales_data.csv where the column "Revenue" is less than 500. (drop function)
+1. Drop rows in sales_data.csv from row 1 to row 9 where the column "Revenue" value is less than 500. (drop function)
 2. Split the column "FullName" in employees.csv into two columns "FirstName" and "LastName" if it contains a space. (split function)
 
 - OUTPUT:
@@ -147,12 +147,33 @@ Step-by-step Plan:
         {
             "function_name": "drop",
             "condition": "if column \"Revenue\" < 500",
-            "arguments": ["sales_data.csv", "Revenue", "index"]
+            "arguments": ["sales_data.csv", ["1", "2", "3", "4", "5", "6", "7", "8", "9"], "index"]
         },
         {
             "function_name": "split",
             "condition": "if column \"FullName\" contains \" \"",
-            "arguments": ["employees.csv", "FullName", " ", ["FirstName", "LastName"]]
+            "arguments": ["employees.csv", "FullName", " ", ["FirstName", "LastName"], "columns"]
+        }
+    ]
+}
+'''
+
+Example 4:
+'''
+- INPUT:
+# Sheet 1
+Sheet Information: test.csv has 4 columns (Columns are ["Name", "Age", "Grade", "Gender"], starting from index 1) and 10 rows (0 to 9, the row 0 is the header row).
+
+Step-by-step Plan:
+1: Fill all missing values with average values for each row from row 1 to row 9 in test.csv. (fill function)
+
+- OUTPUT:
+{
+    "required_tables": ["test.csv"],
+    "program": [
+        {
+            "function_name": "fill",
+            "arguments": ["test.csv", ["1", "2", "3", "4", "5", "6", "7", "8", "9"], "mean", "index"]
         }
     ]
 }

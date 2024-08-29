@@ -149,8 +149,8 @@ def transfer_to_NL(dsl):
         else:
             return "Invalid function"
     elif dsl["function_name"] == "fill":
-        method = dsl["arguments"][1]
-        labels = dsl["arguments"][2]
+        labels = dsl["arguments"][1]
+        method = dsl["arguments"][2]
         axis = dsl["arguments"][3]
         if axis == 0 or axis == "index" or axis == "0":
             return f"Fill the missing values in the row {labels} in the given table(s) with the method {method}"

@@ -278,7 +278,7 @@ class DependenciesManager:
         return True
 
     def handle_fill_statement(self, arguments):
-        table_name, method, labels, axis = arguments
+        table_name, labels, method, axis = arguments
         new_version = self.get_new_version(table_name)
         base_name, _ = self.split_sheet_name(table_name)
         new_table_name = f"{base_name}_v{new_version}.csv"
