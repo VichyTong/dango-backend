@@ -215,10 +215,10 @@ def verify(client_id, dsls):
 def translate_DSLs_to_NL(client_id, dsl_list):
     messages = append_message(translate_DSLs_to_NL_description_prompt, "system", [])
     messages = append_message(json.dumps(dsl_list, indent=4), "user", messages)
-    response = generate_chat_completion(messages, special_type="json_object")
+    response = generate_chat_completion(messages)
     messages = append_message(response, "assistant", messages)
     log_messages(client_id, "translate_DSLs_to_NL", messages)
-    return response["NL Description"]
+    return response
 
 
 def dsl_synthesize(client_id: str) -> str:
@@ -250,7 +250,7 @@ def dsl_synthesize(client_id: str) -> str:
 
     for dsl in dsls["program"]:
         dsl["natural_language"] = transfer_to_NL(dsl)
-    dsls["step_by_step_plan"] = summarization
     dsls["natural_language_description"] = translate_DSLs_to_NL(client_id, dsls)
+    dsls["step_by_step_plan"] = summarization
     update_DSL_functions(client_id, dsls)
     return dsls

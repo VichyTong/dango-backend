@@ -19,7 +19,7 @@ Provide a natural language description for the DSL script.
 - DSL Script: a list of objects that represent the functions to be applied to the tables.
 For example:
 {
-    "required_tables": ["test_result.csv", "data.csv"],
+    "required_tables": ["data.csv"],
     "program": [
         {
             "function_name": "create",
@@ -27,11 +27,11 @@ For example:
         },
         {
             "function_name": "test",
-            "arguments": ["data.csv", "age", "t-test", "columns"]
+            "arguments": ["data.csv", "grade", "data.csv", "study time", "t-test", "columns"]
         },
         {
             "function_name": "drop",
-            "arguments": ["data.csv", "4", "index"]
+            "arguments": ["data.csv", "study time", "columns"]
         }
     ]
 }
@@ -39,7 +39,7 @@ For example:
 #############
 
 # OUTPUT #
-- NL Explanation: a JSON object contains natural language explanation that summarizes the DSL script.
+- NL Explanation: a natural language description of the DSL script.
 
 #############
 
@@ -50,7 +50,7 @@ Example 1:
 - INPUT:
 # Sheet 1
 {
-    "required_tables": ["test_result.csv", "data.csv"],
+    "required_tables": ["data.csv"],
     "program": [
         {
             "function_name": "create",
@@ -58,20 +58,17 @@ Example 1:
         },
         {
             "function_name": "test",
-            "arguments": ["data.csv", "age", "t-test", "columns"]
+            "arguments": ["data.csv", "grade", "data.csv", "study time", "t-test", "columns"]
         },
         {
             "function_name": "drop",
-            "arguments": ["data.csv", "4", "index"]
+            "arguments": ["data.csv", "study time", "columns"]
         }
     ]
 }
 
 - OUTPUT:
-{
-    "NL Description": "To evaluate the relationship between age and sex in the "Heart Disease Prediction dataset.csv" file, we'll conduct a t-test and store the results in a new table called "test_result.csv". Additionally, we'll remove the fourth row from "data.csv" to ensure data consistency."
-}
-
+Conduct a t-test and store the results in a new table called "test_result.csv". Additionally, remove the "study time" column from the "data.csv" file.
 '''
 
 Example 2:
@@ -99,10 +96,7 @@ Example 2:
     ]
 }
 - OUTPUT:
-{
-    "NL Description": "Copy the 'age' column from "Heart Disease Prediction dataset.csv" to "New.csv" and rename it to 'Column1'. Copy the 'sex' column from "Heart Disease Prediction dataset.csv" to "New.csv" and rename it to 'Column2'. Remove the 'age' and 'sex' columns from "Heart Disease Prediction dataset.csv"."
-}
-
+Copy the 'age' column from "Heart Disease Prediction dataset.csv" to "New.csv" and rename it to 'Column1'. Copy the 'sex' column from "Heart Disease Prediction dataset.csv" to "New.csv" and rename it to 'Column2'. Remove the 'age' and 'sex' columns from "Heart Disease Prediction dataset.csv".
 '''
 
 Example 3:
@@ -124,8 +118,5 @@ Example 3:
     ]
 }
 - OUTPUT:
-{
-    "NL Description": "Remove rows from 'sales_data.csv' where the 'Revenue' column is less than 500. For 'employees.csv', split the 'FullName' column into 'FirstName' and 'LastName' if it contains a space."
-}
-
+Remove rows from 'sales_data.csv' where the 'Revenue' column is less than 500. For 'employees.csv', split the 'FullName' column into 'FirstName' and 'LastName' if it contains a space.
 '''
