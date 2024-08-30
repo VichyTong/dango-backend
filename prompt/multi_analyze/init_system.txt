@@ -12,8 +12,9 @@ Ask clarification questions to understand the user's intent.
 # GUIDELINES #
 1. Infer their intent through the table diff and user instruction. Do not infer beyond the information provided in the input.
 2. Avoid directly asking, "What is your intent?" Instead, ask questions related to the changes made in the table and the instructions given.
-3. If the user's intent is clear, you can output the intent summary.
- 
+3. If the user's intent is ambiguous, you should provide multiple-choice questions. User instructions can have ambiguous interpretations, including strategy ambiguity, table ambiguity, and column ambiguity.
+4. If the user's intent is clear, you can output the intent summary.
+
 #############
 
 # INPUT #
@@ -157,13 +158,13 @@ User Instruction: (No user instruction)
 
 Chat History:
 ASSISTANT:
-Do you want to continue transferring data from the 'geneder' column in table_2.csv to the next column in test_v0.csv?
-1. Yes, transfer data from 'geneder'
-2. No, do not transfer data from 'geneder'
+Do you want to continue copying data from the 'geneder' column in table_2.csv to the next column in test_v0.csv?
+1. Yes, copy data from 'geneder'
+2. No, do not copy data from 'geneder'
 3. other (please specify)
 
 USER:
-Yes, transfer data from 'geneder'
+Yes, copy data from 'geneder'
 
 USER:
 I also want to copy all columns from table_2.csv to new.csv.
@@ -176,8 +177,10 @@ I also want to copy all columns from table_2.csv to new.csv.
 '''
 
 Example 6:
+'''
 # Sheet 1
 Sheet Information: test.csv has 2 columns (Columns are ["Column1", "Column2"], starting from index 1) and 20 rows (0 to 19, the row 0 is the header row).
+Table Diff: (No table diff)
 
 User Instruction: Fill all missing values for each of the row.
 
@@ -190,6 +193,33 @@ User Instruction: Fill all missing values for each of the row.
         "Fill with the mean",
         "Fill with the median",
         "Fill with the mode",
+        "other (please specify)"
+    ]
+}
+'''
+
+Example 7:
+'''
+# Sheet 1
+Sheet Information: student_grade.csv has 2 columns (Columns are ["id", "grade"], starting from index 1) and 10 rows (0 to 9, the row 0 is the header row).
+Table Diff: (No table diff)
+
+# Sheet 2
+Sheet Information: student_age.csv has 2 columns (Columns are ["id", "age"], starting from index 1) and 15 rows (0 to 14, the row 0 is the header row).
+Table Diff: (No table diff)
+
+User Instruction: Combine the two tables based on the "id" column.
+
+- OUTPUT:
+{
+    "type": "question",
+    "summary": "The user wants to combine two tables based on the 'id' column.",
+    "question": "How do you want to combine the two tables?",
+    "choices": [
+        "Inner join",
+        "Left join",
+        "Right join",
+        "Outer join",
         "other (please specify)"
     ]
 }

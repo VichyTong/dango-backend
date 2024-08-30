@@ -14,7 +14,6 @@ Ask clarification questions to understand the user's intent.
 2. Avoid directly asking "What is your intent?" Instead, ask questions related to the changes made in the table and the instructions given.
 3. If the user's intent is unclear, you should provide multiple choices questions.
 4. If the user's intent is clear, you can conclude the user's intent.
-5. Please output the user's intent only, do not output your thinking process.
  
 #############
 

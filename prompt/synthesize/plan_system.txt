@@ -122,7 +122,7 @@ User intents: The user wants to concatenate the "age" and "sex" with a comma and
 ]
 '''
 
-Example 4:
+Example 5:
 '''
 - INPUT:
 # Sheet 1
@@ -139,7 +139,7 @@ User Intents: Fill all missing values for each of the row.
 ]
 '''
 
-Example 5:
+Example 6:
 '''
 - INPUT:
 # Sheet 1
