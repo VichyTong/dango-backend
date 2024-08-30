@@ -62,7 +62,7 @@ Sheet Information: origin.csv has 4 columns (Columns are ["age", "sex", "cp", "t
 Table Diff: (No table diff)
 
 # Sheet 2
-Sheet Information: target.csv has 4 columns (Columns are ["Column1", "Column2", "Column3", "Column4") and 303 rows (0 to 302, the row 0 is the header row).
+Sheet Information: target.csv has 4 columns (Columns are ["Column1", "Column2", "Column3", "Column4"], starting from index 1) and 303 rows (0 to 302, the row 0 is the header row).
 Table Diff: (No table diff)
 
 User Instruction: Move age and sex columns from origin.csv to Column1 and Column2 in target.csv.
