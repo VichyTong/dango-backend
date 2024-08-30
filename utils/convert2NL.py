@@ -84,9 +84,9 @@ def transfer_to_NL(dsl):
         delimiter = dsl["arguments"][2]
         axis = dsl["arguments"][4]
         if axis == 0 or axis == "index" or axis == "0":
-            return f"Split the values in the row {label} in the given table(s) with the delimiter {delimiter}"
+            return f"Split the values in the row {label} in the given table(s) with the delimiter '{delimiter}'"
         elif axis == 1 or axis == "columns" or axis == "1":
-            return f"Split the values in the column {label} in the given table(s) with the delimiter {delimiter}"
+            return f"Split the values in the column {label} in the given table(s) with the delimiter '{delimiter}'"
         else:
             return "Invalid function"
     elif dsl["function_name"] == "transpose":

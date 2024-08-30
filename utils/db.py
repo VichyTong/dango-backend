@@ -81,6 +81,7 @@ def upload_sheet_buffer(client_id, sheet_id, data):
 
 
 def get_sheet(client_id, sheet_id, version):
+    print(client_id, sheet_id, version)
     cur.execute(
         "SELECT data FROM sheets WHERE client_id = ? AND sheet_id = ? AND version = ?",
         (client_id, sheet_id, version),

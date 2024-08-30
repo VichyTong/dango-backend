@@ -94,6 +94,7 @@ def add_more_information(client_id, plan, information):
         table_name = item["table_name"]
         label_name = item["label_name"]
         name, version = split_sheet_name(table_name)
+        print(name, version)
         data = get_sheet(client_id, name, version)
         result += f'\n3 Examples of "{label_name}" of {table_name}:\n'
         for index, keys in enumerate(data[label_name]):

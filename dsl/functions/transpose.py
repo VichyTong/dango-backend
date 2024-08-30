@@ -2,9 +2,8 @@ from dsl.functions import DangoFunction
 
 
 class DangoTranspose(DangoFunction):
-    def __init__(self, table):
+    def __init__(self):
         super().__init__(function_type="table")
-        self.table = table
 
     def definition(self):
         return """\

@@ -311,14 +311,15 @@ class DependenciesManager:
         return True
 
     def handle_split_statement(self, arguments):
-        table_name, label, delimiter, axis, new_column = arguments
+        table_name, label, delimiter, new_label_list, axis = arguments
+        print(table_name)
         new_version = self.get_new_version(table_name)
         base_name, _ = self.split_sheet_name(table_name)
         new_table_name = f"{base_name}_v{new_version}.csv"
 
         action = f"split {'row' if axis in (0, 'index') else 'column'} {label} by delimiter '{delimiter}'"
-        if axis in (1, "columns") and new_column:
-            action += f" into new columns {new_column}"
+        if axis in (1, "columns") and new_label_list:
+            action += f" into new columns {new_label_list}"
 
         dependency = {"sheet_id": table_name, "action": action}
 
@@ -441,5 +442,5 @@ class DependenciesManager:
         return True
 
     def get_new_version(self, table_name):
-        version = int(table_name.split("_")[-1].split(".")[0].replace("v", ""))
+        _, version = self.split_sheet_name(table_name)
         return version + 1
