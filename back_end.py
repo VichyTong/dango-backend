@@ -1,4 +1,4 @@
-from fastapi import FastAPI, UploadFile, File, Form, HTTPException
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
@@ -41,6 +41,9 @@ app.add_middleware(
 )
 
 DependenciesManager = DependenciesManager()
+error_message = {
+    "message": "Sorry, I'm having trouble understanding your request. Could you please retry it again or provide more details in the chat?",
+}
 
 
 @app.post("/login/")
@@ -204,59 +207,62 @@ async def handle_chat(request_body: Chat):
 
 @app.post("/multi_analyze")
 async def handle_multi_analyze(request_body: MultiAnalyze):
-    client_id = request_body.client_id
-    table_list = request_body.table_list
-    user_prompt = request_body.message
+    try:
+        client_id = request_body.client_id
+        table_list = request_body.table_list
+        user_prompt = request_body.message
 
-    if not table_list:
-        table_list = []
-        sheets = get_all_sheets(client_id)
-        for sheet in sheets:
-            sheet_id = sheet[0]
-            version = sheet[1]
-            table_diff = None
-            table_info = TableInfo(
-                sheet_id=sheet_id, version=version, table_diff=table_diff
-            )
-            table_list.append(table_info)
+        if not table_list:
+            table_list = []
+            sheets = get_all_sheets(client_id)
+            for sheet in sheets:
+                sheet_id = sheet[0]
+                version = sheet[1]
+                table_diff = None
+                table_info = TableInfo(
+                    sheet_id=sheet_id, version=version, table_diff=table_diff
+                )
+                table_list.append(table_info)
 
-    processed_tables = []
-    for table in table_list:
-        sheet_id = table.sheet_id
-        version = table.version
-        sheet_info = get_sheet_info(client_id, sheet_id, version)
+        processed_tables = []
+        for table in table_list:
+            sheet_id = table.sheet_id
+            version = table.version
+            sheet_info = get_sheet_info(client_id, sheet_id, version)
 
-        processed_table = {
-            "sheet_id": sheet_id,
-            "version": version,
-            "row_names": sheet_info["row_names"],
-            "column_names": sheet_info["column_names"],
-            "table_diff": table.table_diff,
-        }
-        processed_tables.append(processed_table)
-    
-    print(json.dumps(processed_tables, indent=4))
+            processed_table = {
+                "sheet_id": sheet_id,
+                "version": version,
+                "row_names": sheet_info["row_names"],
+                "column_names": sheet_info["column_names"],
+                "table_diff": table.table_diff,
+            }
+            processed_tables.append(processed_table)
 
-    response = multi_analyze(client_id, processed_tables, user_prompt)
-    if response["type"] == "question":
-        response_question = response["question"]
-        response_choices = response["choices"]
-        return_message = {
-            "client_id": client_id,
-            "question": response_question,
-            "choices": response_choices,
-            "type": "question",
-            "status": "clarification",
-        }
-    elif response["type"] == "finish":
-        return_message = {
-            "client_id": client_id,
-            "type": "finish",
-            "status": "generate_dsl",
-        }
+        response = multi_analyze(client_id, processed_tables, user_prompt)
+        if response["type"] == "question":
+            response_question = response["question"]
+            response_choices = response["choices"]
+            return_message = {
+                "client_id": client_id,
+                "question": response_question,
+                "choices": response_choices,
+                "type": "question",
+                "status": "clarification",
+            }
+        elif response["type"] == "finish":
+            return_message = {
+                "client_id": client_id,
+                "type": "finish",
+                "status": "generate_dsl",
+            }
 
-    update_client_end_timestamp(client_id, str(time.time()))
-    return return_message
+        update_client_end_timestamp(client_id, str(time.time()))
+        return return_message
+    except Exception:
+        return JSONResponse(
+            content=error_message, status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
 
 
 class Response(BaseModel):
@@ -266,30 +272,35 @@ class Response(BaseModel):
 
 @app.post("/response")
 async def handle_response(request_body: Response):
-    client_id = request_body.client_id
-    user_response = request_body.response
-    response = followup(client_id, user_response)
+    try:
+        client_id = request_body.client_id
+        user_response = request_body.response
+        response = followup(client_id, user_response)
 
-    if response["type"] == "question":
-        response_question = response["question"]
-        response_choices = response["choices"]
+        if response["type"] == "question":
+            response_question = response["question"]
+            response_choices = response["choices"]
 
-        return_message = {
-            "client_id": client_id,
-            "question": response_question,
-            "choices": response_choices,
-            "type": "question",
-            "status": "clarification",
-        }
-    elif response["type"] == "finish":
-        return_message = {
-            "client_id": client_id,
-            "type": "finish",
-            "status": "generate_dsl",
-        }
+            return_message = {
+                "client_id": client_id,
+                "question": response_question,
+                "choices": response_choices,
+                "type": "question",
+                "status": "clarification",
+            }
+        elif response["type"] == "finish":
+            return_message = {
+                "client_id": client_id,
+                "type": "finish",
+                "status": "generate_dsl",
+            }
 
-    update_client_end_timestamp(client_id, str(time.time()))
-    return return_message
+        update_client_end_timestamp(client_id, str(time.time()))
+        return return_message
+    except Exception:
+        return JSONResponse(
+            content=error_message, status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
 
 
 class GenerateDSL(BaseModel):
@@ -298,13 +309,18 @@ class GenerateDSL(BaseModel):
 
 @app.post("/generate_dsl")
 async def handle_generate_dsl(request_body: GenerateDSL):
-    client_id = request_body.client_id
+    try:
+        client_id = request_body.client_id
 
-    response = dsl_synthesize(client_id)
-    return_message = {"dsl": response, "status": "finish"}
+        response = dsl_synthesize(client_id)
+        return_message = {"dsl": response, "status": "finish"}
 
-    update_client_end_timestamp(client_id, str(time.time()))
-    return return_message
+        update_client_end_timestamp(client_id, str(time.time()))
+        return return_message
+    except Exception:
+        return JSONResponse(
+            content=error_message, status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
 
 
 class Program(BaseModel):
@@ -326,32 +342,37 @@ class ExecuteDSLList(BaseModel):
 
 @app.post("/execute_dsl_list")
 async def handle_execute_dsl_list(request_body: ExecuteDSLList):
-    client_id = request_body.client_id
-    frontend_dsl_list = request_body.dsl_list
-    frontend_program = []
-    for program in frontend_dsl_list.program:
-        frontend_program.append(program.model_dump())
+    try:
+        client_id = request_body.client_id
+        frontend_dsl_list = request_body.dsl_list
+        frontend_program = []
+        for program in frontend_dsl_list.program:
+            frontend_program.append(program.model_dump())
 
-    dsls = get_DSL_functions(client_id)
-    required_tables = dsls["required_tables"]
-    dsl_list = dsls["program"]
-    step_by_step_plan = dsls["step_by_step_plan"]
+        dsls = get_DSL_functions(client_id)
+        required_tables = dsls["required_tables"]
+        dsl_list = dsls["program"]
+        step_by_step_plan = dsls["step_by_step_plan"]
 
-    if frontend_program != dsl_list:
-        step_by_step_plan = update_intent(
-            client_id, frontend_program, step_by_step_plan
+        if frontend_program != dsl_list:
+            step_by_step_plan = update_intent(
+                client_id, frontend_program, step_by_step_plan
+            )
+
+        output = execute_dsl_list(
+            client_id,
+            required_tables,
+            frontend_program,
+            step_by_step_plan,
+            DependenciesManager,
         )
 
-    output = execute_dsl_list(
-        client_id,
-        required_tables,
-        frontend_program,
-        step_by_step_plan,
-        DependenciesManager,
-    )
-
-    update_client_end_timestamp(client_id, str(time.time()))
-    return output
+        update_client_end_timestamp(client_id, str(time.time()))
+        return output
+    except Exception:
+        return JSONResponse(
+            content=error_message, status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
 
 
 @app.get("/get_dependencies/")
@@ -374,19 +395,24 @@ class EditDSL(BaseModel):
 
 @app.post("/edit_dsl")
 async def handle_edit_dsl(request_body: EditDSL):
-    client_id = request_body.client_id
-    new_instruction = request_body.new_instruction
+    try:
+        client_id = request_body.client_id
+        new_instruction = request_body.new_instruction
 
-    if (
-        (not request_body.dsl.function_name)
-        and (request_body.dsl.arguments == [])
-        and (not request_body.dsl.condition)
-    ):
-        response = update_dsl(client_id, new_instruction)
-        update_client_end_timestamp(client_id, str(time.time()))
-        return response
-    else:
-        dsl = request_body.dsl
-        response = edit_dsl(client_id, dsl, new_instruction)
-        update_client_end_timestamp(client_id, str(time.time()))
-        return response
+        if (
+            (not request_body.dsl.function_name)
+            and (request_body.dsl.arguments == [])
+            and (not request_body.dsl.condition)
+        ):
+            response = update_dsl(client_id, new_instruction)
+            update_client_end_timestamp(client_id, str(time.time()))
+            return response
+        else:
+            dsl = request_body.dsl
+            response = edit_dsl(client_id, dsl, new_instruction)
+            update_client_end_timestamp(client_id, str(time.time()))
+            return response
+    except Exception:
+        return JSONResponse(
+            content=error_message, status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
