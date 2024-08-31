@@ -32,7 +32,7 @@ def validate_dsls_format(function_calls: List[dict], error_list=[]):
         return "Failed"
 
 
-# blank_table(row_number, column_number): Returns a empty table with the specified number of rows and columns.
+# blank_table(row_number, column_number): Returns an empty table with the specified number of rows and columns.
 # Parameters:
 # - row_number (int, required): The number of rows in the table.
 # - column_number (int, required): The number of columns in the table.
@@ -105,19 +105,21 @@ class ASSIGN_PARAMS(BaseModel):
     end_row_index: int
     start_column_index: int
     end_column_index: int
-    values: Union[List[List[int]], int]
+    values: Union[List[List[int]], List[List[str]], List[List[float]], int, float, str]
 
 
 def assign(params: ASSIGN_PARAMS):
     return
 
-# move(origin_table_name, origin_index, target_table_name, target_index, axis): Moves a row or column from the origin table to the target table.
+# move(origin_table, origin_index, target_table, target_index, axis): Moves a row or column from the origin table to the target table.
 # Parameters:
-# - origin_table_name (str): The name of the table from which the row/column will be moved.
-# - origin_index (int): The index of the row/column to be moved.
-# - target_table_name (str): The name of the table to which the row/column will be moved.
-# - target_index (int): The index at which the row/column will be moved in the target table.
-# - axis (str or int): Refers to the direction of the operation.
+# - origin_table (DataFrame, required): TThe table from which the row or column will be moved.
+# - origin_index (int, required): The index of the row or column to be moved in the origin table.
+# - target_table (DataFrame, required): The table to which the row or column will be moved.
+# - target_index (int, required): The index at which the row or column will be inserted in the target table.
+# - axis (str or int, required):
+#     - 0 or "index": Indicates that a row will be moved.
+#     - 1 or "columns": Indicates that a column will be moved.
 
 
 class MOVE_PARAMS(BaseModel):
@@ -314,7 +316,7 @@ def format(params: FORMAT_PARAMS):
 class REARRANGE_PARAMS(BaseModel):
     table_name: str
     by_values: Optional[str]
-    by_array: Optional[List[str]]
+    by_array: Optional[Union[List[str], List[int]]]
     axis: Union[str, int]
 
 def rearrange(params: REARRANGE_PARAMS):
