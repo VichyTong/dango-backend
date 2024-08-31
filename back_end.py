@@ -259,7 +259,8 @@ async def handle_multi_analyze(request_body: MultiAnalyze):
 
         update_client_end_timestamp(client_id, str(time.time()))
         return return_message
-    except Exception:
+    except Exception as e:
+        print(e)
         return JSONResponse(
             content=error_message, status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
@@ -297,7 +298,8 @@ async def handle_response(request_body: Response):
 
         update_client_end_timestamp(client_id, str(time.time()))
         return return_message
-    except Exception:
+    except Exception as e:
+        print(e)
         return JSONResponse(
             content=error_message, status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
@@ -317,7 +319,8 @@ async def handle_generate_dsl(request_body: GenerateDSL):
 
         update_client_end_timestamp(client_id, str(time.time()))
         return return_message
-    except Exception:
+    except Exception as e:
+        print(e)
         return JSONResponse(
             content=error_message, status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
@@ -369,7 +372,8 @@ async def handle_execute_dsl_list(request_body: ExecuteDSLList):
 
         update_client_end_timestamp(client_id, str(time.time()))
         return output
-    except Exception:
+    except Exception as e:
+        print(e)
         return JSONResponse(
             content=error_message, status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
@@ -412,7 +416,8 @@ async def handle_edit_dsl(request_body: EditDSL):
             response = edit_dsl(client_id, dsl, new_instruction)
             update_client_end_timestamp(client_id, str(time.time()))
             return response
-    except Exception:
+    except Exception as e:
+        print(e)
         return JSONResponse(
             content=error_message, status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
         )

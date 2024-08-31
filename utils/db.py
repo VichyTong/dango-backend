@@ -74,7 +74,10 @@ def upload_sheet(client_id, sheet_id, version, data):
 def upload_sheet_buffer(client_id, sheet_id, data):
     data = json.dumps(data)
     cur.execute(
-        "INSERT INTO sheets_buffer (client_id, sheet_id, data) VALUES (?, ?, ?)",
+        """
+        INSERT OR REPLACE INTO sheets_buffer (client_id, sheet_id, data)
+        VALUES (?, ?, ?)
+        """,
         (client_id, sheet_id, data),
     )
     con.commit()
@@ -270,7 +273,7 @@ def get_DSL_functions(client_id):
 
 def update_DSL_functions(client_id, functions):
     functions_text = json.dumps(functions)
-    
+
     # Check if the client_id already exists in the table
     cur.execute("SELECT 1 FROM DSL_functions WHERE client_id = ?", (client_id,))
     exists = cur.fetchone()

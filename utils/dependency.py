@@ -88,11 +88,12 @@ class DependenciesManager:
         match = re.search(r"_v(\d+)\.csv$", sheet_name)
         if match:
             # Extract base name and version number
-            base_name = sheet_name[: match.start()] + ".csv"
+            base_name = sheet_name[: match.start()]
             version = int(match.group(1))
         else:
             # No version number present
-            base_name = sheet_name
+            if sheet_name.endswith(".csv"):
+                base_name = sheet_name[: -len(".csv")]
             version = 0
 
         return base_name, version
@@ -314,6 +315,7 @@ class DependenciesManager:
         table_name, label, delimiter, new_label_list, axis = arguments
         new_version = self.get_new_version(table_name)
         base_name, _ = self.split_sheet_name(table_name)
+        print(base_name, table_name)
         new_table_name = f"{base_name}_v{new_version}.csv"
 
         action = f"split {'row' if axis in (0, 'index') else 'column'} {label} by delimiter '{delimiter}'"
