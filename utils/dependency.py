@@ -312,7 +312,6 @@ class DependenciesManager:
 
     def handle_split_statement(self, arguments):
         table_name, label, delimiter, new_label_list, axis = arguments
-        print(table_name)
         new_version = self.get_new_version(table_name)
         base_name, _ = self.split_sheet_name(table_name)
         new_table_name = f"{base_name}_v{new_version}.csv"
@@ -389,10 +388,7 @@ class DependenciesManager:
 
     def handle_merge_statement(self, arguments):
         table_a, table_b, how, on = arguments
-        new_version = max(self.get_new_version(table_a), self.get_new_version(table_b))
-        base_name_a, _ = self.split_sheet_name(table_a)
-        base_name_b, _ = self.split_sheet_name(table_b)
-        new_table_name = f"{base_name_a}_{base_name_b}_merged_v{new_version}.csv"
+        new_table_name = f"merged_v0.csv"
 
         action = f"merge tables {table_a} and {table_b} with how={how} and on={on}"
 

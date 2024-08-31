@@ -266,7 +266,12 @@ def get_multi_analyze(client_id, table_list, user_prompt):
         column_number = len(column_names)
         sheet_id = table["sheet_id"]
         version = table["version"]
-        file_name = f"{sheet_id.split('.csv')[0]}_v{version}.csv"
+
+        # remove .csv
+        if ".csv" in sheet_id:
+            base_name = sheet_id[:-4]
+
+        file_name = f"{base_name}_v{version}.csv"
         row_count = len(table["row_names"])
 
         column_names = json.dumps(column_names)

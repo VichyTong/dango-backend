@@ -234,6 +234,8 @@ async def handle_multi_analyze(request_body: MultiAnalyze):
             "table_diff": table.table_diff,
         }
         processed_tables.append(processed_table)
+    
+    print(json.dumps(processed_tables, indent=4))
 
     response = multi_analyze(client_id, processed_tables, user_prompt)
     if response["type"] == "question":

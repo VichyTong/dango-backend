@@ -77,16 +77,20 @@ Example 2:
 Sheet Information: test.csv has 3 columns (Columns are ["Column1", "Column2", "Column3"], starting from index 1) and 5 rows (0 to 4, the row 0 is the header row).
 Table Diff: (No table diff)
 
+# Sheet 2
+Sheet Information: data.csv has 3 columns (Columns are ["Column1", "Column2", "Column3"], starting from index 1) and 5 rows (0 to 4, the row 0 is the header row).
+Table Diff: (No table diff)
+
 User Instruction: Insert a new column "NewColumn" at the end of the table.
 
 - OUTPUT:
 {
     "type": "question",
-    "summary": "The user wants to insert a new column 'NewColumn' at the end of the table.",
-    "question": "Since test.csv has 3 columns, do you want to insert 'NewColumn' at position 4?",
+    "summary": "The user wants to insert a new column 'NewColumn' at the end of one of the table.",
+    "question": "Which table do you want to insert 'NewColumn' into?",
     "choices": [
-        "Yes, insert 'NewColumn' at position 4",
-        "No, specify the position to insert 'NewColumn'",
+        "Insert 'NewColumn' into test.csv",
+        "Insert 'NewColumn' into data.csv",
         "other (please specify)"
     ]
 }

@@ -41,7 +41,7 @@ Output:
 1. All output should include the save_table function.
 2. When creating a new table using the save_table function, ensure the table is formatted as "{name}_v{version}.csv". Please start the version from 0.
 3. When using merge_table function, here is the naming convention for the tables:
-- merge_table function: "{table_a}_{table_b}_merged_v0.csv"
+- merge_table function: "merged_v0.csv"
 4. The row indexes are strings start from "1" and should be enclosed in double quotes.
 
 #############
