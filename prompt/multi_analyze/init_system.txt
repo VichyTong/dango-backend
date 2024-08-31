@@ -220,10 +220,45 @@ User Instruction: Combine the two tables based on the "id" column.
     "summary": "The user wants to combine two tables based on the 'id' column.",
     "question": "How do you want to combine the two tables?",
     "choices": [
-        "Inner join",
-        "Left join",
-        "Right join",
-        "Outer join",
+        "Only keep the common id rows",
+        "Keep all rows from both tables",
+        "Only keep the rows from the first table",
+        "Only keep the rows from the second table",
+        "other (please specify)"
+    ]
+}
+'''
+
+Example 8:
+'''
+# Sheet 1
+Sheet Information: test.csv has 3 columns (Columns are ["name", "age", "grade"], starting from index 1) and 20 rows (0 to 19, the row 0 is the header row).
+Table Diff: (No table diff)
+
+User Instruction: Summarize the grade in the table.
+
+Chat History:
+USER:
+Delete the 'geneder' column in test.csv.
+
+ASSISTANT:
+Do you want to delete more columns in test.csv?
+
+USER:
+No.
+
+USER:
+Summarize the grade in the table.
+
+- OUTPUT:
+{
+    "type": "question",
+    "summary": "The user wants to summarize the 'grade' column in the table.",
+    "question": "How do you want to summarize the 'grade' column?",
+    "choices": [
+        "Calculate the mean",
+        "Calculate the median",
+        "Calculate the mode",
         "other (please specify)"
     ]
 }

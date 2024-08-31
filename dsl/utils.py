@@ -28,6 +28,7 @@ def classify_axis(axis):
 
 
 def aggregate(table, functions, axis=0):
+    print(table)
     axis = classify_axis(axis)
     # Warn: Special change for better LLM understanding, please refer to the definition.
     if axis == 0:

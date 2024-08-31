@@ -691,10 +691,6 @@ def validate_aggregate(arguments, error_list, sheets_names):
     except ValidationError as e:
         error = create_error_message("Invalid argument format", f"The arguments for 'aggregate' are not in the correct format. Please check the argument types and values.", "aggregate")
         error_list.append(error)
-
-    if arguments[0] not in sheets_names:
-        error = create_error_message("Table does not exist", f"The table '{arguments[0]}' does not exist. Please create the table before performing operations on it.", "aggregate")
-        error_list.append(error)
     return "Success"
 
 

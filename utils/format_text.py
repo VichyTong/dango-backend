@@ -35,7 +35,7 @@ def get_history_text(history, with_sheet_info=True):
     else:
         prompt = ""
     chat_history = history["chat_history"]
-    prompt += "Chat History:\n"
+    prompt += "\nChat History:\n"
     for chat in chat_history:
         prompt += f"{chat['role'].upper()}:\n{chat['message']}\n\n"
 
