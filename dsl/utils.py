@@ -444,23 +444,21 @@ def rearrange(table, by_values=None, by_array=None, axis=0):
         raise ValueError("Either by_values or by_array must be provided")
 
 
-def split(table, label, delimiter, new_label_list, axis=0):
+def split(table, label, delimiter, new_label_list=None, axis=0):
     axis = classify_axis(axis)
 
-    def split_rows(df, label, delimiter, new_label_list):
-        if axis == 0 and isinstance(label, int):
-            label = str(label + 1)
+    def split_rows(df, label, delimiter):
         new_rows = []
         for _, row in df.iterrows():
             split_values = row[label].split(delimiter)
             for i, value in enumerate(split_values):
                 new_row = row.copy()
-                if new_label_list and i < len(new_label_list):
-                    new_row[new_label_list[i]] = value.strip()
-                else:
-                    new_row[label] = value.strip()
+                new_row[label] = value.strip()
                 new_rows.append(new_row)
-        return pd.DataFrame(new_rows)
+
+        # Create the new DataFrame and reset the index
+        new_df = pd.DataFrame(new_rows)
+        return new_df.reset_index(drop=True)
 
     def split_columns(df, label, delimiter, new_label_list):
         new_columns = df[label].str.split(delimiter, expand=True)
@@ -470,12 +468,15 @@ def split(table, label, delimiter, new_label_list, axis=0):
             new_columns.columns = [
                 f"{label}_part{i+1}" for i in range(new_columns.shape[1])
             ]
+
+        column_position = df.columns.get_loc(label)
         df = df.drop(columns=[label])
-        df = pd.concat([df, new_columns], axis=1)
+        for i, col in enumerate(new_columns.columns):
+            df.insert(column_position + i, col, new_columns[col])
         return df
 
     if axis == 0:
-        return split_rows(table, label, delimiter)
+        return split_rows(table, label, delimiter, new_label_list)
     elif axis == 1:
         return split_columns(table, label, delimiter, new_label_list)
     else:
