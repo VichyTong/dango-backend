@@ -28,7 +28,6 @@ def classify_axis(axis):
 
 
 def aggregate(table, functions, axis=0):
-    print(table)
     axis = classify_axis(axis)
     # Warn: Special change for better LLM understanding, please refer to the definition.
     if axis == 0:
@@ -49,12 +48,6 @@ def aggregate(table, functions, axis=0):
 def assign(
     table, start_row_index, end_row_index, start_column_index, end_column_index, values
 ):
-    # Adjust indices to be zero-based
-    start_row_index -= 1
-    end_row_index -= 1
-    start_column_index -= 1
-    end_column_index -= 1
-
     # If values is a single number, create a matrix of that value
     if isinstance(values, (int, float, str)):
         num_rows = end_row_index - start_row_index + 1
