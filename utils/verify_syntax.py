@@ -57,12 +57,14 @@ class DELETE_TABLE_PARAMS(BaseModel):
 def delete_table(params: DELETE_TABLE_PARAMS):
     return
 
-# insert(table_name, index, index_name, axis): Inserts an empty row or column at the specified index in the table.
+# insert(table, index, index_name, axis): Inserts an empty row or column at the specified index in the table. Other rows or columns will be moved down or to the right.
 # Parameters:
-# - table_name (str): The name of the table to insert the row/column into.
-# - index (int): The index at which the row/column will be inserted.
-# - index_name (str): The name of the new row/column.
-# - axis (str or int): Refers to the direction of the operation.
+# - table (DataFrame, required): The table to insert the row or column into.
+# - index (int, required): The position at which the new row or column will be inserted. For example, if index is 1, the new row or column will be at position 1.
+# - index_name (str, required): The name of the new row or column.
+# - axis (str or int, required):
+#     - 0 or "index": Indicates that a row will be inserted.
+#     - 1 or "columns": Indicates that a column will be inserted.
 
 
 class INSERT_PARAMS(BaseModel):
@@ -75,11 +77,13 @@ class INSERT_PARAMS(BaseModel):
 def insert(params: INSERT_PARAMS):
     return
 
-# drop(table_name, label, axis): Drops a row or column in the table.
+# drop(table, label, axis): Drops one or more rows or columns from the table.
 # Parameters:
-# - table_name (str): The name of the table to drop the row/column from.
-# - label (str or int or list[str] or list[int]): The label or list of labels of the row/column to be dropped.
-# - axis (str or int): Refers to the direction of the operation.
+# - table (DataFrame, required): The table from which the row(s) or column(s) will be dropped.
+# - label (str or int or list[str] or list[int], required): The label or list of labels of the row(s) or column(s) to be dropped.
+# - axis (str or int, required):
+#     - 0 or "index": Indicates that one or more rows will be dropped.
+#     - 1 or "columns": Indicates that one or more columns will be dropped.
 
 
 class DROP_PARAMS(BaseModel):
@@ -91,13 +95,12 @@ class DROP_PARAMS(BaseModel):
 def drop(params: DROP_PARAMS):
     return
 
-# assign(table_name, start_row_index, end_row_index, start_column_index, end_column_index, values): Assigns a value to specific cells in the table.
+# assign(table, start_row_index, end_row_index, start_column_index, end_column_index, values): Assigns fixed constant values to specific cells in the table.
 # Parameters:
-# - table_name (str): The name of the table to assign the value to.
-# - start_row_index, end_row_index (int): The range of row indices to assign the value to.
-# - start_column_index, end_column_index (int): The range of column indices to assign the value to.
-# - values (list[list[int/float/str]] or int/float/str): The value(s) to assign to the specified cell(s). Can be a single int/float/str or a list of lists of int/float/str.
-
+# - table (DataFrame, required): The table to which the values will be assigned.
+# - start_row_index, end_row_index (int, required): The range of row indices where the values will be assigned. Indexing starts from 0 and must be int.
+# - start_column_index, end_column_index (int, required): The range of column indices where the values will be assigned. Indexing starts from 0 and must be int.
+# - values (list[list[int/float/str]] or int/float/str, required): The constant value(s) to assign to the specified cell(s). If "values" is a list of list, the values are assigned in order from top to bottom, left to right. If "values" is a single value, it is assigned to all cells in the specified range.
 
 class ASSIGN_PARAMS(BaseModel):
     table_name: str
@@ -105,7 +108,7 @@ class ASSIGN_PARAMS(BaseModel):
     end_row_index: int
     start_column_index: int
     end_column_index: int
-    values: Union[List[List[int]], List[List[str]], List[List[float]], int, float, str]
+    values: Union[List[List[Union[int, str, float]]], int, float, str]
 
 
 def assign(params: ASSIGN_PARAMS):
@@ -133,13 +136,15 @@ class MOVE_PARAMS(BaseModel):
 def move(params: MOVE_PARAMS):
     return
 
-# copy(origin_table_name, origin_index, target_table_name, target_index, axis): Copies a row or column from the origin table to the target table at the specified index.
+# copy(origin_table, origin_label, target_table, target_label, axis): Copies a row or column from the origin table to the target table at the specified label.
 # Parameters:
-# - origin_table_name (str): The name of the table from which the row/column will be copied.
-# - origin_label (str or int): The index of the row/column to be copied.
-# - target_table_name (str): The name of the table to which the row/column will be copied.
-# - target_label (str or int): The index at which the row/column will be copied in the target table.
-# - axis (str or int): Refers to the direction of the operation.
+# - origin_table (DataFrame, required): The table from which the row or column will be copied.
+# - origin_label (str or int, required): The label of the row or column to be copied.
+# - target_table (DataFrame, required): The table to which the row or column will be copied.
+# - target_label (str or int, required): The label at which the row or column will be placed in the target table. If this label already exists, the copied row or column will overwrite the existing one.
+# - axis (str or int, required): Specifies the axis along which the copy operation is performed.
+#     - 0 or "index": Copy a row.
+#     - 1 or "columns": Copy a column.
 
 
 class COPY_PARAMS(BaseModel):
@@ -153,13 +158,15 @@ class COPY_PARAMS(BaseModel):
 def copy(params: COPY_PARAMS):
     return
 
-# swap(table_name_a, label_a, table_name_b, label_b, axis): Swaps rows or columns between two tables.
+# swap(table_a, label_a, table_b, label_b, axis): Swaps rows or columns between two tables.
 # Parameters:
-# - table_name_a (str): The first table from which the row/column will be swapped.
-# - label_a (str or int): The label of the row/column to be swapped in the first table.
-# - table_name_b (str): The second table from which the row/column will be swapped.
-# - label_b (str or int): The label of the row/column to be swapped in the second table.
-# - axis (str or int): Refers to the direction of the operation.
+# - table_a (DataFrame, required): The first table from which the row or column will be swapped.
+# - label_a (str or int, required): The label of the row or column to be swapped in the first table.
+# - table_b (DataFrame, required): The second table from which the row or column will be swapped.
+# - label_b (str or int, required): The label of the row or column to be swapped in the second table.
+# - axis (str or int, required):
+#     - 0 or "index": Indicates to swap rows.
+#     - 1 or "columns": Indicates to swap columns.
 
 
 class SWAP_PARAMS(BaseModel):
@@ -173,14 +180,12 @@ class SWAP_PARAMS(BaseModel):
 def swap(params: SWAP_PARAMS):
     return
 
-# merge(table_a, table_b, how="outer", on=None, axis=0): Merges two tables based on a common column or along columns.
+# merge(table_a, table_b, how, on): Merges two tables based on a common column.
 # Parameters:
-# - table_a: First table
-# - table_b: Second table
-# - how: Type of merge to be performed. Options are 'left', 'right', 'outer', 'inner'. Default is 'outer'.
-# - on: Column or index level names to join on. Must be found in both DataFrames. If not provided and the DataFrames have a common column, will default to the intersection of the columns in the DataFrames.
-# - axis: Axis to concatenate along. 0 or "index" for row-wise, 1 or "column" for column-wise. Default is 0.
-
+# - table_a (DataFrame, required): The first table to merge.
+# - table_b (DataFrame, required): The second table to merge.
+# - how(str, required): The type of merge to be performed. Options are 'left', 'right', 'outer', 'inner', or 'fuzzy'.
+# - on(str, required): Column or index level names to join on. Must be present in both tables.
 
 class MERGE_PARAMS(BaseModel):
     table_name_a: str
@@ -192,14 +197,16 @@ class MERGE_PARAMS(BaseModel):
 def merge(params: MERGE_PARAMS):
     return
 
-# concatenate(table_name, label_a, label_b, glue, new_label, axis): Concatenates two labels and appends the merged label to the table.
+# concatenate(table, label_a, label_b, glue, new_label, axis): Concatenates two rows or columns using a string as glue and appends the merged row or column to the table.
 # Parameters:
-# - table_name (str): table in which the rows/columns will be concatenated.
-# - label_a (str or int): The label of the first row/column to be concatenated.
-# - label_b (str or int): The label of the second row/column to be concatenated.
-# - glue (str): The string to be used to concatenate the two rows/columns.
-# - new_label (str or int): The label of the new row/column created by the concatenation.
-# - axis (str or int): Refers to the direction of the operation.
+# - table (DataFrame, required): The table in which the rows or columns will be concatenated.
+# - label_a (str or int, required): The label of the first row or column to be concatenated.
+# - label_b (str or int, required): The label of the second row or column to be concatenated.
+# - glue (str, required): The string used to concatenate the two rows or columns.
+# - new_label (str or int, required): The label of the new row or column created by the concatenation.
+# - axis (str or int, required):
+#     - 0 or "index": Indicates that rows will be concatenated.
+#     - 1 or "columns": Indicates that columns will be concatenated.
 
 
 class CONCATENATE_PARAMS(BaseModel):
@@ -234,9 +241,9 @@ class SPLIT_PARAMS(BaseModel):
 def split(params: SPLIT_PARAMS):
     return
 
-# transpose(table_name): Transposes the given table.
+# transpose(table): Transposes the given table.
 # Parameters:
-# - table_name (str): table to be transposed.
+# - table (DataFrame, required): The table to be transposed.
 
 
 class TRANSPOSE_PARAMS(BaseModel):
@@ -247,11 +254,13 @@ def transpose(params: TRANSPOSE_PARAMS):
     return
 
 
-# aggregate(table_name, functions, axis): Aggregates the table using the specified function.
+# aggregate(table, functions, axis): Aggregates the table using a specified function.
 # Parameters:
-# - table_name (str): table to be aggregated.
-# - functions (dict): Keys are names of rows or columns, and values are lists of function names. Example: {'A': ['sum', 'mean'], 'B': ['min', 'max']}.
-# - axis (str or int): Refers to the direction of the operation.
+# - table (DataFrame, required): table to be aggregated.
+# - functions (dict, required): Keys are the names of rows or columns, and values are lists of function names. Example: {'A': ['sum', 'mean'], 'B': ['min', 'max']}.
+# - axis (str or int, required):
+#     - 0 or "index": Applies the aggregate operations on rows, with the keys in the functions dictionary corresponding to row names.
+#     - 1 or "columns": Applies the aggregate operations on columns, with the keys in the functions dictionary corresponding to column names.
 
 class AGGREGATE_PARAMS(BaseModel):
     table_name: str
@@ -262,14 +271,16 @@ class AGGREGATE_PARAMS(BaseModel):
 def aggregate(params: AGGREGATE_PARAMS):
     return
 
-# test(table_name, label_a, label_b, strategy, axis): Returns a new result table by comparing two labels using the specified strategy.
+# test(table_a, label_a, table_b, label_b, strategy, axis): Compares two labels using the specified statistical test and returns a tuple (statistic, p_value).
 # Parameters:
-# - table_name (str): table on which the test will be performed.
-# - label_a (str or int): The label of the first row/column to be tested.
-# - label_b (str or int): The label of the second row/column to be tested.
-# - strategy (str): The stati   stical test to perform ('t-test', 'z-test', 'chi-squared').
-# - axis (str or int): Refers to the direction of the operation.
-
+# - table_a (DataFrame, required): The first table on which the test will be performed.
+# - label_a (str or int, required): The label of the first row or column to be tested in the first table.
+# - table_b (DataFrame, required): The second table on which the test will be performed.
+# - label_b (str or int, required): The label of the second row or column to be tested in the second table.
+# - strategy (str, required): The statistical test to perform. Options include 't-test', 'z-test', 'chi-squared', 'pearson-correlation'.
+# - axis (str or int, required):
+#     - 0 or "index": Indicates that rows will be tested.
+#     - 1 or "columns": Indicates that columns will be tested.
 
 class TEST_PARAMS(BaseModel):
     table_name_a: str
@@ -284,15 +295,15 @@ def test(params: TEST_PARAMS):
     return
 
 
-# format(table_name, label, pattern, replace_with, axis): Formats the values in a row or column based on the specified pattern.
+# format(table, label, pattern, replace_with, axis): Formats the values in a row or column based on the specified pattern and "replace_with" using re.sub().
 # Parameters:
-# - table_name: table in which the row/column will be formatted.
-# - label: The label of the row/column to be formatted.
-# - pattern: The format regex pattern to apply to the values, You can use group syntax.
-# - replace_with: The string or backreference to replace the matched pattern with.
-# - axis:
-#     - 0 or "index": Indicates a row operation.
-#     - 1 or "columns": Indicates a column operation.
+# - table (DataFrame, required): The DataFrame in which the row or column will be formatted.
+# - label (str or int, required): The label of the row or column to be formatted.
+# - pattern (str, required): The regex pattern to apply to the values. You can use group syntax.
+# - replace_with (str, required): The string or backreference to replace the matched pattern with.
+# - axis (str or int, required):
+#     - 0 or "index": Indicates to format a row.
+#     - 1 or "columns": Indicates to format a column.
 
 class FORMAT_PARAMS(BaseModel):
     table_name: str
@@ -304,31 +315,31 @@ class FORMAT_PARAMS(BaseModel):
 def format(params: FORMAT_PARAMS):
     return
 
-# rearrange(table_name, by_values=None, by_array=None, axis): Rearranges the rows or columns of the table based on the specified order.
+# rearrange(table, by_values=None, by_array=None, axis): Rearranges the rows or columns of the table based on the specified order.
 # Parameters:
-# - table_name: table to be rearranged.
-# - by_values: If this parameter is set, the rows/columns will be rearranged based on the values in the specified row/column.
-# - by_array: If this parameter is set, the rows/columns will be rearranged based on the order of the values in the array.
-# - axis:
-#     - 0 or "index": Indicates a row operation.
-#     - 1 or "columns": Indicates a column operation.
+# - table (DataFrame, required): The table to be rearranged.
+# - by_values (str, optional): If set, the rows or columns will be rearranged based on the values in the specified row or column.
+# - by_array (list[str/int], optional): If set, the rows or columns will be rearranged based on the order of the values in the array.
+# - axis (str or int, required):
+#     - 0 or "index": Indicates that rows will be rearranged based on the values in the specified row or column or the order in the array.
+#     - 1 or "columns": Indicates that columns will be rearranged based on the values in the specified row or column or the order in the array.
 
 class REARRANGE_PARAMS(BaseModel):
     table_name: str
     by_values: Optional[str]
-    by_array: Optional[Union[List[str], List[int]]]
+    by_array: Optional[Union[List[Union[str, int]]]]
     axis: Union[str, int]
 
 def rearrange(params: REARRANGE_PARAMS):
     pass
 
-# divide(table_name, by=None, axis): Divides the table by the specific values of a row or column, return a list of tables.
+# divide(table, by, axis): Divides the table by the specified row or column, returning a list of tables.
 # Parameters:
-# - table (str): table to be divided.
-# - by(int/str): The label of a row or column.
-# - axis (str or int):
-#     - 0 or "index": Indicates to divide the table by a row.
-#     - 1 or "columns": Indicates to divide the table by a column.
+# - table (DataFrame, required): The table to be divided.
+# - by(int/str, required): The label of the row or column by which the table will be divided.
+# - axis (str or int, required):
+#     - 0 or "index": Indicates that the table will be divided by a row. Set axis to 0 if by is a row label.
+#     - 1 or "columns": Indicates that the table will be divided by a column. Set axis to 1 if by is a column label.
 
 class DIVIDE_PARAMS(BaseModel):
     table_name: str
@@ -338,13 +349,13 @@ class DIVIDE_PARAMS(BaseModel):
 def divide(params: DIVIDE_PARAMS):
     pass
 
-# pivot_table(table_name, index, columns, values, aggfunc): Reshapes the table so that each unique 'columns' value becomes a separate column, with the 'index' values as row headers, and the corresponding 'values' filled in their respective cells.
+# pivot_table(table, index, columns, values, aggfunc): Reshapes the table so that each unique value in columns becomes a separate column, with index values as row headers, and the corresponding values filled in their respective cells.
 # Parameters:
-# - table (DataFrame): The table to pivot.
-# - index (str): The column name to use as the new row headers.
-# - columns (str): The column name to use as the new column headers.
-# - values (str): The column name whose values will fill the new table.
-# - aggfunc (str): The aggregation function to apply to the values. Common options are 'first', 'sum', 'mean', etc.
+# - table (DataFrame, required): The table to pivot.
+# - index (str, required): The column name to use as the new row headers.
+# - columns (str, required): The column name to use as the new column headers.
+# - values (str, required): The column name whose values will fill the new table.
+# - aggfunc (str, required): The aggregation function to apply to the values. Common options are 'first', 'sum', 'mean', etc.
 
 class PIVOT_TABLE_PARAMS(BaseModel):
     table_name: str
@@ -358,12 +369,12 @@ def pivot_table(params: PIVOT_TABLE_PARAMS):
 
 # fill(table, method, labels, axis): Fills missing values in the table using the specified method.
 # Parameters:
-# - table (DataFrame, required): Table to fill missing values.
-# - labels (list[str or int] or int or str, required): The label of labels list of the row(s)/column(s) to fill missing values.
+# - table (DataFrame, required): The table in which missing values will be filled.
+# - labels (list[str or int] or int or str, required): The label or list of labels where missing values will be filled.
 # - method (str, required): The method to use for filling missing values. Choose from 'value', 'mean', 'median', 'mode', 'ffill', 'bfill', 'interpolate'.
 # - axis (str or int, required):
-#     - 0 or "index": Indicates to fill missing values in rows.
-#     - 1 or "columns": Indicates to fill missing values in columns.
+#     - 0 or "index": Indicates that labels correspond to row labels, and filling will be applied across rows.
+#     - 1 or "columns": Indicates that labels correspond to column labels, and filling will be applied across columns.
 
 class FILL(BaseModel):
     table_name: str
