@@ -181,10 +181,14 @@ def drop(table, label, axis=0):
 
 
 def fill(table, labels, method, axis=0):
+    print(table)
     axis = classify_axis(axis)
     df = table.copy()
     df.replace("", None, inplace=True)
-    if isinstance(labels, (int, str)):
+
+    if labels == "ALL":
+        labels = df.index if axis == 0 else df.columns
+    elif isinstance(labels, (int, str)):
         labels = [labels]
 
     def should_skip(series):
