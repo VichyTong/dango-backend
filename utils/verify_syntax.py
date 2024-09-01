@@ -402,6 +402,25 @@ class SUBTABLE(BaseModel):
 def subtable(params: SUBTABLE):
     pass
 
+# count(table, label, value, axis): Counts the occurrences of a specified value within a given column or row in a DataFrame, then store the value in a new DataFrame.
+# Parameters:
+# - table (DataFrame, required): The DataFrame to operate on.
+# - label (str or int, required): The column name (if axis=0) or row label/index (if axis=1) where the value should be counted.
+# - value (str or int, required): The value to count within the specified column or row.
+# - axis (int or str, optional):
+#     - 0 or "index": Indicates that the count will be performed on a column.
+#     - 1 or "columns": Indicates that the count will be performed on a row.
+
+class COUNT(BaseModel):
+    table_name: str
+    label: Union[str, int]
+    value: Union[str, int]
+    axis: Union[str, int]
+
+def count(params: COUNT):
+    pass
+
+
 def get_sheet_names(all_sheets):
     sheets_names = [sheet[0] for sheet in all_sheets]
     sheets_names = [sheet.split(".csv")[0] for sheet in sheets_names]
@@ -417,6 +436,7 @@ def validate_dsls_functions(function_calls: List[dict], all_sheets, error_list=[
         "blank_table",
         "concatenate",
         "copy",
+        "count",
         "delete_table",
         "divide",
         "drop",
@@ -449,6 +469,8 @@ def validate_dsls_functions(function_calls: List[dict], all_sheets, error_list=[
                 validate_concatenate(call["arguments"], error_list, sheets_names)
             elif call["function_name"] == "copy":
                 validate_copy(call["arguments"], error_list, sheets_names)
+            elif call["function_name"] == "count":
+                validate_count(call["arguments"], error_list, sheets_names)
             elif call["function_name"] == "delete_table":
                 validate_delete_table(call["arguments"], error_list, sheets_names)
             elif call["function_name"] == "divide":
@@ -506,10 +528,6 @@ def validate_delete_table(arguments, error_list, sheets_names):
     except ValidationError as e:
         error = create_error_message("Invalid argument format", f"The argument for 'delete_table' is not in the correct format. Please check the argument type and value.", "delete_table")
         error_list.append(error)
-
-    if arguments[0] not in sheets_names:
-        error = create_error_message("Table does not exist", f"The table '{arguments[0]}' does not exist. Please create the table before performing operations on it.", "delete_table")
-        error_list.append(error)
     return "Success"
 
 
@@ -523,10 +541,6 @@ def validate_insert(arguments, error_list, sheets_names):
         insert(params)
     except ValidationError as e:
         error = create_error_message("Invalid argument format", f"The arguments for 'insert' are not in the correct format. Please check the argument types and values.", "insert")
-        error_list.append(error)
-
-    if arguments[0] not in sheets_names:
-        error = create_error_message("Table does not exist", f"The table '{arguments[0]}' does not exist. Please create the table before performing operations on it.", "insert")
         error_list.append(error)
     return "Success"
 
@@ -542,11 +556,6 @@ def validate_drop(arguments, error_list, sheets_names):
     except ValidationError as e:
         error = create_error_message("Invalid argument format", f"The arguments for 'drop' are not in the correct format. Please check the argument types and values.", "drop")
         error_list.append(error)
-
-    if arguments[0] not in sheets_names:
-        error = create_error_message("Table does not exist", f"The table '{arguments[0]}' does not exist. Please create the table before performing operations on it.", "drop")
-        error_list.append(error)
-
     return "Success"
 
 
@@ -560,10 +569,6 @@ def validate_assign(arguments, error_list, sheets_names):
         assign(params)
     except ValidationError as e:
         error = create_error_message("Invalid argument format", f"The arguments for 'assign' are not in the correct format. Please check the argument types and values.", "assign")
-        error_list.append(error)
-
-    if arguments[0] not in sheets_names:
-        error = create_error_message("Table does not exist", f"The table '{arguments[0]}' does not exist. Please create the table before performing operations on it.", "assign")
         error_list.append(error)
     return "Success"
 
@@ -579,10 +584,6 @@ def validate_move(arguments, error_list, sheets_names):
     except ValidationError as e:
         error = create_error_message("Invalid argument format", f"The arguments for 'move' are not in the correct format. Please check the argument types and values.", "move")
         error_list.append(error)
-
-    if arguments[0] not in sheets_names or arguments[2] not in sheets_names:
-        error = create_error_message("Table does not exist", f"The table '{arguments[0]}' or '{arguments[2]}' does not exist. Please create the table before performing operations on it.", "move")
-        error_list.append(error)
     return "Success"
 
 
@@ -596,10 +597,6 @@ def validate_copy(arguments, error_list, sheets_names):
         copy(params)
     except ValidationError as e:
         error = create_error_message("Invalid argument format", f"The arguments for 'copy' are not in the correct format. Please check the argument types and values.", "copy")
-        error_list.append(error)
-
-    if arguments[0] not in sheets_names or arguments[2] not in sheets_names:
-        error = create_error_message("Table does not exist", f"The table '{arguments[0]}' or '{arguments[2]}' does not exist. Please create the table before performing operations on it.", "copy")
         error_list.append(error)
     return "Success"
 
@@ -615,10 +612,6 @@ def validate_swap(arguments, error_list, sheets_names):
     except ValidationError as e:
         error = create_error_message("Invalid argument format", f"The arguments for 'swap' are not in the correct format. Please check the argument types and values.", "swap")
         error_list.append(error)
-
-    if arguments[0] not in sheets_names or arguments[2] not in sheets_names:
-        error = create_error_message("Table does not exist", f"The table '{arguments[0]}' or '{arguments[2]}' does not exist. Please create the table before performing operations on it.", "swap")
-        error_list.append(error)
     return "Success"
 
 
@@ -633,10 +626,6 @@ def validate_merge(arguments, error_list, sheets_names):
     except ValidationError as e:
         error = create_error_message("Invalid argument format", f"The arguments for 'merge' are not in the correct format. Please check the argument types and values.", "merge")
         error_list.append(error)
-
-    if arguments[0] not in sheets_names or arguments[1] not in sheets_names:
-        error = create_error_message("Table does not exist", f"The table '{arguments[0]}' or '{arguments[1]}' does not exist. Please create the table before performing operations on it.", "merge")
-        error_list.append(error)
     return "Success"
 
 
@@ -650,10 +639,6 @@ def validate_concatenate(arguments, error_list, sheets_names):
         concatenate(params)
     except ValidationError as e:
         error = create_error_message("Invalid argument format", f"The arguments for 'concatenate' are not in the correct format. Please check the argument types and values.", "concatenate")
-        error_list.append(error)
-
-    if arguments[0] not in sheets_names:
-        error = create_error_message("Table does not exist", f"The table '{arguments[0]}' does not exist. Please create the table before performing operations on it.", "concatenate")
         error_list.append(error)
     return "Success"
 
@@ -684,10 +669,6 @@ def validate_transpose(arguments, error_list, sheets_names):
     except ValidationError as e:
         error = create_error_message("Invalid argument format", f"The argument for 'transpose' is not in the correct format. Please check the argument type and value.", "transpose")
         error_list.append(error)
-
-    if arguments[0] not in sheets_names:
-        error = create_error_message("Table does not exist", f"The table '{arguments[0]}' does not exist. Please create the table before performing operations on it.", "transpose")
-        error_list.append(error)
     return "Success"
 
 
@@ -716,10 +697,7 @@ def validate_test(arguments, error_list, sheets_names):
     except ValidationError as e:
         error = create_error_message("Invalid argument format", f"The arguments for 'test' are not in the correct format. Please check the argument types and values.", "test")
         error_list.append(error)
-
-    if arguments[0] not in sheets_names or arguments[2] not in sheets_names:
-        error = create_error_message("Table does not exist", f"The table '{arguments[0]}' or '{arguments[2]}' does not exist. Please create the table before performing operations on it.", "test")
-        error_list.append(error)
+    return "Success"
 
 def validate_format(arguments, error_list, sheets_names):
     if len(arguments) != 5:
@@ -731,10 +709,6 @@ def validate_format(arguments, error_list, sheets_names):
         format(params)
     except ValidationError as e:
         error = create_error_message("Invalid argument format", f"The arguments for 'format' are not in the correct format. Please check the argument types and values.", "format")
-        error_list.append(error)
-
-    if arguments[0] not in sheets_names:
-        error = create_error_message("Table does not exist", f"The table '{arguments[0]}' does not exist. Please create the table before performing operations on it.", "format")
         error_list.append(error)
     return "Success"
 
@@ -749,10 +723,6 @@ def validate_rearrange(arguments, error_list, sheets_names):
     except ValidationError as e:
         error = create_error_message("Invalid argument format", f"The arguments for 'rearrange' are not in the correct format. Please check the argument types and values.", "rearrange")
         error_list.append(error)
-
-    if arguments[0] not in sheets_names:
-        error = create_error_message("Table does not exist", f"The table '{arguments[0]}' does not exist. Please create the table before performing operations on it.", "rearrange")
-        error_list.append(error)
     return "Success"
 
 def validate_divide(arguments, error_list, sheets_names):
@@ -765,10 +735,6 @@ def validate_divide(arguments, error_list, sheets_names):
         divide(params)
     except ValidationError as e:
         error = create_error_message("Invalid argument format", f"The arguments for 'divide' are not in the correct format. Please check the argument types and values.", "divide")
-        error_list.append(error)
-
-    if arguments[0] not in sheets_names:
-        error = create_error_message("Table does not exist", f"The table '{arguments[0]}' does not exist. Please create the table before performing operations on it.", "divide")
         error_list.append(error)
     return "Success"
 
@@ -783,10 +749,6 @@ def validate_pivot_table(arguments, error_list, sheets_names):
     except ValidationError as e:
         error = create_error_message("Invalid argument format", f"The arguments for 'pivot_table' are not in the correct format. Please check the argument types and values.", "pivot_table")
         error_list.append(error)
-
-    if arguments[0] not in sheets_names:
-        error = create_error_message("Table does not exist", f"The table '{arguments[0]}' does not exist. Please create the table before performing operations on it.", "pivot_table")
-        error_list.append(error)
     return "Success"
 
 def validate_fill(arguments, error_list, sheets_names):
@@ -799,10 +761,6 @@ def validate_fill(arguments, error_list, sheets_names):
         fill(params)
     except ValidationError as e:
         error = create_error_message("Invalid argument format", f"The arguments for 'fill' are not in the correct format. Please check the argument types and values.", "fill")
-        error_list.append(error)
-
-    if arguments[0] not in sheets_names:
-        error = create_error_message("Table does not exist", f"The table '{arguments[0]}' does not exist. Please create the table before performing operations on it.", "fill")
         error_list.append(error)
     return "Success"
 
@@ -817,8 +775,17 @@ def validate_subtable(arguments, error_list, sheets_names):
     except ValidationError as e:
         error = create_error_message("Invalid argument format", f"The arguments for 'subtable' are not in the correct format. Please check the argument types and values.", "subtable")
         error_list.append(error)
+    return "Success"
 
-    if arguments[0] not in sheets_names:
-        error = create_error_message("Table does not exist", f"The table '{arguments[0]}' does not exist. Please create the table before performing operations on it.", "subtable")
+def validate_count(arguments, error_list, sheets_names):
+    if len(arguments) != 4:
+        error = create_error_message("Invalid number of arguments", f"The function 'count' requires 4 arguments: 'table_name', 'label', 'value', 'axis'.", "count")
+        error_list.append(error)
+        return "Failed"
+    try:
+        params = COUNT(table_name=arguments[0], label=arguments[1], value=arguments[2], axis=arguments[3])
+        count(params)
+    except ValidationError as e:
+        error = create_error_message("Invalid argument format", f"The arguments for 'count' are not in the correct format. Please check the argument types and values.", "count")
         error_list.append(error)
     return "Success"

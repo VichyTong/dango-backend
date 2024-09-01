@@ -3,6 +3,7 @@ import dsl.functions.assign as assign
 import dsl.functions.blank_table as blank_table
 import dsl.functions.concatenate as concatenate
 import dsl.functions.copy as copy
+import dsl.functions.count as count
 import dsl.functions.delete_table as delete_table
 import dsl.functions.divide as divide
 import dsl.functions.drop as drop
@@ -26,6 +27,7 @@ function_map = {
     "blank_table": blank_table.DangoBlankTable,
     "concatenate": concatenate.DangoConcatenate,
     "copy": copy.DangoCopy,
+    "count": count.DangoCount,
     "delete_table": delete_table.DangoDeleteTable,
     "divide": divide.DangoDivide,
     "drop": drop.DangoDrop,

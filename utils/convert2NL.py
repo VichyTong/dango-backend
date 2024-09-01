@@ -171,6 +171,16 @@ def transfer_to_NL(dsl):
             return f"Extract a subtable from the given table(s) based on the columns {label_list}"
         else:
             return "Invalid function"
+    elif dsl["function_name"] == "count":
+        label = dsl["arguments"][1]
+        value = dsl["arguments"][2]
+        axis = dsl["arguments"][3]
+        if axis == 0 or axis == "index" or axis == "0":
+            return f"Count the occurrences of the value {value} in the row {label} in the given table(s)"
+        elif axis == 1 or axis == "columns" or axis == "1":
+            return f"Count the occurrences of the value {value} in the column {label} in the given table(s)"
+        else:
+            return "Invalid function"
     else:
         return "Invalid function"
     

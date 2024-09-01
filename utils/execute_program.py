@@ -38,6 +38,7 @@ from dsl.utils import (
     concatenate,
     split,
     format,
+    count,
 )
 from utils.format_text import format_selected_dsl_grammar
 

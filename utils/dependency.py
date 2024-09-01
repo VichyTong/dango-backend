@@ -64,6 +64,7 @@ class DependenciesManager:
             "assign": self.handle_assign_statement,
             "move": self.handle_move_statement,
             "copy": self.handle_copy_statement,
+            "count": self.handle_count_statement,
             "swap": self.handle_swap_statement,
             "transpose": self.handle_transpose_statement,
             "rearrange": self.handle_rearrange_statement,
@@ -198,6 +199,21 @@ class DependenciesManager:
             self.add_dependency(new_target_table, dependency)
         else:
             self.add_node(new_target_table, [dependency])
+
+        self.display_nodes()
+        return True
+
+    def handle_count_statement(self, arguments):
+        table_name, label, value, axis = arguments
+        new_version = self.get_new_version(table_name)
+        base_name, _ = self.split_sheet_name(table_name)
+        new_table_name = f"{base_name}_v{new_version}.csv"
+
+        action = f"count {'row' if axis in (0, 'index') else 'column'} {label} with value {value}"
+
+        dependency = {"sheet_id": table_name, "action": action}
+
+        self.add_node(new_table_name, [dependency])
 
         self.display_nodes()
         return True

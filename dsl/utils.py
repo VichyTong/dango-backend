@@ -603,3 +603,17 @@ def transpose(table):
     transposed_table = table.transpose()
 
     return transposed_table
+
+
+def count(table, label, value, axis=0):
+    axis = classify_axis(axis)
+
+    if axis == 1:
+        count_result = table[label].value_counts().get(value, 0)
+    else:
+        count_result = table.loc[label].value_counts().get(value, 0)
+
+    # create a new table
+    new_table = pd.DataFrame([count_result], columns=[value])
+
+    return new_table
