@@ -145,13 +145,13 @@ Example 6:
 # Sheet 1
 Sheet Information: test.csv has 2 columns (Columns are ["Column1", "Column2"], starting from index 1) and 20 rows (0 to 19, the row 0 is the header row).
 
-User Intents: Delete any row with missing values in "Column1".
+User Intents: Delete rows with any missing value in "Column1".
 
 - OUTPUT:
 [
     {
-        "function": "delete",
-        "description": "Delete rows 1 through 19 with missing values in 'Column1' in test.csv."
+        "function": "drop",
+        "description": "Drop rows 1 through 19 with missing values in 'Column1' in test.csv."
     }
 ]
 '''
