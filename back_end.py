@@ -345,38 +345,38 @@ class ExecuteDSLList(BaseModel):
 
 @app.post("/execute_dsl_list")
 async def handle_execute_dsl_list(request_body: ExecuteDSLList):
-    # try:
-    client_id = request_body.client_id
-    frontend_dsl_list = request_body.dsl_list
-    frontend_program = []
-    for program in frontend_dsl_list.program:
-        frontend_program.append(program.model_dump())
+    try:
+        client_id = request_body.client_id
+        frontend_dsl_list = request_body.dsl_list
+        frontend_program = []
+        for program in frontend_dsl_list.program:
+            frontend_program.append(program.model_dump())
 
-    dsls = get_DSL_functions(client_id)
-    required_tables = dsls["required_tables"]
-    dsl_list = dsls["program"]
-    step_by_step_plan = dsls["step_by_step_plan"]
+        dsls = get_DSL_functions(client_id)
+        required_tables = dsls["required_tables"]
+        dsl_list = dsls["program"]
+        step_by_step_plan = dsls["step_by_step_plan"]
 
-    if frontend_program != dsl_list:
-        step_by_step_plan = update_intent(
-            client_id, frontend_program, step_by_step_plan
+        if frontend_program != dsl_list:
+            step_by_step_plan = update_intent(
+                client_id, frontend_program, step_by_step_plan
+            )
+
+        output = execute_dsl_list(
+            client_id,
+            required_tables,
+            frontend_program,
+            step_by_step_plan,
+            DependenciesManager,
         )
 
-    output = execute_dsl_list(
-        client_id,
-        required_tables,
-        frontend_program,
-        step_by_step_plan,
-        DependenciesManager,
-    )
-
-    update_client_end_timestamp(client_id, str(time.time()))
-    return output
-    # except Exception as e:
-    #     print(e)
-    #     return JSONResponse(
-    #         content=error_message, status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
-    #     )
+        update_client_end_timestamp(client_id, str(time.time()))
+        return output
+    except Exception as e:
+        print(e)
+        return JSONResponse(
+            content=error_message, status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
 
 
 @app.get("/get_dependencies/")
