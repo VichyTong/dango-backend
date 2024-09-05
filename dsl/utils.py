@@ -3,6 +3,7 @@ import pandas as pd
 import scipy.stats as stats
 import statsmodels.api as sm
 from thefuzz import process
+import numpy as np
 
 pd.set_option("future.no_silent_downcasting", True)
 
@@ -197,24 +198,26 @@ def fill(table, labels, method, axis=0):
     # Convert all string values to NaN
     table_numeric = table_copy.mask(str_mask)
 
-
-
     # Determine the fill values based on the strategy
-    if method == 'mean':
+    if method == "mean":
         fill_values = table_numeric.mean(axis=axis, skipna=True)
-    elif method == 'median':
+    elif method == "median":
         fill_values = table_numeric.median(axis=axis, skipna=True)
-    elif method == 'mode':
+    elif method == "mode":
         # Mode can have multiple values; take the first one
         fill_values = table_numeric.mode(dropna=True, axis=axis)
         if axis == 0:
             fill_values = fill_values.iloc[0]
         else:
-            fill_values = fill_values.apply(lambda x: x[0] if len(x) > 0 else np.nan, axis=1)
+            fill_values = fill_values.apply(
+                lambda x: x[0] if len(x) > 0 else np.nan, axis=1
+            )
     elif isinstance(method, (int, float)):
         fill_values = method
     else:
-        raise ValueError("Invalid strategy. Choose 'mean', 'median', 'mode', or specify a constant number.")
+        raise ValueError(
+            "Invalid strategy. Choose 'mean', 'median', 'mode', or specify a constant number."
+        )
 
     # Fill missing values based on axis
     if axis == 0:
@@ -293,9 +296,17 @@ def merge(table_a, table_b, how="outer", on=None):
         merged_df = merged_df.drop(columns=["matched_name", f"{on}_y"]).rename(
             columns={f"{on}_x": on}
         )
-        return merged_df
     else:
-        return pd.merge(table_a, table_b, how=how, on=on)
+        merged_df = pd.merge(table_a, table_b, how=how, on=on)
+
+    # Drop _y columns and rename _x columns to the original name
+    for col in table_a.columns:
+        if f"{col}_x" in merged_df.columns and f"{col}_y" in merged_df.columns:
+            merged_df = merged_df.drop(columns=[f"{col}_y"]).rename(
+                columns={f"{col}_x": col}
+            )
+
+    return merged_df
 
 
 def move(origin_table, origin_label, target_table, target_label, axis=0):
@@ -312,7 +323,7 @@ def move(origin_table, origin_label, target_table, target_label, axis=0):
             origin_index = origin_table.index.get_loc(origin_label)
         else:
             raise ValueError("origin_label must be an int or str")
-        
+
         # Handle target_label
         if isinstance(target_label, int):
             target_index = target_label
@@ -324,11 +335,17 @@ def move(origin_table, origin_label, target_table, target_label, axis=0):
         # Move row
         row = origin_table.iloc[origin_index].copy()
         origin_table = origin_table.drop(index=origin_index)
-        
+
         if same_table:
             target_table = origin_table.copy()
-        
-        target_table = pd.concat([target_table.iloc[:target_index], row.to_frame().T, target_table.iloc[target_index:]])
+
+        target_table = pd.concat(
+            [
+                target_table.iloc[:target_index],
+                row.to_frame().T,
+                target_table.iloc[target_index:],
+            ]
+        )
 
     elif axis == 1:  # Moving columns
         # Handle origin_label
@@ -338,7 +355,7 @@ def move(origin_table, origin_label, target_table, target_label, axis=0):
             origin_col = origin_table.columns.get_loc(origin_label)
         else:
             raise ValueError("origin_label must be an int or str")
-        
+
         # Handle target_label
         if isinstance(target_label, int):
             target_col = target_label
@@ -350,11 +367,18 @@ def move(origin_table, origin_label, target_table, target_label, axis=0):
         # Move column
         column = origin_table.iloc[:, origin_col].copy()
         origin_table = origin_table.drop(columns=origin_table.columns[origin_col])
-        
+
         if same_table:
             target_table = origin_table.copy()
 
-        target_table = pd.concat([target_table.iloc[:, :target_col], column.to_frame(), target_table.iloc[:, target_col:]], axis=1)
+        target_table = pd.concat(
+            [
+                target_table.iloc[:, :target_col],
+                column.to_frame(),
+                target_table.iloc[:, target_col:],
+            ],
+            axis=1,
+        )
 
     else:
         raise ValueError("axis must be 0 (rows) or 1 (columns)")
