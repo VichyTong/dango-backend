@@ -8,6 +8,7 @@ import json
 import re
 import pandas as pd
 import time
+import traceback
 
 
 from utils.analyze import multi_analyze, followup
@@ -263,7 +264,9 @@ async def handle_multi_analyze(request_body: MultiAnalyze):
         update_client_end_timestamp(client_id, str(time.time()))
         return return_message
     except Exception as e:
-        print(e)
+        error_message = traceback.format_exc()
+        print("An error occurred:")
+        print(error_message)
         return JSONResponse(
             content=error_message, status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
@@ -302,7 +305,9 @@ async def handle_response(request_body: Response):
         update_client_end_timestamp(client_id, str(time.time()))
         return return_message
     except Exception as e:
-        print(e)
+        error_message = traceback.format_exc()
+        print("An error occurred:")
+        print(error_message)
         return JSONResponse(
             content=error_message, status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
@@ -321,9 +326,12 @@ async def handle_generate_dsl(request_body: GenerateDSL):
         return_message = {"dsl": response, "status": "finish"}
 
         update_client_end_timestamp(client_id, str(time.time()))
+        print(json.dumps(return_message, indent=4))
         return return_message
     except Exception as e:
-        print(e)
+        error_message = traceback.format_exc()
+        print("An error occurred:")
+        print(error_message)
         return JSONResponse(
             content=error_message, status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
@@ -376,7 +384,9 @@ async def handle_execute_dsl_list(request_body: ExecuteDSLList):
         update_client_end_timestamp(client_id, str(time.time()))
         return output
     except Exception as e:
-        print(e)
+        error_message = traceback.format_exc()
+        print("An error occurred:")
+        print(error_message)
         return JSONResponse(
             content=error_message, status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
@@ -405,6 +415,7 @@ async def handle_edit_dsl(request_body: EditDSL):
     try:
         client_id = request_body.client_id
         new_instruction = request_body.new_instruction
+        print(f">>>>>>> New Instruction: {new_instruction}")
 
         if (
             (not request_body.dsl.function_name)
@@ -420,7 +431,9 @@ async def handle_edit_dsl(request_body: EditDSL):
             update_client_end_timestamp(client_id, str(time.time()))
             return response
     except Exception as e:
-        print(e)
+        error_message = traceback.format_exc()
+        print("An error occurred:")
+        print(error_message)
         return JSONResponse(
             content=error_message, status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
         )

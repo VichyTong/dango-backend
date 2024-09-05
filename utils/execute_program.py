@@ -13,6 +13,8 @@ from utils.db import (
     delete_sheet_buffer,
     get_same_sheet_version,
     find_next_version,
+    get_history,
+    update_history,
 )
 from utils.log import log_messages
 from utils.llm import (
@@ -137,6 +139,7 @@ def execute_dsl_list(
 
     output = []
     all_sheet_buffer = get_all_sheet_buffer(client_id)
+    history = get_history(client_id)
 
     for table, buffer in all_sheet_buffer:
         delete_sheet_buffer(client_id, table)
@@ -162,8 +165,9 @@ def execute_dsl_list(
                 }
             )
             continue
-        
+
         buffer_sheet_data = buffer["data"]
+
         # Same table data
         same_sheet_version = get_same_sheet_version(
             client_id, sheet_id, buffer_sheet_data
@@ -173,6 +177,13 @@ def execute_dsl_list(
             sheet = pd.DataFrame(buffer_sheet_data, index_col=0)
         if same_sheet_version is not None:
             print(f"Sheet {sheet_id} already exists in version {same_sheet_version}")
+            history["chat_history"].append(
+                {
+                    "role": "system",
+                    "message": f"Output table already exists in {sheet_id[:-4]}_v{same_sheet_version}.csv",
+                }
+            )
+            update_history(client_id, history)
             output.append(
                 {
                     "sheet_id": sheet_id,
@@ -186,6 +197,12 @@ def execute_dsl_list(
 
         # New table data
         sheet_version = find_next_version(client_id, sheet_id)
+        history["chat_history"].append(
+            {
+                "role": "system",
+                "message": f"Output table {sheet_id[:-4]}_v{sheet_version}.csv",
+            }
+        )
         output.append(
             {
                 "sheet_id": sheet_id,
@@ -197,6 +214,7 @@ def execute_dsl_list(
         )
         upload_sheet(client_id, sheet_id, sheet_version, buffer_sheet_data)
 
+    update_history(client_id, history)
     for dsl in dsl_list:
         function = dsl["function_name"]
         arguments = dsl["arguments"]

@@ -70,6 +70,9 @@ def edit_dsl(client_id, dsl, new_instruction):
     messages = append_message(edit_dsl_system_prompt, "system", [])
     messages = append_message(edit_dsl_user_prompt, "user", messages)
     edited_dsl = generate_chat_completion(messages, special_type="json_object")
+    messages = append_message(edited_dsl, "assistant", messages)
+    log_messages(client_id, "edit_dsl", messages)
+
     # Apply transfer_to_NL and add natural_language field
     edited_dsl["natural_language"] = transfer_to_NL(edited_dsl)
 
@@ -95,6 +98,9 @@ def update_dsl(client_id, new_instruction):
     messages = append_message(update_dsl_system_prompt, "system", [])
     messages = append_message(update_dsl_user_prompt, "user", messages)
     created_dsl = generate_chat_completion(messages, special_type="json_object")
+    messages = append_message(created_dsl, "assistant", messages)
+    log_messages(client_id, "update_dsl", messages)
+
     # Apply transfer_to_NL and add natural_language field
     created_dsl["natural_language"] = transfer_to_NL(created_dsl)
 

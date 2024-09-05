@@ -58,11 +58,12 @@ Previous Generated DSL:
 }
 
 New Instruction:
-Drop the row 1 in the given table(s).
+Drop the row 1 in the given table(s) if there is any missing value.
 
 - OUTPUT:
 {
   "function_name": "drop",
-  "arguments": ["a.csv", ["1"], "index"]
+  "arguments": ["a.csv", ["1"], "index"],
+  "condition": "if any missing value"
 }
 '''

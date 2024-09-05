@@ -72,7 +72,7 @@ Output:
 2. drop(table, label, axis): Drops one or more rows or columns from the table.
 Parameters:
 - table (DataFrame, required): The table from which the row(s) or column(s) will be dropped.
-- label (str or int or list[str] or list[int], required): The label or list of labels of the row(s) or column(s) to be dropped.
+- label (str or int or list[str] or list[int] or "ALL", required): The label or list of labels of the row(s) or column(s) to be dropped. If the value is "ALL", all rows or columns will be dropped.
 - axis (str or int, required):
     - 0 or "index": Indicates that one or more rows will be dropped.
     - 1 or "columns": Indicates that one or more columns will be dropped.
@@ -91,15 +91,15 @@ Output:
 4. move(origin_table, origin_label, target_table, target_label, axis): Moves a row or column from the origin table to the target table.
 Parameters:
 - origin_table (DataFrame, required): The table from which the row or column will be moved.
-- origin_label (int or str, required): The index or name of the row or column to be moved in the origin table.
+- origin_label (int or str, required): The index or name of the row or column to be moved in the origin table. Index starts from 0 and must be int.
 - target_table (DataFrame, required): The table to which the row or column will be moved.
-- target_label (int or str, required): The index or name at which the row or column will be inserted in the target table.
+- target_label (int or str, required): The index or name at which the row or column will be inserted in the target table. Index starts from 0 and must be int.
 - axis (str or int, required):
-    - 0 or "index": Indicates that a row will be moved.
-    - 1 or "columns": Indicates that a column will be moved.
+    - 0 or "index": Indicates that move a row.
+    - 1 or "columns": Indicates that move a column.
 Output:
-- A pandas DataFrame containing the updated origin table with the row or column removed.
-- A pandas DataFrame containing the updated target table with the row or column added.
+- Updated origin table with the row or column removed.
+- Updated target table with the row or column added.
 
 5. copy(origin_table, origin_label, target_table, target_label, axis): Copies a row or column from the origin table to the target table at the specified label.
 Parameters:

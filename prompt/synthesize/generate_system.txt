@@ -198,10 +198,7 @@ Step-by-step Plan:
                 "test.csv", 
                 {
                     "Income": [
-                        "sum",
                         "mean",
-                        "min",
-                        "max"
                     ]
                 },
                 "columns"

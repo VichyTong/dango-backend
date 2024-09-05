@@ -26,7 +26,7 @@ def format_multiple_choices_question(question, choices):
     prompt = question_template.replace("{QUESTION}", question).replace(
         "{CHOICES}", choices_string
     )
-    return prompt
+    return prompt.strip()
 
 
 def get_history_text(history, with_sheet_info=True):

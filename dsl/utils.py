@@ -163,10 +163,13 @@ def divide(table, by, axis=0):
 
 
 def drop(table, label, axis=0):
-    print(table)
-    print(label)
     axis = classify_axis(axis)
-    if not isinstance(label, list):
+    if label == "ALL":
+        if axis == 1:
+            return pd.DataFrame()
+        else:
+            return pd.DataFrame(columns=table.columns)
+    elif not isinstance(label, list):
         label = [label]
 
     if axis == 1:  # Dropping columns
