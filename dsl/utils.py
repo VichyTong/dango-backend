@@ -301,6 +301,9 @@ def merge(table_a, table_b, how="outer", on=None):
 def move(origin_table, origin_label, target_table, target_label, axis=0):
     axis = classify_axis(axis)
 
+    # Handle the case where origin_table and target_table are the same
+    same_table = origin_table is target_table
+
     if axis == 0:  # Moving rows
         # Handle origin_label
         if isinstance(origin_label, int):
@@ -317,12 +320,16 @@ def move(origin_table, origin_label, target_table, target_label, axis=0):
             target_index = target_table.index.get_loc(target_label)
         else:
             raise ValueError("target_label must be an int or str")
-        
+
         # Move row
-        row = origin_table.iloc[origin_index]
+        row = origin_table.iloc[origin_index].copy()
         origin_table = origin_table.drop(index=origin_index)
-        target_table = pd.concat([target_table.iloc[:target_index], row.to_frame().T, target_table.iloc[target_index:]])
         
+        if same_table:
+            target_table = origin_table.copy()
+        
+        target_table = pd.concat([target_table.iloc[:target_index], row.to_frame().T, target_table.iloc[target_index:]])
+
     elif axis == 1:  # Moving columns
         # Handle origin_label
         if isinstance(origin_label, int):
@@ -339,15 +346,19 @@ def move(origin_table, origin_label, target_table, target_label, axis=0):
             target_col = target_table.columns.get_loc(target_label)
         else:
             raise ValueError("target_label must be an int or str")
-        
+
         # Move column
-        column = origin_table.iloc[:, origin_col]
+        column = origin_table.iloc[:, origin_col].copy()
         origin_table = origin_table.drop(columns=origin_table.columns[origin_col])
-        target_table = pd.concat([target_table.iloc[:, :target_col], column.to_frame(), target_table.iloc[:, target_col:]], axis=1)
         
+        if same_table:
+            target_table = origin_table.copy()
+
+        target_table = pd.concat([target_table.iloc[:, :target_col], column.to_frame(), target_table.iloc[:, target_col:]], axis=1)
+
     else:
         raise ValueError("axis must be 0 (rows) or 1 (columns)")
-    
+
     return origin_table, target_table
 
 

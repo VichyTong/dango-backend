@@ -256,9 +256,6 @@ def mata_diff_to_NL(
     changes = extract_changes(client_id, diff)
     changes = find_batch_operation(client_id, changes, row_count, len(column_names))
 
-    print(json.dumps(changes, indent=4))
-    print(json.dumps(column_names, indent=4))
-    print(len(column_names))
     for change in changes:
         for key in change:
             if "col" in key:
