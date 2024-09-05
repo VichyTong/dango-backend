@@ -147,9 +147,9 @@ User Instruction: (No user instruction)
 
 Chat History:
 ASSISTANT:
-Since there are two sheets, do you want to drop the 'gender' column in table_4-sheet_1.csv and apply the same changes to table_4-sheet_2.csv?
-1. Yes, drop the column in both sheets.
-2. No, only drop the column in table_4-sheet_1.csv.
+Since there are two sheets, do you want to drop the 'gender' column in 'table_4-sheet_1.csv' and apply the same changes to 'table_4-sheet_2.csv'?
+1. Yes, apply the same changes to 'table_4-sheet_2.csv'.
+2. No, only drop the column in 'table_4-sheet_1.csv'.
 3. other (please specify)
 
 USER:
@@ -158,6 +158,6 @@ Yes, drop the column in both sheets.
 - OUTPUT:
 {
     "type": "finish",
-    "summary": "The user wants to drop the 'gender' column in both table_4-sheet_1.csv and table_4-sheet_2.csv."
+    "summary": "The user wants to drop the 'gender' column in both 'table_4-sheet_1.csv' and 'table_4-sheet_2.csv'."
 }
 '''

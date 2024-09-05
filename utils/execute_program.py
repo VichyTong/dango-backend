@@ -1,6 +1,7 @@
 import re
 import json
 import pandas as pd
+import numpy as np
 
 from utils.db import (
     upload_sheet,

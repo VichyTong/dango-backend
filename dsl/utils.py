@@ -163,6 +163,8 @@ def divide(table, by, axis=0):
 
 
 def drop(table, label, axis=0):
+    print(table)
+    print(label)
     axis = classify_axis(axis)
     if not isinstance(label, list):
         label = [label]
@@ -182,6 +184,7 @@ def drop(table, label, axis=0):
 
 
 def fill(table, labels, method, axis=0):
+    table = table.replace("", np.nan)
     axis = classify_axis(axis)
     # Handle labels parameter
     if labels == "ALL":
@@ -383,7 +386,10 @@ def move(origin_table, origin_label, target_table, target_label, axis=0):
     else:
         raise ValueError("axis must be 0 (rows) or 1 (columns)")
 
-    return origin_table, target_table
+    if same_table:
+        return target_table, target_table
+    else:
+        return origin_table, target_table
 
 
 def pivot_table(table, index, columns, values, aggfunc="first"):
