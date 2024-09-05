@@ -298,33 +298,56 @@ def merge(table_a, table_b, how="outer", on=None):
         return pd.merge(table_a, table_b, how=how, on=on)
 
 
-def move(origin_table, origin_index, target_table, target_index, axis=0):
+def move(origin_table, origin_label, target_table, target_label, axis=0):
     axis = classify_axis(axis)
-    origin_index -= 1
-    target_index -= 1
 
-    if axis == 0:  # Move row
+    if axis == 0:  # Moving rows
+        # Handle origin_label
+        if isinstance(origin_label, int):
+            origin_index = origin_label
+        elif isinstance(origin_label, str):
+            origin_index = origin_table.index.get_loc(origin_label)
+        else:
+            raise ValueError("origin_label must be an int or str")
+        
+        # Handle target_label
+        if isinstance(target_label, int):
+            target_index = target_label
+        elif isinstance(target_label, str):
+            target_index = target_table.index.get_loc(target_label)
+        else:
+            raise ValueError("target_label must be an int or str")
+        
+        # Move row
         row = origin_table.iloc[origin_index]
-        origin_table = origin_table.drop(origin_table.index[origin_index])
-        target_table = pd.concat(
-            [
-                target_table.iloc[:target_index],
-                row.to_frame().T,
-                target_table.iloc[target_index:],
-            ]
-        ).reset_index(drop=True)
-    elif axis == 1:  # Move column
-        col = origin_table.iloc[:, origin_index]
-        origin_table = origin_table.drop(origin_table.columns[origin_index], axis=1)
-        target_table = pd.concat(
-            [
-                target_table.iloc[:, :target_index],
-                col.to_frame(),
-                target_table.iloc[:, target_index:],
-            ],
-            axis=1,
-        )
-
+        origin_table = origin_table.drop(index=origin_index)
+        target_table = pd.concat([target_table.iloc[:target_index], row.to_frame().T, target_table.iloc[target_index:]])
+        
+    elif axis == 1:  # Moving columns
+        # Handle origin_label
+        if isinstance(origin_label, int):
+            origin_col = origin_label
+        elif isinstance(origin_label, str):
+            origin_col = origin_table.columns.get_loc(origin_label)
+        else:
+            raise ValueError("origin_label must be an int or str")
+        
+        # Handle target_label
+        if isinstance(target_label, int):
+            target_col = target_label
+        elif isinstance(target_label, str):
+            target_col = target_table.columns.get_loc(target_label)
+        else:
+            raise ValueError("target_label must be an int or str")
+        
+        # Move column
+        column = origin_table.iloc[:, origin_col]
+        origin_table = origin_table.drop(columns=origin_table.columns[origin_col])
+        target_table = pd.concat([target_table.iloc[:, :target_col], column.to_frame(), target_table.iloc[:, target_col:]], axis=1)
+        
+    else:
+        raise ValueError("axis must be 0 (rows) or 1 (columns)")
+    
     return origin_table, target_table
 
 

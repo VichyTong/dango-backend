@@ -127,9 +127,9 @@ def assign(params: ASSIGN_PARAMS):
 
 class MOVE_PARAMS(BaseModel):
     origin_table_name: str
-    origin_index: int
+    origin_index: Union[int, str]
     target_table_name: str
-    target_index: int
+    target_index: Union[int, str]
     axis: Union[str, int]
 
 

@@ -43,6 +43,7 @@ Output:
 3. When using merge_table function, here is the naming convention for the tables:
 - merge_table function: "merged_v0.csv"
 4. The row indexes are strings start from "1" and should be enclosed in double quotes.
+5. Notice the number of output arguments for each function and assign them accordingly.
 
 #############
 
@@ -106,42 +107,47 @@ Example 2:
 '''
 - INPUT:
 Required Tables: 
-["Heart Disease Prediction dataset_v1.csv", "New_v0.csv"]
+["dataset_v1.csv", "New_v0.csv"]
 
 DSL Program:
 [
     {
         "function_name": "copy",
-        "arguments": ["Heart Disease Prediction dataset_v1.csv", "age", "New_v0.csv", "age", "columns"]
+        "arguments": ["dataset_v1.csv", "age", "New_v0.csv", "age", "columns"]
     },
     {
         "function_name": "copy",
-        "arguments": ["Heart Disease Prediction dataset_v1.csv", "sex", "New_v0.csv", "sex", "columns"]
+        "arguments": ["dataset_v1.csv", "sex", "New_v0.csv", "sex", "columns"]
     },
     {
         "function_name": "drop",
-        "arguments": ["Heart Disease Prediction dataset_v1.csv", "age", "columns"]
+        "arguments": ["dataset_v1.csv", "age", "columns"]
     },
     {
         "function_name": "drop",
-        "arguments": ["Heart Disease Prediction dataset_v1.csv", "sex", "columns"]
+        "arguments": ["dataset_v1.csv", "sex", "columns"]
+    },
+    {
+        "function_name": "move",
+        "arguments": ["data_v0.csv", "sum", "New_v0.csv", "sum", "columns"]
     }
 ]
 
 User Intents:
-Copy the columns "age" and "sex" from the table "Heart Disease Prediction dataset_v1.csv" to the table "New_v0.csv". Then, drop the columns "age" and "sex" from the table "Heart Disease Prediction dataset_v1.csv".
+Copy the columns "age" and "sex" from the table "dataset_v1.csv" to the table "New_v0.csv". Then, drop the columns "age" and "sex" from the table "dataset_v1.csv". Finally, move the 'sum' column from the table "data_v0.csv" to the table "New_v0.csv".
 
 - OUTPUT:
 ```
-Heart_Disease_Prediction_dataset = load_table("Heart Disease Prediction dataset_v1.csv")
+dataset = load_table("dataset_v1.csv")
 New = load_table("New_v0.csv")
 
-New = copy(Heart_Disease_Prediction_dataset, "age", New, "age", "columns")
-New = copy(Heart_Disease_Prediction_dataset", "sex", New, "sex", "columns")
-Heart_Disease_Prediction_dataset = drop(Heart_Disease_Prediction_dataset, "age", "columns")
-Heart_Disease_Prediction_dataset = drop(Heart_Disease_Prediction_dataset, "sex", "columns")
+New = copy(dataset, "age", New, "age", "columns")
+New = copy(dataset", "sex", New, "sex", "columns")
+dataset = drop(dataset, "age", "columns")
+dataset = drop(dataset, "sex", "columns")
+dataset, New = move(dataset, "sum", New, "sum", "columns")
 
-save_table(Heart_Disease_Prediction_dataset, "Heart Disease Prediction dataset_v1.csv")
+save_table(dataset, "dataset_v1.csv")
 save_table(New, "New_v0.csv")
 ```
 '''
@@ -186,5 +192,30 @@ employees = split(employees, "FullName", " ", ["FirstName", "LastName"], "column
 
 save_table(sales_data, "sales_data_v0.csv")
 save_table(employees, "employees_v0.csv")
+```
+'''
+
+Example 4:
+'''
+- INPUT:
+Required Tables: 
+["table-4.csv"]
+
+DSL Program:
+[
+    {
+        "function_name": "move",
+        "arguments": ["table-4.csv", "age", "table-4.csv", "name", "columns"]
+    }
+]
+
+User Intents:
+Move the column "age" from the table "table-4.csv" to the column "name" in the same table.
+
+- OUTPUT:
+```
+table = load_table("table-4.csv")
+_, table = move(table, "age", table, "name", "columns")
+save_table(table, "table-4.csv")
 ```
 '''

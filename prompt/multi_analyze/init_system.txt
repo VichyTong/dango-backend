@@ -151,7 +151,7 @@ User Instruction: (No user instruction)
 Example 5:
 '''
 # Sheet 1
-Sheet Information: table_2.csv has 4 columns (Columns are ["name", "age", "geneder", "address"], starting from index 1) and 5 rows (0 to 4, the row 0 is the header row).
+Sheet Information: table_2.csv has 4 columns (Columns are ["name", "age", "gender", "address"], starting from index 1) and 5 rows (0 to 4, the row 0 is the header row).
 Table Diff: In SalesRep.xlsx-Sheet1_v0.csv, the user copies data from columns "name" and "age" for all rows.
 
 # Sheet 2
@@ -162,13 +162,13 @@ User Instruction: (No user instruction)
 
 Chat History:
 ASSISTANT:
-Do you want to continue copying data from the 'geneder' column in table_2.csv to the next column in test_v0.csv?
-1. Yes, copy data from 'geneder'
-2. No, do not copy data from 'geneder'
+Do you want to continue copying data from the 'gender' column in table_2.csv to the next column in test_v0.csv?
+1. Yes, copy data from 'gender'
+2. No, do not copy data from 'gender'
 3. other (please specify)
 
 USER:
-Yes, copy data from 'geneder'
+Yes, copy data from 'gender'
 
 USER:
 I also want to copy all columns from table_2.csv to new.csv.
@@ -176,7 +176,7 @@ I also want to copy all columns from table_2.csv to new.csv.
 - OUTPUT:
 {
     "type": "finish",
-    "summary": "The user wants to copy 'name', 'age', 'geneder', and 'address' columns from table_2.csv to 'Column1', Column2', 'Column3', 'Column4' of new.csv."
+    "summary": "The user wants to copy 'name', 'age', 'gender', and 'address' columns from table_2.csv to 'Column1', Column2', 'Column3', 'Column4' of new.csv."
 }
 '''
 
@@ -239,7 +239,7 @@ User Instruction: Summarize the grade in the table.
 
 Chat History:
 USER:
-Delete the 'geneder' column in test.csv.
+Delete the 'gender' column in test.csv.
 
 ASSISTANT:
 Do you want to delete more columns in test.csv?

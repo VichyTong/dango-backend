@@ -84,7 +84,7 @@ Other: Actually, I want to replace row 3 with the values from row 5 in table_1.c
 Example 2:
 '''
 # Sheet 1
-Sheet Information: table_2.csv has 4 columns (Columns are ["name", "age", "geneder", "address"], starting from index 1) and 5 rows (0 to 4, the row 0 is the header row).
+Sheet Information: table_2.csv has 4 columns (Columns are ["name", "age", "gender", "address"], starting from index 1) and 5 rows (0 to 4, the row 0 is the header row).
 Table Diff: In SalesRep.xlsx-Sheet1_v0.csv, the user copies data from columns "name" and "age" for all rows.
 
 # Sheet 2
@@ -95,13 +95,13 @@ User Instruction: (No user instruction)
 
 Chat History:
 ASSISTANT:
-Do you want to continue transferring data from the 'geneder' column in table_2.csv to the next column in test_v0.csv?
-1. Yes, transfer data from 'geneder'
-2. No, do not transfer data from 'geneder'
+Do you want to continue transferring data from the 'gender' column in table_2.csv to the next column in test_v0.csv?
+1. Yes, transfer data from 'gender'
+2. No, do not transfer data from 'gender'
 3. other (please specify)
 
 USER:
-Yes, transfer data from 'geneder'
+Yes, transfer data from 'gender'
 
 - OUTPUT:
 {
@@ -131,5 +131,33 @@ Fill with the mean
 {
     "type": "finish",
     "summary": "The user wants to fill all missing values in the row (row 1 to row 19) with the mean."
+}
+'''
+
+Example 4:
+'''
+# Sheet 1
+Sheet Information: table_4-sheet_1.csv has 4 columns (Columns are ["name", "ID", "gender", "address"], starting from index 1) and 5 rows (0 to 4, the row 0 is the header row).
+Table Diff: In table_4-sheet_1.csv, the user drops data from column "gender" for all rows.
+
+# Sheet 2
+Sheet Information: table_4-sheet_2.csv has 4 columns (Columns are ["name", "ID",  "gender", "age"], starting from index 1) and 5 rows (0 to 4, the row 0 is the header row).
+
+User Instruction: (No user instruction)
+
+Chat History:
+ASSISTANT:
+Since there are two sheets, do you want to drop the 'gender' column in table_4-sheet_1.csv and apply the same changes to table_4-sheet_2.csv?
+1. Yes, drop the column in both sheets.
+2. No, only drop the column in table_4-sheet_1.csv.
+3. other (please specify)
+
+USER:
+Yes, drop the column in both sheets.
+
+- OUTPUT:
+{
+    "type": "finish",
+    "summary": "The user wants to drop the 'gender' column in both table_4-sheet_1.csv and table_4-sheet_2.csv."
 }
 '''

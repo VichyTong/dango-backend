@@ -49,6 +49,8 @@ def extract_changes(client_id, data):
     pattern_4 = r"Copied data from column (\d+), row (\d+), to column (\d+), row (\d+) in (.+)\.csv"
     # paste data pattern
     pattern_5 = r"Pasted data from column (\d+), row (\d+), to column (\d+), row (\d+) in (.+)\.csv"
+    # move data pattern
+    pattern_6 = r"Moved column from index (\d+) to index (\d+)"
 
     for line in lines:
         match_1 = re.match(pattern_1, line)
@@ -105,6 +107,16 @@ def extract_changes(client_id, data):
             changes.append(change)
             continue
 
+        match_6 = re.match(pattern_6, line)
+        if match_6:
+            change = {
+                "type": "move_column",
+                "start_col": int(match_6.group(1)) + 1,
+                "end_col": int(match_6.group(2)) + 1,
+            }
+            changes.append(change)
+            continue
+
         log_warn(client_id, f">>> extract_changes\nUnrecognized line: {line}")
 
     return changes
@@ -112,59 +124,58 @@ def extract_changes(client_id, data):
 
 def find_batch_operation(client_id, changes, num_rows, num_cols):
     batch_operations = []
+    changes_copy = changes[:]  # Copy the original list to track positions
+
     # 1. batch insert row operations
     next_index = num_rows + 1
-
     for change in changes:
         if change["type"] == "insert_row":
             if change["row"] == next_index:
                 next_index += 1
 
     if next_index != num_rows + 1:
-        batch_operations.append(
-            {
-                "type": "insert_multi_rows",
-                "start_row": num_rows + 1,
-                "end_row": next_index - 1,
-            }
-        )
-
-    changes = [change for change in changes if change["type"] != "insert_row"]
+        batch_op = {
+            "type": "insert_multi_rows",
+            "start_row": num_rows + 1,
+            "end_row": next_index - 1,
+        }
+        # Replace all insert_row operations with batch_op
+        for i, change in enumerate(changes_copy):
+            if change["type"] == "insert_row":
+                changes_copy[i] = batch_op
+        batch_operations.append(batch_op)
     num_rows = next_index - 1
 
     # 2. batch insert column operations
     next_index = num_cols + 1
-
     for change in changes:
         if change["type"] == "insert_col":
             if change["col"] == next_index:
                 next_index += 1
 
     if next_index != num_cols + 1:
-        batch_operations.append(
-            {
-                "type": "insert_multi_cols",
-                "start_col": num_cols + 1,
-                "end_col": next_index - 1,
-            }
-        )
-
-    changes = [change for change in changes if change["type"] != "insert_col"]
+        batch_op = {
+            "type": "insert_multi_cols",
+            "start_col": num_cols + 1,
+            "end_col": next_index - 1,
+        }
+        # Replace all insert_col operations with batch_op
+        for i, change in enumerate(changes_copy):
+            if change["type"] == "insert_col":
+                changes_copy[i] = batch_op
+        batch_operations.append(batch_op)
     num_cols = next_index - 1
 
     # 3. batch change operations
-    # Initialize dictionaries to track changes across rows and columns
     col_changes = {col: [] for col in range(1, num_cols + 1)}
     row_changes = {row: [] for row in range(0, num_rows + 1)}
 
-    # Gather changes by rows and columns
     for change in changes:
         if change["type"] != "change_cell":
             continue
         col_changes[change["col"]].append(change)
         row_changes[change["row"]].append(change)
 
-    # Check for column-wise batch operations
     for col, col_changes in col_changes.items():
         if len(col_changes) == num_rows + 1 and all(
             change["row"] == i
@@ -172,7 +183,6 @@ def find_batch_operation(client_id, changes, num_rows, num_cols):
                 sorted(col_changes, key=lambda x: x["row"]), start=0
             )
         ):
-            # All rows in this column have changes
             old_values = [
                 change["old_value"]
                 for change in sorted(col_changes, key=lambda x: x["row"])
@@ -181,20 +191,18 @@ def find_batch_operation(client_id, changes, num_rows, num_cols):
                 change["new_value"]
                 for change in sorted(col_changes, key=lambda x: x["row"])
             ]
-            batch_operations.append(
-                {
-                    "type": "change_entire_column",
-                    "col": col,
-                    "old_values": old_values,
-                    "new_values": new_values,
-                }
-            )
-            # Remove individual changes from the main list
-            for change in col_changes:
-                changes.remove(change)
-                row_changes[change["row"]].remove(change)
+            batch_op = {
+                "type": "change_entire_column",
+                "col": col,
+                "old_values": old_values,
+                "new_values": new_values,
+            }
+            # Replace all change_cell operations for this column with batch_op
+            for i, change in enumerate(changes_copy):
+                if change in col_changes:
+                    changes_copy[i] = batch_op
+            batch_operations.append(batch_op)
 
-    # Check for row-wise batch operations
     for row, row_changes in row_changes.items():
         if len(row_changes) == num_cols and all(
             change["col"] == i
@@ -202,7 +210,6 @@ def find_batch_operation(client_id, changes, num_rows, num_cols):
                 sorted(row_changes, key=lambda x: x["col"]), start=1
             )
         ):
-            # All columns in this row have changes
             old_values = [
                 change["old_value"]
                 for change in sorted(row_changes, key=lambda x: x["col"])
@@ -211,36 +218,51 @@ def find_batch_operation(client_id, changes, num_rows, num_cols):
                 change["new_value"]
                 for change in sorted(row_changes, key=lambda x: x["col"])
             ]
-            batch_operations.append(
-                {
-                    "type": "change_entire_row",
-                    "row": row,
-                    "old_values": old_values,
-                    "new_values": new_values,
-                }
-            )
-            # Remove individual changes from the main list
-            for change in row_changes:
-                changes.remove(change)
+            batch_op = {
+                "type": "change_entire_row",
+                "row": row,
+                "old_values": old_values,
+                "new_values": new_values,
+            }
+            # Replace all change_cell operations for this row with batch_op
+            for i, change in enumerate(changes_copy):
+                if change in row_changes:
+                    changes_copy[i] = batch_op
+            batch_operations.append(batch_op)
 
-    # Add batch operations to the changes list
-    changes.extend(batch_operations)
-    log_text(
-        client_id,
-        f"Batch Operations:\n{json.dumps(batch_operations, indent=4)}",
-    )
-    return changes
+    # Deduplicate changes_copy list to avoid repeated batch operations
+    unique_changes = []
+    seen_operations = set()
+    for change in changes_copy:
+        # Convert any list values in the change dict to tuples for hashing
+        change_tuple = tuple(
+            (k, tuple(v) if isinstance(v, list) else v) for k, v in change.items()
+        )
+        if change_tuple not in seen_operations:
+            unique_changes.append(change)
+            seen_operations.add(change_tuple)
+
+    log_text(client_id, f"Batch Operations:\n{json.dumps(batch_operations, indent=4)}")
+    return unique_changes
 
 
 def mata_diff_to_NL(
     client_id: str,
     diff: str,
     row_count: int,
-    column_count: int,
+    column_names: list,
     sheet_state_string: str,
 ) -> str:
     changes = extract_changes(client_id, diff)
-    changes = find_batch_operation(client_id, changes, row_count, column_count)
+    changes = find_batch_operation(client_id, changes, row_count, len(column_names))
+
+    print(json.dumps(changes, indent=4))
+    print(json.dumps(column_names, indent=4))
+    print(len(column_names))
+    for change in changes:
+        for key in change:
+            if "col" in key:
+                change[key] = column_names[change[key] - 1]
 
     changes_text = ""
     for change in changes:
@@ -367,13 +389,11 @@ def multi_analyze(
         column_count = len(column_names)
         table_diff = table["table_diff"]
 
-        column_names = json.dumps(column_names)
-
         sheet_state_string = (
             sheet_state_template.replace("{index}", str(index))
             .replace("{file_name}", file_name)
             .replace("{column_count}", str(column_count))
-            .replace("{column_names}", column_names)
+            .replace("{column_names}", json.dumps(column_names))
             .replace("{row_count}", str(row_count + 1))
             .replace("{row_end}", str(row_count))
         )
@@ -382,7 +402,7 @@ def multi_analyze(
                 client_id,
                 table_diff,
                 row_count,
-                column_count,
+                column_names,
                 sheet_state_string,
             )
             table["NL_diff"] = NL_diff
