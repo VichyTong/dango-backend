@@ -61,7 +61,7 @@ User Instruction: (No user instruction)
 {
     "type": "question",
     "summary": "The user has deleted row 3 in table_1.csv.",
-    "question": "Do you want to drop row 3 in table_1.csv and apply the same changes to table_2.csv?"
+    "question": "Since there are two tables, do you want to drop row 3 in table_1.csv and apply the same changes to table_2.csv?"
     "choices": [
         "Yes, drop the row in both tables",
         "No, only drop the row in table_1.csv",

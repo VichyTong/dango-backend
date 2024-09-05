@@ -209,20 +209,23 @@ async def handle_chat(request_body: Chat):
 async def handle_multi_analyze(request_body: MultiAnalyze):
     try:
         client_id = request_body.client_id
-        table_list = request_body.table_list
+        diff_table_list = request_body.table_list
         user_prompt = request_body.message
 
-        if not table_list:
-            table_list = []
-            sheets = get_all_sheets(client_id)
-            for sheet in sheets:
-                sheet_id = sheet[0]
-                version = sheet[1]
-                table_diff = None
-                table_info = TableInfo(
-                    sheet_id=sheet_id, version=version, table_diff=table_diff
-                )
-                table_list.append(table_info)
+        table_list = []
+        sheets = get_all_sheets(client_id)
+        for sheet in sheets:
+            sheet_id = sheet[0]
+            version = sheet[1]
+            table_diff = None
+            for table in diff_table_list:
+                if table.sheet_id == sheet_id and table.version == version:
+                    table_diff = table.table_diff
+                    break
+            table_info = TableInfo(
+                sheet_id=sheet_id, version=version, table_diff=table_diff
+            )
+            table_list.append(table_info)
 
         processed_tables = []
         for table in table_list:
@@ -238,6 +241,8 @@ async def handle_multi_analyze(request_body: MultiAnalyze):
                 "table_diff": table.table_diff,
             }
             processed_tables.append(processed_table)
+
+        print(json.dumps(processed_tables, indent=4))
 
         response = multi_analyze(client_id, processed_tables, user_prompt)
         if response["type"] == "question":
