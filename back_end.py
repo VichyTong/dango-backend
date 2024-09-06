@@ -415,7 +415,6 @@ async def handle_edit_dsl(request_body: EditDSL):
     try:
         client_id = request_body.client_id
         new_instruction = request_body.new_instruction
-        print(f">>>>>>> New Instruction: {new_instruction}")
 
         if (
             (not request_body.dsl.function_name)

@@ -14,8 +14,8 @@ Parameters:
 - target_table (DataFrame, required): The table to which the row or column will be moved.
 - target_label (int or str, required): The index or name at which the row or column will be inserted in the target table. Index starts from 0 and must be int.
 - axis (str or int, required):
-    - 0 or "index": Indicates that move a row.
-    - 1 or "columns": Indicates that move a column.
+    - 0 or "index": Indicates that the label is a row label.
+    - 1 or "columns": Indicates that the label is a column label.
 Output:
 - Updated origin table with the row or column removed.
 - Updated target table with the row or column added.\

@@ -95,8 +95,8 @@ Parameters:
 - target_table (DataFrame, required): The table to which the row or column will be moved.
 - target_label (int or str, required): The index or name at which the row or column will be inserted in the target table. Index starts from 0 and must be int.
 - axis (str or int, required):
-    - 0 or "index": Indicates that move a row.
-    - 1 or "columns": Indicates that move a column.
+    - 0 or "index": Indicates that the label is a row label.
+    - 1 or "columns": Indicates that the label is a column label.
 Output:
 - Updated origin table with the row or column removed.
 - Updated target table with the row or column added.
@@ -126,14 +126,13 @@ Output:
 - A pandas DataFrame containing the first table with the swapped row or column.
 - A pandas DataFrame containing the second table with the swapped row or column.
 
-7. rearrange(table, by_values=None, by_array=None, axis): Rearranges the rows or columns of the table based on the specified order.
+7. rearrange(table, by_values, axis): Rearranges the rows or columns of the table based on the specified order.
 Parameters:
 - table (DataFrame, required): The table to be rearranged.
-- by_values (str, optional): If set, the rows or columns will be rearranged based on the values in the specified row or column.
-- by_array (list[str/int], optional): If set, the rows or columns will be rearranged based on the order of the values in the array.
+- by_values (str, required): If set, the rows or columns will be rearranged based on the values in the specified row or column.
 - axis (str or int, required):
-    - 0 or "index": Indicates that rows will be rearranged based on the values in the specified row or column or the order in the array.
-    - 1 or "columns": Indicates that columns will be rearranged based on the values in the specified row or column or the order in the array.
+    - 0 or "index": Indicates that rows will be rearranged based on the values in the specified row or column.
+    - 1 or "columns": Indicates that columns will be rearranged based on the values in the specified row or column.
 Output:
 - A pandas DataFrame.
 

@@ -110,24 +110,13 @@ def transfer_to_NL(dsl):
             return "Invalid function"
     elif dsl["function_name"] == "rearrange":
         by_values = dsl["arguments"][1]
-        by_array = dsl["arguments"][2]
-        axis = dsl["arguments"][3]
-        if by_values is not None:
-            if axis == 0 or axis == "index" or axis == "0":
-                return f"Rearrange the rows in the given table(s) based on the values in the row {by_values}"
-            elif axis == 1 or axis == "columns" or axis == "1":
-                return f"Rearrange the columns in the given table(s) based on the values in the column {by_values}"
-            else:
-                return "Invalid function"
-        elif by_array is not None:
-            if axis == 0 or axis == "index" or axis == "0":
-                return f"Rearrange the rows in the given table(s) based on the order of the rows {by_array}"
-            elif axis == 1 or axis == "columns" or axis == "1":
-                return f"Rearrange the columns in the given table(s) based on the order of the columns {by_array}"
-            else:
-                return "Invalid function"
+        axis = dsl["arguments"][2]
+        if axis == 0 or axis == "index" or axis == "0":
+            return f"Rearrange the rows in the given table(s) based on the values in the row {by_values}"
+        elif axis == 1 or axis == "columns" or axis == "1":
+            return f"Rearrange the columns in the given table(s) based on the values in the column {by_values}"
         else:
-            return "Either by_values or by_array must be provided"
+            return "Invalid function"
     elif dsl["function_name"] == "format":
         label = dsl["arguments"][1]
         pattern = dsl["arguments"][2]

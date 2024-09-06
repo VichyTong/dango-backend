@@ -315,19 +315,19 @@ class FORMAT_PARAMS(BaseModel):
 def format(params: FORMAT_PARAMS):
     return
 
-# rearrange(table, by_values=None, by_array=None, axis): Rearranges the rows or columns of the table based on the specified order.
+# rearrange(table, by_values, axis): Rearranges the rows or columns of the table based on the specified order.
 # Parameters:
 # - table (DataFrame, required): The table to be rearranged.
-# - by_values (str, optional): If set, the rows or columns will be rearranged based on the values in the specified row or column.
-# - by_array (list[str/int], optional): If set, the rows or columns will be rearranged based on the order of the values in the array.
+# - by_values (str, required): If set, the rows or columns will be rearranged based on the values in the specified row or column.
 # - axis (str or int, required):
-#     - 0 or "index": Indicates that rows will be rearranged based on the values in the specified row or column or the order in the array.
-#     - 1 or "columns": Indicates that columns will be rearranged based on the values in the specified row or column or the order in the array.
+#     - 0 or "index": Indicates that rows will be rearranged based on the values in the specified row or column.
+#     - 1 or "columns": Indicates that columns will be rearranged based on the values in the specified row or column.
+# Output:
+# - A pandas DataFrame.
 
 class REARRANGE_PARAMS(BaseModel):
     table_name: str
-    by_values: Optional[str]
-    by_array: Optional[Union[List[Union[str, int]]]]
+    by_values: str
     axis: Union[str, int]
 
 def rearrange(params: REARRANGE_PARAMS):
@@ -713,12 +713,12 @@ def validate_format(arguments, error_list, sheets_names):
     return "Success"
 
 def validate_rearrange(arguments, error_list, sheets_names):
-    if len(arguments) != 4:
+    if len(arguments) != 3:
         error = create_error_message("Invalid number of arguments", f"The function 'rearrange' requires 3 arguments: 'table_name', 'by_values', 'axis'.", "rearrange")
         error_list.append(error)
         return "Failed"
     try:
-        params = REARRANGE_PARAMS(table_name=arguments[0], by_values=arguments[1], by_array=arguments[2], axis=arguments[3])
+        params = REARRANGE_PARAMS(table_name=arguments[0], by_values=arguments[1], axis=arguments[2])
         rearrange(params)
     except ValidationError as e:
         error = create_error_message("Invalid argument format", f"The arguments for 'rearrange' are not in the correct format. Please check the argument types and values.", "rearrange")

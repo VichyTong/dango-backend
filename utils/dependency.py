@@ -255,16 +255,13 @@ class DependenciesManager:
         return True
 
     def handle_rearrange_statement(self, arguments):
-        table_name, by_values, by_array, axis = arguments
+        table_name, by_values, axis = arguments
         new_version = self.get_new_version(table_name)
         base_name, _ = self.split_sheet_name(table_name)
         new_table_name = f"{base_name}_v{new_version}.csv"
 
         action = f"rearrange {'rows' if axis in (0, 'index') else 'columns'}"
-        if by_values:
-            action += f" by values in {by_values}"
-        elif by_array:
-            action += f" by array {by_array}"
+        action += f" by values in {by_values}"
 
         dependency = {"sheet_id": table_name, "action": action}
 

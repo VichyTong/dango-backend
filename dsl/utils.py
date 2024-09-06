@@ -402,31 +402,18 @@ def pivot_table(table, index, columns, values, aggfunc="first"):
     return pivot_df
 
 
-def rearrange(table, by_values=None, by_array=None, axis=0):
+def rearrange(table, by_values, axis=0):
     axis = classify_axis(axis)
-    if by_values is not None:
-        if axis == 0:
-            sorted_indices = table[by_values].argsort()
-            return table.iloc[sorted_indices]
-        elif axis == 1:
-
-            sorted_indices = table.loc[by_values].argsort()
-            return table.iloc[:, sorted_indices]
-        else:
-            raise ValueError(
-                "axis should be 0 or 'index' for row operation, 1 or 'columns' for column operation"
-            )
-    elif by_array is not None:
-        if axis == 0:
-            return table.iloc[by_array]
-        elif axis == 1:
-            return table.iloc[:, by_array]
-        else:
-            raise ValueError(
-                "axis should be 0 or 'index' for row operation, 1 or 'columns' for column operation"
-            )
+    if axis == 1:
+        sorted_indices = table[by_values].argsort()
+        return table.iloc[sorted_indices]
+    elif axis == 0:
+        sorted_indices = table.loc[by_values].argsort()
+        return table.iloc[:, sorted_indices]
     else:
-        raise ValueError("Either by_values or by_array must be provided")
+        raise ValueError(
+            "axis should be 0 or 'index' for row operation, 1 or 'columns' for column operation"
+        )
 
 
 def split(table, label, delimiter, new_label_list=None, axis=0):
