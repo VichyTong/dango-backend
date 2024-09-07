@@ -9,11 +9,11 @@ class DangoRearrange(DangoFunction):
         return """\
 rearrange(table, by_values, axis): Rearranges the rows or columns of the table based on the specified order.
 Parameters:
-- table (DataFrame, required): The table to be rearranged.
-- by_values (str, required): If set, the rows or columns will be rearranged based on the values in the specified row or column.
+- table (DataFrame, required): The table to rearrange.
+- by_values (str or int, required): The row or column to use as the basis for rearranging the rows or columns.
 - axis (str or int, required):
-    - 0 or "index": Indicates that rows will be rearranged based on the values in the specified row or column.
-    - 1 or "columns": Indicates that columns will be rearranged based on the values in the specified row or column.
+    - 0 or "index": Rearranges the rows.
+    - 1 or "columns": Rearranges the columns.
 Output:
 - A pandas DataFrame.\
 """

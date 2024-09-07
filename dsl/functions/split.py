@@ -14,8 +14,8 @@ Parameters:
 - delimiter (str, required): The delimiter to use for splitting the rows or columns.
 - new_label_list (list[str or int], required): The list of labels for the new rows or columns created by the split.
 - axis (str or int, required):
-    - 0 or 'index': Indicates row splitting.
-    - 1 or 'columns': Indicates column splitting.
+    - 0 or 'index': Splits a row.
+    - 1 or 'columns': Splits a column.
 Output:
 - A pandas DataFrame.\
 """

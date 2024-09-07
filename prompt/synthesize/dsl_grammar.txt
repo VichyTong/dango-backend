@@ -36,7 +36,7 @@ Parameters:
 - table_a (DataFrame, required): The first table to merge.
 - table_b (DataFrame, required): The second table to merge.
 - how(str, required): The type of merge to be performed. Options are 'left', 'right', 'outer', 'inner', or 'fuzzy'.
-- on(str, required): Column or index level names to join on. Must be present in both tables.
+- on(str, optional): Column or index level names to join on. Must be present in both tables. If 'on' is None, the merge will be performed using the intersection of the column names from both tables.
 Output:
 - A pandas DataFrame.
 
@@ -128,11 +128,11 @@ Output:
 
 7. rearrange(table, by_values, axis): Rearranges the rows or columns of the table based on the specified order.
 Parameters:
-- table (DataFrame, required): The table to be rearranged.
-- by_values (str, required): If set, the rows or columns will be rearranged based on the values in the specified row or column.
+- table (DataFrame, required): The table to rearrange.
+- by_values (str or int, required): The row or column to use as the basis for rearranging the rows or columns.
 - axis (str or int, required):
-    - 0 or "index": Indicates that rows will be rearranged based on the values in the specified row or column.
-    - 1 or "columns": Indicates that columns will be rearranged based on the values in the specified row or column.
+    - 0 or "index": Rearranges the rows.
+    - 1 or "columns": Rearranges the columns.
 Output:
 - A pandas DataFrame.
 
@@ -215,8 +215,8 @@ Parameters:
 - delimiter (str, required): The delimiter to use for splitting the rows or columns.
 - new_label_list (list[str or int], required): The list of labels for the new rows or columns created by the split.
 - axis (str or int, required):
-    - 0 or 'index': Indicates row splitting.
-    - 1 or 'columns': Indicates column splitting.
+    - 0 or 'index': Splits a row.
+    - 1 or 'columns': Splits a column.
 Output:
 - A pandas DataFrame.
 

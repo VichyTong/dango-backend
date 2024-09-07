@@ -49,6 +49,11 @@ def aggregate(table, functions, axis=0):
 def assign(
     table, start_row_index, end_row_index, start_column_index, end_column_index, values
 ):
+    start_row_index -= 1
+    end_row_index -= 1
+    start_column_index -= 1
+    end_column_index -= 1
+
     # If values is a single number, create a matrix of that value
     if isinstance(values, (int, float, str)):
         num_rows = end_row_index - start_row_index + 1
@@ -231,12 +236,16 @@ def fill(table, labels, method, axis=0):
     else:
         table_filled = table_numeric.T.fillna(fill_values).T
 
-    # Restore the original string values
-    table_filled = table_filled.where(~str_mask, table_copy)
     if axis == 0:
-        table_filled = table_filled.loc[labels]
+        table_filled = table_numeric.fillna(fill_values)
+        # Restore non-label values
+        non_labels = ~table_copy.index.isin(labels)
+        table_filled.loc[non_labels] = table_copy.loc[non_labels]
     else:
-        table_filled = table_filled[labels]
+        table_filled = table_numeric.T.fillna(fill_values).T
+        # Restore non-label values
+        non_labels = ~table_copy.columns.isin(labels)
+        table_filled.loc[:, ~table_filled.columns.isin(labels)] = table_copy.loc[:, non_labels]
     return table_filled
 
 
@@ -307,10 +316,14 @@ def merge(table_a, table_b, how="outer", on=None):
 
     # Drop _y columns and rename _x columns to the original name
     for col in table_a.columns:
-        if f"{col}_x" in merged_df.columns and f"{col}_y" in merged_df.columns:
-            merged_df = merged_df.drop(columns=[f"{col}_y"]).rename(
-                columns={f"{col}_x": col}
-            )
+        x_col = f"{col}_x"
+        y_col = f"{col}_y"
+        if x_col in merged_df.columns:
+            if y_col in merged_df.columns:
+                merged_df[x_col] = merged_df[x_col].fillna(merged_df[y_col])
+                merged_df = merged_df.drop(columns=[y_col])
+        elif y_col in merged_df.columns:
+            merged_df = merged_df.rename(columns={y_col: col})
 
     return merged_df
 
@@ -404,10 +417,10 @@ def pivot_table(table, index, columns, values, aggfunc="first"):
 
 def rearrange(table, by_values, axis=0):
     axis = classify_axis(axis)
-    if axis == 1:
+    if axis == 0:
         sorted_indices = table[by_values].argsort()
         return table.iloc[sorted_indices]
-    elif axis == 0:
+    elif axis == 1:
         sorted_indices = table.loc[by_values].argsort()
         return table.iloc[:, sorted_indices]
     else:
@@ -448,7 +461,7 @@ def split(table, label, delimiter, new_label_list=None, axis=0):
         return df
 
     if axis == 0:
-        return split_rows(table, label, delimiter, new_label_list)
+        return split_rows(table, label, delimiter)
     elif axis == 1:
         return split_columns(table, label, delimiter, new_label_list)
     else:

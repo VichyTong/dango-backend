@@ -3,8 +3,8 @@ import json
 
 def transfer_to_NL(dsl):
     if dsl["function_name"] == "blank_table":
-        row_number = dsl["arguments"][1]
-        column_number = dsl["arguments"][2]
+        row_number = dsl["arguments"][0]
+        column_number = dsl["arguments"][1]
         return f"Create a blank table with {row_number} rows and {column_number} columns"
     elif dsl["function_name"] == "delete_table":
         table = dsl["arguments"][0]

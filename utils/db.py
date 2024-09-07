@@ -246,9 +246,13 @@ def update_client_end_timestamp(client_id, end_timestamp):
     )
     con.commit()
     statistics = get_client_statistics(client_id)
+    start_timestamp = float(statistics[0])
+    stored_end_timestamp = float(statistics[1])
+    verification_attempts = statistics[2]
+    total_time = stored_end_timestamp - start_timestamp
     log_text(
         client_id,
-        f">>> Statistics:\nstart_timestamp: {statistics[0]}\nend_timestamp: {statistics[1]}\nverification_attempts: {statistics[2]}\n",
+        f">>> Statistics:\nstart_timestamp: {start_timestamp}\nend_timestamp: {stored_end_timestamp}\nverification_attempts: {verification_attempts}\ntotal_time: {total_time:.2f}s\n",
     )
 
 
@@ -259,9 +263,13 @@ def update_client_verification_attempts(client_id, verification_attempts):
     )
     con.commit()
     statistics = get_client_statistics(client_id)
+    start_timestamp = float(statistics[0])
+    stored_end_timestamp = float(statistics[1])
+    verification_attempts = statistics[2]
+    total_time = stored_end_timestamp - start_timestamp
     log_text(
         client_id,
-        f">>> Statistics:\nstart_timestamp: {statistics[0]}\nend_timestamp: {statistics[1]}\nverification_attempts: {statistics[2]}\n",
+        f">>> Statistics:\nstart_timestamp: {start_timestamp}\nend_timestamp: {stored_end_timestamp}\nverification_attempts: {verification_attempts}\ntotal_time: {total_time:.2f}s\n",
     )
 
 
