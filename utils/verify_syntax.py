@@ -367,20 +367,16 @@ class PIVOT_TABLE_PARAMS(BaseModel):
 def pivot_table(params: PIVOT_TABLE_PARAMS):
     pass
 
-# fill(table, method, labels, axis): Fills missing values in the table using the specified method.
+# fill(table, method, labels): Fills missing values in the table using the specified method.
 # Parameters:
 # - table (DataFrame, required): The table in which missing values will be filled.
 # - labels (list[str or int] or int or str, required): The label or list of labels where missing values will be filled.
 # - method (str, required): The method to use for filling missing values. Choose from 'value', 'mean', 'median', 'mode', 'ffill', 'bfill', 'interpolate'.
-# - axis (str or int, required):
-#     - 0 or "index": Indicates that labels correspond to row labels, and filling will be applied across rows.
-#     - 1 or "columns": Indicates that labels correspond to column labels, and filling will be applied across columns.
 
 class FILL(BaseModel):
     table_name: str
-    label: Union[List[str], List[int], int, str]
+    label: Union[List[str], str]
     method: str
-    axis: Union[str, int]
 
 def fill(params: FILL):
     pass
@@ -752,12 +748,12 @@ def validate_pivot_table(arguments, error_list, sheets_names):
     return "Success"
 
 def validate_fill(arguments, error_list, sheets_names):
-    if len(arguments) != 4:
-        error = create_error_message("Invalid number of arguments", f"The function 'fill' requires 4 arguments: 'table_name', 'label', 'method', 'axis'.", "fill")
+    if len(arguments) != 3:
+        error = create_error_message("Invalid number of arguments", f"The function 'fill' requires 3 arguments: 'table_name', 'label', 'method'.", "fill")
         error_list.append(error)
         return "Failed"
     try:
-        params = FILL(table_name=arguments[0], label=arguments[1], method=arguments[2], axis=arguments[3])
+        params = FILL(table_name=arguments[0], label=arguments[1], method=arguments[2])
         fill(params)
     except ValidationError as e:
         error = create_error_message("Invalid argument format", f"The arguments for 'fill' are not in the correct format. Please check the argument types and values.", "fill")

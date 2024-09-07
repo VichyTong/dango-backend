@@ -173,7 +173,7 @@ Step-by-step Plan:
     "program": [
         {
             "function_name": "fill",
-            "arguments": ["test.csv", "ALL", "mean", "index"]
+            "arguments": ["test.csv", "ALL", "mean"]
         }
     ]
 }

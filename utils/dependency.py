@@ -290,12 +290,12 @@ class DependenciesManager:
         return True
 
     def handle_fill_statement(self, arguments):
-        table_name, labels, method, axis = arguments
+        table_name, labels, method = arguments
         new_version = self.get_new_version(table_name)
         base_name, _ = self.split_sheet_name(table_name)
         new_table_name = f"{base_name}_v{new_version}.csv"
 
-        action = f"fill {'row' if axis in (0, 'index') else 'column'} {labels} with method {method}"
+        action = f"fill row {labels} with method {method}"
 
         dependency = {"sheet_id": table_name, "action": action}
 

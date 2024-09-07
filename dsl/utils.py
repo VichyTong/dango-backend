@@ -191,67 +191,32 @@ def drop(table, label, axis=0):
     return table
 
 
-def fill(table, labels, method, axis=0):
+def fill(table, labels, method):
     table = table.replace("", np.nan)
-    axis = classify_axis(axis)
-    # Handle labels parameter
+
     if labels == "ALL":
-        labels = table.index if axis == 0 else table.columns
-    elif isinstance(labels, (int, str)):
+        labels = table.columns
+    if isinstance(labels, str):
         labels = [labels]
 
-    # Create a copy to avoid modifying the original DataFrame
-    table_copy = table.copy()
-
-    # Create a boolean mask for string values
-    str_mask = table_copy.applymap(lambda x: isinstance(x, str))
-    original_str_values = table_copy.where(str_mask)
-
-    # Convert all string values to NaN
-    table_numeric = table_copy.mask(str_mask)
-
-    # Determine the fill values based on the strategy
-    if method == "mean":
-        fill_values = table_numeric.mean(axis=axis, skipna=True)
-    elif method == "median":
-        fill_values = table_numeric.median(axis=axis, skipna=True)
-    elif method == "mode":
-        # Mode can have multiple values; take the first one
-        fill_values = table_numeric.mode(dropna=True, axis=axis)
-        if axis == 0:
-            fill_values = fill_values.iloc[0]
+    for label in labels:
+        if table[label].apply(lambda x: isinstance(x, str)).any():
+            print(f"Skipping column {label} because it contains string values.")
+            continue
+        if method == "mean":
+            fill_value = table[label].mean()
+        elif method == "median":
+            fill_value = table[label].median()
+        elif method == "mode":
+            fill_value = table[label].mode()[
+                0
+            ]  # Mode can return multiple values, so take the first
         else:
-            fill_values = fill_values.apply(
-                lambda x: x[0] if len(x) > 0 else np.nan, axis=1
-            )
-    elif isinstance(method, (int, float)):
-        fill_values = method
-    else:
-        raise ValueError(
-            "Invalid strategy. Choose 'mean', 'median', 'mode', or specify a constant number."
-        )
+            raise ValueError("Invalid method. Choose from 'mean', 'median', or 'mode'.")
+        table[label].fillna(fill_value, inplace=True)
 
-    # Fill missing values based on axis
-    if axis == 0:
-        table_filled = table_numeric.fillna(fill_values)
-    else:
-        table_filled = table_numeric.T.fillna(fill_values).T
-
-    if axis == 0:
-        table_filled = table_numeric.fillna(fill_values)
-        # Restore non-label values
-        non_labels = ~table_copy.index.isin(labels)
-        table_filled.loc[non_labels] = table_copy.loc[non_labels]
-    else:
-        table_filled = table_numeric.T.fillna(fill_values).T
-        # Restore non-label values
-        non_labels = ~table_copy.columns.isin(labels)
-        table_filled.loc[:, ~table_filled.columns.isin(labels)] = table_copy.loc[
-            :, non_labels
-        ]
-
-    table_filled = table_filled.where(~str_mask, original_str_values)
-    return table_filled
+    table = table.applymap(lambda x: f"{x:.2f}" if isinstance(x, (int, float)) else x)
+    return table
 
 
 def format(table, label, pattern, replace_with="", axis=0):
