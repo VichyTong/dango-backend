@@ -119,11 +119,9 @@ class DependenciesManager:
 
     def handle_drop_statement(self, arguments):
         sheet_id = arguments[0]
-        # Heart Disease Prediction dataset_v0.csv
-        file_name = sheet_id.split("_")[0]
-        version = int(sheet_id.split("_")[-1].split(".")[0].replace("v", ""))
+        base_name, version = self.split_sheet_name(sheet_id)
         new_version = version + 1
-        new_sheet_id = f"{file_name}_v{new_version}.csv"
+        new_sheet_id = f"{base_name}_v{new_version}.csv"
         index = arguments[1]
         action = "drop"
         if arguments[2] == "index":

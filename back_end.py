@@ -72,6 +72,7 @@ async def upload_file(client_id: str = Form(...), file: UploadFile = File(...)):
     data = data.decode("utf-8")
     csv_data = StringIO(data)
     data = pd.read_csv(csv_data)
+    data = data.replace("N/A", "")
 
     # Convert the index to string
     data.index = [str(i) for i in range(1, len(data) + 1)]
