@@ -288,12 +288,18 @@ def merge(table_a, table_b, how="outer", on=None):
         x_col = f"{col}_x"
         y_col = f"{col}_y"
         if x_col in merged_df.columns and y_col in merged_df.columns:
-            # Prioritize `_x` values but fill missing with `_y`
             merged_df[col] = merged_df[x_col].combine_first(merged_df[y_col])
             merged_df = merged_df.drop(columns=[x_col, y_col])
         elif y_col in merged_df.columns:
-            # Keep `_y` values if `_x` doesn't exist
             merged_df = merged_df.rename(columns={y_col: col})
+
+    # Preserve the column order from both table_a and table_b
+    table_a_cols = [col for col in table_a.columns if col in merged_df.columns]
+    table_b_cols = [col for col in table_b.columns if col in merged_df.columns and col not in table_a_cols]
+
+    # Reorder columns to maintain the original order of both tables
+    ordered_columns = table_a_cols + table_b_cols
+    merged_df = merged_df[ordered_columns]
 
     return merged_df
 
