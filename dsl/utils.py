@@ -287,11 +287,12 @@ def merge(table_a, table_b, how="outer", on=None):
     for col in table_a.columns:
         x_col = f"{col}_x"
         y_col = f"{col}_y"
-        if f"{col}_x" in merged_df.columns and f"{col}_y" in merged_df.columns:
-            merged_df = merged_df.drop(columns=[f"{col}_y"]).rename(
-                columns={f"{col}_x": col}
-            )
+        if x_col in merged_df.columns and y_col in merged_df.columns:
+            # Prioritize `_x` values but fill missing with `_y`
+            merged_df[col] = merged_df[x_col].combine_first(merged_df[y_col])
+            merged_df = merged_df.drop(columns=[x_col, y_col])
         elif y_col in merged_df.columns:
+            # Keep `_y` values if `_x` doesn't exist
             merged_df = merged_df.rename(columns={y_col: col})
 
     return merged_df
