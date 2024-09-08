@@ -7,13 +7,13 @@ class DangoRearrange(DangoFunction):
 
     def definition(self):
         return """\
-rearrange(table, by_values, axis): Rearranges the rows or columns of the table based on the specified order.
+rearrange(table, by_values, by_axis): Rearranges the rows or columns of the table based on the specified order.
 Parameters:
 - table (DataFrame, required): The table to rearrange.
-- by_values (str or int, required): The row or column to use as the basis for rearranging the rows or columns.
-- axis (str or int, required):
-    - 0 or "index": Rearranges base on the values of a row.
-    - 1 or "columns": Rearranges base on the values of a column.
-Output:
+- label (str or int, required): The row or column to use as the basis for rearranging the rows or columns.
+- by_axis (str or int, required):
+    - 0 or "index": Rearranges the rows based on the values in the specified column.
+    - 1 or "columns": Rearranges the columns based on the values in the specified row.
+Output: 
 - A pandas DataFrame.\
 """

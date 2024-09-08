@@ -384,13 +384,13 @@ def pivot_table(table, index, columns, values, aggfunc="first"):
     return pivot_df
 
 
-def rearrange(table, by_values, axis=0):
+def rearrange(table, label, axis=0):
     axis = classify_axis(axis)
-    if axis == 1:
-        sorted_indices = table[by_values].argsort()
+    if axis == 0:
+        sorted_indices = table[label].argsort()
         return table.iloc[sorted_indices]
-    elif axis == 0:
-        sorted_indices = table.loc[by_values].argsort()
+    elif axis == 1:
+        sorted_indices = table.loc[label].argsort()
         return table.iloc[:, sorted_indices]
     else:
         raise ValueError(
