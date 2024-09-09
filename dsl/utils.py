@@ -49,11 +49,6 @@ def aggregate(table, functions, axis=0):
 def assign(
     table, start_row_index, end_row_index, start_column_index, end_column_index, values
 ):
-    start_row_index -= 1
-    end_row_index -= 1
-    start_column_index -= 1
-    end_column_index -= 1
-
     # If values is a single number, create a matrix of that value
     if isinstance(values, (int, float, str)):
         num_rows = end_row_index - start_row_index + 1
@@ -202,6 +197,11 @@ def fill(table, labels, method):
     for label in labels:
         if table[label].apply(lambda x: isinstance(x, str)).any():
             print(f"Skipping column {label} because it contains string values.")
+            for index, value in table[label].items():
+                if isinstance(value, str):
+                    print(
+                        f"Skipping string value at index {index} in column '{label}': {value}"
+                    )
             continue
         if method == "mean":
             fill_value = table[label].mean()
@@ -213,9 +213,10 @@ def fill(table, labels, method):
             ]  # Mode can return multiple values, so take the first
         else:
             raise ValueError("Invalid method. Choose from 'mean', 'median', or 'mode'.")
+
         table[label].fillna(fill_value, inplace=True)
 
-    table = table.applymap(lambda x: f"{x:.2f}" if isinstance(x, (int, float)) else x)
+    table = table.replace(np.nan, "")
     return table
 
 
@@ -295,7 +296,11 @@ def merge(table_a, table_b, how="outer", on=None):
 
     # Preserve the column order from both table_a and table_b
     table_a_cols = [col for col in table_a.columns if col in merged_df.columns]
-    table_b_cols = [col for col in table_b.columns if col in merged_df.columns and col not in table_a_cols]
+    table_b_cols = [
+        col
+        for col in table_b.columns
+        if col in merged_df.columns and col not in table_a_cols
+    ]
 
     # Reorder columns to maintain the original order of both tables
     ordered_columns = table_a_cols + table_b_cols

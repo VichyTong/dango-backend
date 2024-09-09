@@ -169,6 +169,10 @@ DSL Program:
         "function_name": "split",
         "condition": "if column \"FullName\" contains \" \"",
         "arguments": ["employees.csv_v0", "FullName", " ", ["FirstName", "LastName"]]
+    },
+    {
+        "function_name": "swap",
+        "arguments": ["employees_v0.csv", "FirstName", "employees_v0.csv", "LastName", "columns"]
     }
 ]
 
@@ -189,6 +193,7 @@ for index in delete_index_list:
     sales_data = drop(sales_data, index, "index")
 
 employees = split(employees, "FullName", " ", ["FirstName", "LastName"], "columns")
+employees, _ = swap(employees, "FirstName", employees, "LastName", "columns")
 
 save_table(sales_data, "sales_data_v0.csv")
 save_table(employees, "employees_v0.csv")
