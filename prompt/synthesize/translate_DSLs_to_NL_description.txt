@@ -15,7 +15,6 @@ Provide a natural language description for the DSL script.
 #############
 
 # INPUT #
-- 
 - DSL Script: a list of objects that represent the functions to be applied to the tables.
 For example:
 {

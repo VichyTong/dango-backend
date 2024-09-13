@@ -55,7 +55,7 @@ Output:
 #############
 
 # OUTPUT #
-Your output should between ``` tags and contain the Python code snippet that executes the given DSL function.
+Your output should be between ``` tags and contain the Python code snippet that executes the given DSL function.
 
 #############
 
