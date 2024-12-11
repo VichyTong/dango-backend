@@ -133,12 +133,6 @@ def copy(origin_table, origin_label, target_table, target_label, axis):
                 target_table.drop(index=target_label, inplace=True)
 
             target_table.loc[target_label] = row_data
-            # Reorder rows to preserve the original order
-            rows = list(target_table.index)
-            rows.remove(target_label)
-            rows.insert(rows.index(origin_label), target_label)
-            target_table = target_table.reindex(rows)
-
         else:
             raise ValueError("For axis=0, origin_label must be an int or str.")
 
@@ -318,34 +312,39 @@ def move(origin_table, origin_label, target_table, target_label, axis=0):
     if axis == 0:  # Moving rows
         # Handle origin_label
         if isinstance(origin_label, int):
-            origin_index = origin_label
+            origin_index = str(origin_label + 1)
         elif isinstance(origin_label, str):
-            origin_index = origin_table.index.get_loc(origin_label)
+            origin_index = origin_label
         else:
             raise ValueError("origin_label must be an int or str")
 
         # Handle target_label
         if isinstance(target_label, int):
-            target_index = target_label
+            target_index = str(target_label + 1)
         elif isinstance(target_label, str):
-            target_index = target_table.index.get_loc(target_label)
+            target_index = target_label
         else:
             raise ValueError("target_label must be an int or str")
 
         # Move row
-        row = origin_table.iloc[origin_index].copy()
+        row = origin_table.loc[origin_index].copy()
         origin_table = origin_table.drop(index=origin_index)
+        origin_table.index = [str(i + 1) for i in range(len(origin_table))]
 
         if same_table:
             target_table = origin_table.copy()
 
+        position = target_table.index.get_loc(target_index)
+
         target_table = pd.concat(
             [
-                target_table.iloc[:target_index],
+                target_table.iloc[:position],
                 row.to_frame().T,
-                target_table.iloc[target_index:],
+                target_table.iloc[position:],
             ]
         )
+        target_table.reset_index(drop=True, inplace=True)
+        target_table.index = [str(i + 1) for i in range(len(target_table))]
 
     elif axis == 1:  # Moving columns
         # Handle origin_label
